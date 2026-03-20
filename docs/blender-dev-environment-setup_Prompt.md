@@ -83,13 +83,14 @@ Create `[ADDON_PACKAGE_NAME]/` as a folder-based Python package containing:
 
 ---
 
-## 1b. Scaled Architecture: core/ and scene/ Sub-Packages (Optional Expansion)
+## 1b. Scaled Architecture: core/ and scene/ Sub-Packages
 
-Include this section in your explanation to the developer as guidance for when and how
-to expand beyond the starter flat-file structure.
+The Cursor rule (section 4) is written for the three-layer `operators → scene → core`
+architecture from day one. This means the AI will follow the placement rule and create
+`core/` and `scene/` folders automatically as it generates code — the developer does not
+need to create them manually first.
 
-When the project grows, the single `core.py` file should be promoted to two sub-packages
-that segregate pure Python from bpy-dependent scene code. Explain the following to the developer:
+Explain the following to the developer so they understand the pattern the AI is following:
 
 ### When to make this split
 
@@ -163,9 +164,11 @@ operators.py  →  scene/  →  core/
 | Functions taking `bpy.types.*` arguments | `scene/` | No — needs live Blender |
 | Operator `execute()` methods | `operators.py` | No — needs live Blender |
 
-Do NOT scaffold this structure automatically on the initial setup — start flat.
-Only scaffold it if the developer explicitly requests the scaled structure or if the
-project brief clearly indicates significant complexity from the outset.
+The initial scaffold (section 1) still uses a flat `core.py` starter file as the simplest
+valid starting point. The Cursor rule immediately guides the AI toward the three-layer
+structure as soon as the developer starts adding features. The developer does not need to
+manually restructure — when they ask the AI to add the first function that touches a live
+Blender object, the AI will create `scene/` automatically and explain why.
 
 ---
 
@@ -247,6 +250,12 @@ jobs:
 ## 4. Cursor AI Rules
 
 ### `.cursor/rules/project-context.mdc`
+
+Write this rule to encode the three-layer architecture from the start, even if the developer
+begins with the flat `core.py` starter file. The rule is forward-compatible: the AI will
+follow the layer routing and create `core/` and `scene/` folders automatically when it writes
+code that belongs in them, without waiting for the developer to create the folders manually.
+
 ```markdown
 ---
 description: [Addon Display Name] Blender addon project structure and development conventions
@@ -259,26 +268,53 @@ alwaysApply: true
 
 - `[addon_package_name]/` — the addon package Blender loads
   - `__init__.py` — entry point with register/unregister and importlib reload pattern
-  - `core.py` — pure Python logic, minimal bpy usage, tested with pytest
-  - `operators.py` — thin Blender operator layer, delegates to core
+  - `operators.py` — thin Blender operator layer, delegates to core/ and scene/
   - `blender_manifest.toml` — Blender [version]+ extension manifest
-  - `tests/` — pytest tests that run against the bpy pip package (headless, no Blender UI)
+  - `core/` — pure Python logic, no bpy scene access, fully testable with pytest
+    - `__init__.py` — re-exports public API
+    - `math.py` — clamp, lerp, remap and other math primitives
+    - Add one file per logical domain of pure Python logic
+  - `scene/` — bpy-heavy code that operates on live Blender scene objects
+    - `__init__.py`
+    - Add one file per logical domain of scene operations
+  - `tests/` — pytest tests; mirrors the core/ structure, one test file per core module
 - `requirements.txt` — venv dependencies (bpy, fake-bpy-module, pytest)
 - `pyproject.toml` — pytest configuration
 - `.venv/` — Python [python version] virtual environment (not committed)
 
 ## Architecture Rules
 
-- Keep `operators.py` as thin as possible; push logic into `core.py`.
+### Layer order (arrows point down only — never up or sideways)
+
+```
+operators.py  →  scene/  →  core/
+```
+
+- `core/` NEVER imports from `scene/` or `operators.py`
+- `scene/` NEVER imports from `operators.py`
+- `operators.py` imports from `scene/` (and may import `core/` directly for pure utilities)
+
+### Placement rule
+
+- If a function takes only plain Python types (float, dict, list, str, etc.) → put it in `core/`
+- If a function takes a `bpy.types.*` argument or reads/writes scene state → put it in `scene/`
+- If it wires a Blender UI action to scene/ or core/ logic → put it in `operators.py`
+
+### General rules
+
+- Keep `operators.py` as thin as possible — no business logic, no scene traversal.
 - Never add environment guards or conditional imports to switch between venv and Blender.
-- `import bpy` should work identically in pytest (via pip bpy) and in live Blender.
+- `import bpy` must work identically in pytest (via pip bpy) and in live Blender.
 - New operator classes go in `operators.py` and must be added to the `CLASSES` list.
-- Each new module must get an `importlib.reload()` line in `__init__.py`.
+- Each new module (including new files inside core/ and scene/) must get an
+  `importlib.reload()` line in `__init__.py`.
 
 ## Testing
 
-- Tests run via `pytest` from the repo root against the bpy pip package.
-- GHA runs the same pytest suite on Python [python version] / ubuntu-latest.
+- `core/` modules are fully testable with `pytest` — no Blender session required.
+- `scene/` modules require a live Blender session; test interactively via Blender: Start.
+- `operators.py` is tested interactively in live Blender.
+- GHA runs the pytest suite (core/ tests only) on Python [python version] / ubuntu-latest.
 - Visual/interactive testing uses the Blender Development extension (Blender: Start).
 ```
 

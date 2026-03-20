@@ -89,6 +89,8 @@ The starter scaffold uses a single `core.py` file. This works fine early on, but
 
 The solution is to promote `core.py` into a sub-package and add a parallel `scene/` sub-package for anything that needs to act directly on a live Blender scene.
 
+This architecture is encoded in the project's Cursor rule (`project-context.mdc`), so the AI will automatically route new code to the correct layer when you ask it to add features. You do not need to specify "put this in core/" or "put this in scene/" — the rule does that for you.
+
 ### The Expanded Structure
 
 ```
@@ -222,6 +224,8 @@ Do not split prematurely. The starter scaffold (`core.py`, `operators.py`) is co
 
 - `core.py` has grown past ~150–200 lines and navigation is becoming slow, **or**
 - You are about to write a function that needs to call `bpy` to access a live scene object — that is the moment to create `scene/` rather than putting it in `core.py`
+
+The Cursor rule (`project-context.mdc`) is already written for the scaled `core/` / `scene/` structure. This means the AI will follow the three-layer pattern and use the correct placement rule from the very first time you ask it to generate code — even before you have physically created the `core/` and `scene/` folders. The rule is future-proof: it describes where things belong, and the AI will create the folders as needed when it writes code.
 
 ---
 
@@ -442,10 +446,15 @@ Cursor rules are markdown files stored in `.cursor/rules/` that are injected int
 
 `alwaysApply: true` means this rule is included in every AI conversation in this workspace. It contains:
 
-- The project layout and what each file is for
-- Architecture rules (keep operators thin, push logic to core)
+- The full project layout and what each file and folder is for
+- The three-layer architecture: `operators.py → scene/ → core/`
+- The placement rule: plain Python types → `core/`, `bpy.types.*` arguments → `scene/`
 - Import rules (no environment guards, `import bpy` must work everywhere)
-- Testing conventions
+- Testing conventions for each layer
+
+**This rule is the single source of truth that keeps the AI writing code in the right place.** When you ask Cursor to add a feature, it reads this rule before responding and will route new code to the correct layer automatically — without you needing to specify it each time.
+
+If you ever find the AI putting scene-manipulation code in `core/` or putting logic in an operator, check that the rule file is intact and the `.venv` interpreter is selected. If the AI drifts despite the rule, a quick correction like "this touches a live Blender object, put it in `scene/`" is enough to redirect it, and the rule will keep it on track for the rest of the session.
 
 ### `blender-python.mdc` — file-scoped
 
@@ -457,6 +466,21 @@ Cursor rules are markdown files stored in `.cursor/rules/` that are injected int
 - `bl_idname` format: `"synth_head.<snake_case>"`
 
 These naming conventions are enforced by Blender itself — using non-conforming names causes Blender to refuse to register the class.
+
+### What the rules enforce vs. what they don't
+
+Rules are persistent guidance injected into the AI context — they are not a compiler or a linter. They reliably keep the AI on pattern for:
+
+- Naming conventions (enforced by `blender-python.mdc`)
+- Layer routing — where new code is placed (`core/` vs `scene/` vs `operators.py`)
+- `CLASSES` list maintenance
+- `importlib.reload()` for new modules
+
+They do not catch everything. If you give an ambiguous instruction the AI may still drift. The rules reduce that significantly, but a short correction in the conversation is always sufficient to get back on track.
+
+### Updating the rules as the project grows
+
+The rules live in `.cursor/rules/` and are plain markdown — edit them like any other file. When you add a new major subsystem, update `project-context.mdc` to document it. The AI will incorporate it from the next conversation onward.
 
 ---
 

@@ -9,10 +9,16 @@ alwaysApply: true
 
 - `synth_head/` — the addon package Blender loads
   - `__init__.py` — entry point with register/unregister and importlib reload pattern
-  - `core.py` — pure Python logic, minimal bpy usage, tested with pytest
-  - `operators.py` — thin Blender operator layer, delegates to core
+  - `operators.py` — thin Blender operator layer, delegates to core/ and scene/
   - `blender_manifest.toml` — Blender 5.0 extension manifest
-  - `tests/` — pytest tests that run against the bpy pip package (headless, no Blender UI)
+  - `core/` — pure Python logic, no bpy scene access, fully testable with pytest
+    - `__init__.py` — re-exports public API
+    - `math.py` — clamp, lerp, remap and other math primitives
+    - Add one file per logical domain of pure Python logic
+  - `scene/` — bpy-heavy code that operates on live Blender scene objects
+    - `__init__.py`
+    - Add one file per logical domain of scene operations
+  - `tests/` — pytest tests; mirrors the core/ structure, one test file per core module
 - `data/` — reference mesh data (shape key lists, geo info)
 - `requirements.txt` — venv dependencies (bpy==5.0.1, fake-bpy-module-5.0, pytest)
 - `pyproject.toml` — pytest configuration
@@ -20,14 +26,36 @@ alwaysApply: true
 
 ## Architecture Rules
 
-- Keep `operators.py` as thin as possible; push logic into `core.py`.
+### Layer order (arrows point down only — never up or sideways)
+
+```
+operators.py  →  scene/  →  core/
+```
+
+- `core/` NEVER imports from `scene/` or `operators.py`
+- `scene/` NEVER imports from `operators.py`
+- `operators.py` imports from `scene/` (and may import `core/` directly for pure utilities)
+
+### Placement rule
+
+- If a function takes only plain Python types (float, dict, list, str, etc.) → put it in `core/`
+- If a function takes a `bpy.types.*` argument or reads/writes scene state → put it in `scene/`
+- If it wires a Blender UI action to scene/ or core/ logic → put it in `operators.py`
+
+### General rules
+
+- Keep `operators.py` as thin as possible — no business logic, no scene traversal.
 - Never add environment guards or conditional imports to switch between venv and Blender.
-- `import bpy` should work identically in pytest (via pip bpy) and in live Blender.
+- `import bpy` must work identically in pytest (via pip bpy) and in live Blender.
 - New operator classes go in `operators.py` and must be added to the `CLASSES` list.
-- Each new module must get an `importlib.reload()` line in `__init__.py`.
+- Each new module (including new files inside core/ and scene/) must get an
+  `importlib.reload()` line in `__init__.py`.
 
 ## Testing
 
-- Tests run via `pytest` from the repo root against the bpy pip package.
-- GHA runs the same pytest suite on Python 3.11 / ubuntu-latest.
+- `core/` modules are fully testable with `pytest` — no Blender session required.
+- `scene/` modules require a live Blender session; test them interactively via Blender: Start.
+- `operators.py` is tested interactively in live Blender; it contains so little logic that
+  interactive testing is sufficient.
+- GHA runs the pytest suite (core/ tests only) on Python 3.11 / ubuntu-latest.
 - Visual/interactive testing uses the Blender Development extension (Blender: Start).

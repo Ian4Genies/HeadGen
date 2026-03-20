@@ -23,6 +23,21 @@ class SYNTHHEAD_OT_hello(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class SYNTHHEAD_OT_ping(bpy.types.Operator):
+    """Synth Head is loaded and ready — visible in F3 search as a smoke test"""
+
+    bl_idname = "synth_head.ping"
+    bl_label = "Synth Head: Ping"
+    bl_description = "Smoke test — confirms Synth Head is active and F3-searchable"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        version = core.clamp(1.0)
+        self.report({"INFO"}, f"Synth Head ping OK  (core.clamp check: {version})")
+        return {"FINISHED"}
+
+
 CLASSES = [
     SYNTHHEAD_OT_hello,
+    SYNTHHEAD_OT_ping,
 ]

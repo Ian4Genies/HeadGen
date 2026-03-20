@@ -7,10 +7,9 @@ alwaysApply: true
 
 ## Project Layout
 
-- `synth_head/` — the addon package Blender loads
-  - `__init__.py` — entry point with register/unregister and importlib reload pattern
+- `synth_head/` — the addon package Blender loads (legacy addon mode for development)
+  - `__init__.py` — entry point with bl_info, register/unregister, importlib reload pattern
   - `operators.py` — thin Blender operator layer, delegates to core/ and scene/
-  - `blender_manifest.toml` — Blender 5.0 extension manifest
   - `core/` — pure Python logic, no bpy scene access, fully testable with pytest
     - `__init__.py` — re-exports public API
     - `math.py` — clamp, lerp, remap and other math primitives

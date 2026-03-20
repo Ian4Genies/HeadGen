@@ -233,11 +233,10 @@ The Cursor rule (`project-context.mdc`) is already written for the scaled `core/
 
 ```
 HeadGen/
-  synth_head/                      ← the Blender addon package
-    __init__.py                    ← entry point Blender loads
+  synth_head/                      ← the Blender addon package (legacy addon format)
+    __init__.py                    ← entry point with bl_info; Blender loads this
     core.py                        ← pure Python business logic
     operators.py                   ← thin Blender operator layer
-    blender_manifest.toml          ← Blender 5.0+ extension manifest
     tests/
       __init__.py                  ← makes tests/ a Python package
       test_core.py                 ← pytest tests against core.py
@@ -409,11 +408,37 @@ This only works when Blender was launched via the extension. A Blender instance 
 
 ---
 
-## 8. The Blender Extension Manifest
+## 8. Legacy Addon vs. Extension Format
 
-Blender 4.2 introduced a new extension format that replaces the old `bl_info` dict. Both exist in this project for backward compatibility.
+Blender 4.2 introduced a new **extension** format using `blender_manifest.toml`. This is separate from the older **legacy addon** format that uses a `bl_info` dictionary in `__init__.py`. Both formats are valid in Blender 5.0, but they have different loading paths.
 
-### `blender_manifest.toml`
+### Why this project uses legacy addon format for development
+
+The Blender Development extension (by Jacques Lucke) detects which format to use by checking whether `blender_manifest.toml` exists in the addon folder. If it does, the addon gets loaded as an extension and is namespaced under `bl_ext.<repository>.<module>`. This breaks direct `import synth_head`, makes `addon_enable(module="synth_head")` fail, and causes reload-on-save to not work reliably.
+
+By using only `bl_info` in `__init__.py` (no `blender_manifest.toml`), the Blender Development extension loads the addon via the legacy path: symlinked into `scripts/addons/synth_head/`, importable as `synth_head` directly, and reload-on-save works cleanly.
+
+### `bl_info` in `__init__.py`
+
+```python
+bl_info = {
+    "name": "Synth Head",
+    "author": "Genies",
+    "version": (0, 1, 0),
+    "blender": (5, 0, 0),
+    "location": "View3D > Sidebar > Synth Head",
+    "description": "Procedural head generation with shape key control",
+    "category": "Mesh",
+}
+```
+
+This is the addon's identity as far as Blender is concerned during development. The `"blender"` tuple declares the minimum Blender version.
+
+### When to add `blender_manifest.toml`
+
+Add a manifest when you are ready to **package the addon for distribution** (e.g., uploading to Blender's extension marketplace or shipping a `.zip`). The manifest is the modern standard for distributed extensions. During active development with the Blender Development extension, it should not be present in the addon folder — its presence changes the loading path and breaks the dev workflow.
+
+When packaging for distribution, create `blender_manifest.toml` inside the addon folder:
 
 ```toml
 schema_version = "1.0.0"
@@ -430,11 +455,7 @@ blender_version_min = "5.0.0"
 license = ["SPDX:GPL-3.0-or-later"]
 ```
 
-This file must live inside the addon package folder (alongside `__init__.py`). The `id` must match the Python package name. The `blender_version_min` gates which Blender versions can install this addon.
-
-### `bl_info` in `__init__.py`
-
-The `bl_info` dictionary is the older format still read by Blender 2.x–4.1 and by the Blender Development extension. Keeping both ensures compatibility with the development tooling even as the project targets Blender 5.0+.
+The `id` must match the Python package folder name. Include both `bl_info` and the manifest for maximum compatibility across Blender versions.
 
 ---
 

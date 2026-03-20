@@ -59,16 +59,16 @@ Create `[ADDON_PACKAGE_NAME]/` as a folder-based Python package containing:
   - `execute()` calls `self.report({"INFO"}, "addon is loaded and working.")` and returns `{"FINISHED"}`
 - Define `CLASSES = [<hello operator class>]` at the bottom
 
-### `[ADDON_PACKAGE_NAME]/blender_manifest.toml`
-- `schema_version = "1.0.0"`
-- `id` = addon package name
-- `version = "0.1.0"`
-- `name` = addon display name
-- `tagline` = one-line description
-- `maintainer` = maintainer name
-- `type = "add-on"`
-- `blender_version_min` = the current Blender version you verified (as a string "X.Y.Z")
-- `license = ["SPDX:GPL-3.0-or-later"]`
+### DO NOT create `[ADDON_PACKAGE_NAME]/blender_manifest.toml` during initial scaffold
+The Blender Development extension (Jacques Lucke) checks for `blender_manifest.toml` to
+decide whether to load the addon as a **legacy addon** or a **Blender 5.0+ extension**.
+If the manifest exists, the addon is loaded as an extension under a namespaced path
+(`bl_ext.<repo>.<module>`), which breaks reload-on-save and direct module import during
+development.
+
+For development, use only `bl_info` in `__init__.py` (legacy addon mode). The manifest
+should only be added when packaging for distribution. Include a note in the developer
+instructions explaining this.
 
 ### `[ADDON_PACKAGE_NAME]/tests/__init__.py`
 - Empty file (makes the folder a Python package so pytest can import from it)
@@ -266,10 +266,9 @@ alwaysApply: true
 
 ## Project Layout
 
-- `[addon_package_name]/` — the addon package Blender loads
-  - `__init__.py` — entry point with register/unregister and importlib reload pattern
+- `[addon_package_name]/` — the addon package Blender loads (legacy addon mode for dev)
+  - `__init__.py` — entry point with bl_info, register/unregister, importlib reload pattern
   - `operators.py` — thin Blender operator layer, delegates to core/ and scene/
-  - `blender_manifest.toml` — Blender [version]+ extension manifest
   - `core/` — pure Python logic, no bpy scene access, fully testable with pytest
     - `__init__.py` — re-exports public API
     - `math.py` — clamp, lerp, remap and other math primitives

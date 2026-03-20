@@ -1,0 +1,15 @@
+---
+description: Blender Python API conventions for addon code
+globs: synth_head/**/*.py
+alwaysApply: false
+---
+
+# Blender Python Conventions
+
+- Operator class names: `SYNTHHEAD_OT_<name>` (Blender naming convention)
+- Panel class names: `SYNTHHEAD_PT_<name>`
+- Property group names: `SYNTHHEAD_PG_<name>`
+- Use `bl_idname = "synth_head.<snake_case>"` for operator IDs.
+- Always include `bl_label` and `bl_options` on operators.
+- Register/unregister via the `CLASSES` list in `operators.py`, iterated in `__init__.py`.
+- Prefer `context.object` over `bpy.context.object` inside operators.

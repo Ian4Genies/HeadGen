@@ -1,0 +1,33 @@
+---
+description: Synth Head Blender addon project structure and development conventions
+alwaysApply: true
+---
+
+# Synth Head — Blender 5.0 Addon
+
+## Project Layout
+
+- `synth_head/` — the addon package Blender loads
+  - `__init__.py` — entry point with register/unregister and importlib reload pattern
+  - `core.py` — pure Python logic, minimal bpy usage, tested with pytest
+  - `operators.py` — thin Blender operator layer, delegates to core
+  - `blender_manifest.toml` — Blender 5.0 extension manifest
+  - `tests/` — pytest tests that run against the bpy pip package (headless, no Blender UI)
+- `data/` — reference mesh data (shape key lists, geo info)
+- `requirements.txt` — venv dependencies (bpy==5.0.1, fake-bpy-module-5.0, pytest)
+- `pyproject.toml` — pytest configuration
+- `.venv/` — Python 3.11 virtual environment (not committed)
+
+## Architecture Rules
+
+- Keep `operators.py` as thin as possible; push logic into `core.py`.
+- Never add environment guards or conditional imports to switch between venv and Blender.
+- `import bpy` should work identically in pytest (via pip bpy) and in live Blender.
+- New operator classes go in `operators.py` and must be added to the `CLASSES` list.
+- Each new module must get an `importlib.reload()` line in `__init__.py`.
+
+## Testing
+
+- Tests run via `pytest` from the repo root against the bpy pip package.
+- GHA runs the same pytest suite on Python 3.11 / ubuntu-latest.
+- Visual/interactive testing uses the Blender Development extension (Blender: Start).

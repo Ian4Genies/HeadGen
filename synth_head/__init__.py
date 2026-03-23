@@ -2,15 +2,17 @@ import importlib
 
 if "bpy" in locals():
     from . import core, operators
-    from .core import math, variation
+    from .core import math, modifiers as core_modifiers, variation
     from . import scene
-    from .scene import fbx_import, chaos_anim
+    from .scene import fbx_import, chaos_anim, modifiers as scene_modifiers
 
     importlib.reload(math)
+    importlib.reload(core_modifiers)
     importlib.reload(variation)
     importlib.reload(core)
     importlib.reload(fbx_import)
     importlib.reload(chaos_anim)
+    importlib.reload(scene_modifiers)
     importlib.reload(scene)
     importlib.reload(operators)
 

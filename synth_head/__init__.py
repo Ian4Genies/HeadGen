@@ -1,11 +1,21 @@
 import importlib
 
 if "bpy" in locals():
+    from . import core, operators
+    from .core import math, variation
+    from . import scene
+    from .scene import fbx_import, chaos_anim
+
+    importlib.reload(math)
+    importlib.reload(variation)
     importlib.reload(core)
+    importlib.reload(fbx_import)
+    importlib.reload(chaos_anim)
+    importlib.reload(scene)
     importlib.reload(operators)
 
 import bpy
-from . import core, operators
+from . import core, operators, scene
 
 bl_info = {
     "name": "Synth Head",

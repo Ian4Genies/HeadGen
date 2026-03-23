@@ -1,18 +1,18 @@
-"""Starter tests for synth_head.core — validates the dev environment works."""
+"""Tests for synth_head.core.math."""
 
-from synth_head import core
+from synth_head.core.math import clamp
 
 
 def test_clamp_within_range():
-    assert core.clamp(0.5) == 0.5
+    assert clamp(0.5) == 0.5
 
 
 def test_clamp_below():
-    assert core.clamp(-1.0) == 0.0
+    assert clamp(-1.0) == 0.0
 
 
 def test_clamp_above():
-    assert core.clamp(2.0) == 1.0
+    assert clamp(2.0) == 1.0
 
 
 def test_bpy_importable():

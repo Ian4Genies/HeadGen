@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import bpy
 
+from ..core.math import euler_degrees_to_quaternion
 from ..core.variation import ChaosTransform
 
 
@@ -28,6 +29,10 @@ def apply_chaos_keyframes(
 ) -> None:
     """Apply pre-generated chaos transforms and insert keyframes.
 
+    Rotation values in *transforms* are in degrees; they are converted to
+    quaternions here at the application boundary so that bone rotation mode
+    does not matter.
+
     Args:
         context: The active Blender context.
         armature: The armature object to animate.
@@ -44,11 +49,19 @@ def apply_chaos_keyframes(
             xform = joint_map.get(bone.name)
             if xform is None:
                 continue
+
             bone.location.x, bone.location.y, bone.location.z = xform.location
-            bone.rotation_euler.x, bone.rotation_euler.y, bone.rotation_euler.z = xform.rotation
+
+            w, x, y, z = euler_degrees_to_quaternion(xform.rotation)
+            bone.rotation_quaternion.w = w
+            bone.rotation_quaternion.x = x
+            bone.rotation_quaternion.y = y
+            bone.rotation_quaternion.z = z
+
             bone.scale.x, bone.scale.y, bone.scale.z = xform.scale
+
             bone.keyframe_insert(data_path="location", frame=frame)
-            bone.keyframe_insert(data_path="rotation_euler", frame=frame)
+            bone.keyframe_insert(data_path="rotation_quaternion", frame=frame)
             bone.keyframe_insert(data_path="scale", frame=frame)
 
     bpy.ops.object.mode_set(mode="OBJECT")

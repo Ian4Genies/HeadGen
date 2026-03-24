@@ -77,35 +77,29 @@ def classify_joints(
     return pairs, center
 
 
-def generate_chaos_transforms(
-    config: VariationConfig,
-    joint_names: list[str],
-) -> dict[int, dict[str, ChaosTransform]]:
-    """Return {frame: {joint_name: ChaosTransform}} for every frame in config.
+def _generate_joint_transforms(
+    rng: random.Random,
+    pairs: list[tuple[str, str]],
+    center: list[str],
+    t: float,
+    r: float,
+    s: float,
+    enable_scale: bool,
+) -> dict[str, ChaosTransform]:
+    """Generate one frame of symmetry-aware chaos transforms.
 
-    Symmetry rules applied during generation:
+    Symmetry rules:
     - Paired (Left*/Right*) joints: identical Y/Z location and X rotation;
       Left X location is negated for Right (mirror across YZ plane);
       Left Y/Z rotation is negated for Right.
     - Center joints (no Left/Right prefix): zero X location; only X-axis
       rotation is non-zero.
-    - Scale is identity (1, 1, 1) unless config.enable_scale is True.
-
-    Uses an optionally seeded RNG so results are reproducible when
-    config.seed is set.
+    - Scale is identity (1, 1, 1) unless *enable_scale* is True.
     """
-    rng = random.Random(config.seed)
-    result: dict[int, dict[str, ChaosTransform]] = {}
-
-    t = config.transform_max
-    r = config.rotate_max
-    s = config.scale_max
-
-    pairs, center = classify_joints(joint_names)
     identity_scale: tuple[float, float, float] = (1.0, 1.0, 1.0)
 
     def _scale() -> tuple[float, float, float]:
-        if config.enable_scale:
+        if enable_scale:
             return (
                 1.0 + rng.uniform(-s, s),
                 1.0 + rng.uniform(-s, s),
@@ -113,36 +107,74 @@ def generate_chaos_transforms(
             )
         return identity_scale
 
-    for frame in range(1, config.frame_count + 1):
-        joints: dict[str, ChaosTransform] = {}
+    joints: dict[str, ChaosTransform] = {}
 
-        for left_name, right_name in pairs:
-            lx = rng.uniform(-t, t)
-            ly = rng.uniform(-t, t)
-            lz = rng.uniform(-t, t)
-            rot_x = rng.uniform(-r, r)
-            rot_y = rng.uniform(-r, r)
-            rot_z = rng.uniform(-r, r)
-            scale = _scale()
+    for left_name, right_name in pairs:
+        lx = rng.uniform(-t, t)
+        ly = rng.uniform(-t, t)
+        lz = rng.uniform(-t, t)
+        rot_x = rng.uniform(-r, r)
+        rot_y = rng.uniform(-r, r)
+        rot_z = rng.uniform(-r, r)
+        scale = _scale()
 
-            joints[left_name] = ChaosTransform(
-                location=(lx, ly, lz),
-                rotation=(rot_x, rot_y, rot_z),
-                scale=scale,
-            )
-            joints[right_name] = ChaosTransform(
-                location=(-lx, ly, lz),
-                rotation=(rot_x, -rot_y, -rot_z),
-                scale=scale,
-            )
+        joints[left_name] = ChaosTransform(
+            location=(lx, ly, lz),
+            rotation=(rot_x, rot_y, rot_z),
+            scale=scale,
+        )
+        joints[right_name] = ChaosTransform(
+            location=(-lx, ly, lz),
+            rotation=(rot_x, -rot_y, -rot_z),
+            scale=scale,
+        )
 
-        for name in center:
-            joints[name] = ChaosTransform(
-                location=(0.0, rng.uniform(-t, t), rng.uniform(-t, t)),
-                rotation=(rng.uniform(-r, r), 0.0, 0.0),
-                scale=_scale(),
-            )
+    for name in center:
+        joints[name] = ChaosTransform(
+            location=(0.0, rng.uniform(-t, t), rng.uniform(-t, t)),
+            rotation=(rng.uniform(-r, r), 0.0, 0.0),
+            scale=_scale(),
+        )
 
-        result[frame] = joints
+    return joints
 
-    return result
+
+def generate_chaos_transforms(
+    config: VariationConfig,
+    joint_names: list[str],
+) -> dict[int, dict[str, ChaosTransform]]:
+    """Return {frame: {joint_name: ChaosTransform}} for every frame in config.
+
+    Uses an optionally seeded RNG so results are reproducible when
+    config.seed is set.
+    """
+    rng = random.Random(config.seed)
+    pairs, center = classify_joints(joint_names)
+
+    return {
+        frame: _generate_joint_transforms(
+            rng, pairs, center,
+            config.transform_max, config.rotate_max, config.scale_max,
+            config.enable_scale,
+        )
+        for frame in range(1, config.frame_count + 1)
+    }
+
+
+def generate_single_frame_transforms(
+    config: VariationConfig,
+    joint_names: list[str],
+) -> dict[str, ChaosTransform]:
+    """Return {joint_name: ChaosTransform} for a single random variation.
+
+    Uses config.seed if set, otherwise a fresh random seed each call.
+    Same symmetry rules as generate_chaos_transforms.
+    """
+    rng = random.Random(config.seed)
+    pairs, center = classify_joints(joint_names)
+
+    return _generate_joint_transforms(
+        rng, pairs, center,
+        config.transform_max, config.rotate_max, config.scale_max,
+        config.enable_scale,
+    )

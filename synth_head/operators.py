@@ -8,11 +8,16 @@ import bpy
 
 from .core.math import clamp
 from .core.ref_keys import MESH, ARMATURE
-from .core.variation import CHAOS_JOINT_NAMES, VariationConfig, generate_chaos_transforms
+from .core.variation import (
+    CHAOS_JOINT_NAMES,
+    VariationConfig,
+    generate_chaos_transforms,
+    generate_single_frame_transforms,
+)
 from .scene.fbx_import import import_fbx_and_classify
 from .scene.refs import get_ref, set_ref
 from .core.modifiers import SmoothCorrectiveConfig
-from .scene.chaos_anim import collect_chaos_joints, apply_chaos_keyframes
+from .scene.chaos_anim import collect_chaos_joints, apply_chaos_keyframes, apply_chaos_single_frame
 from .scene.modifiers import add_smooth_corrective
 
 _FBX_PATH = "C:/Genies/01_Repo/02_Blender/HeadGen/data/genericGenie-0013-unified_rig.fbx"
@@ -101,9 +106,40 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
+    """Re-randomize chaos joint transforms on the current frame"""
+
+    bl_idname = "synth_head.randomize_face"
+    bl_label = "Synth Head: Randomize Face"
+    bl_description = "Generate new random chaos transforms on the current frame"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        armature = get_ref(context, ARMATURE)
+        if not armature:
+            self.report({"ERROR"}, "No armature stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+
+        chaos_joints = collect_chaos_joints(armature, CHAOS_JOINT_NAMES)
+        if not chaos_joints:
+            self.report({"ERROR"}, "No chaos joints found on armature")
+            return {"CANCELLED"}
+
+        config = VariationConfig()
+        transforms = generate_single_frame_transforms(
+            config, [b.name for b in chaos_joints],
+        )
+        apply_chaos_single_frame(context, armature, chaos_joints, transforms)
+
+        frame = context.scene.frame_current
+        self.report({"INFO"}, f"Randomized {len(chaos_joints)} joints on frame {frame}")
+        return {"FINISHED"}
+
+
 CLASSES = [
     SYNTHHEAD_PG_PipelineRefs,
     SYNTHHEAD_OT_hello,
     SYNTHHEAD_OT_ping,
     SYNTHHEAD_OT_VariationPipeline,
+    SYNTHHEAD_OT_RandomizeFace,
 ]

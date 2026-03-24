@@ -8,6 +8,7 @@ from .variation import (
     VariationConfig,
     classify_joints,
     generate_chaos_transforms,
+    generate_single_frame_transforms,
 )
 
 __all__ = [
@@ -19,4 +20,5 @@ __all__ = [
     "VariationConfig",
     "classify_joints",
     "generate_chaos_transforms",
+    "generate_single_frame_transforms",
 ]

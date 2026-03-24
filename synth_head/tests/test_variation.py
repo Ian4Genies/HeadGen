@@ -8,6 +8,7 @@ from synth_head.core.variation import (
     VariationConfig,
     classify_joints,
     generate_chaos_transforms,
+    generate_single_frame_transforms,
 )
 
 # Center-only joints for tests that don't need pairs
@@ -120,6 +121,48 @@ class TestGenerateChaosTransforms:
         cfg = VariationConfig(frame_count=0)
         result = generate_chaos_transforms(cfg, _CENTER_JOINTS)
         assert result == {}
+
+
+class TestGenerateSingleFrameTransforms:
+    def test_returns_flat_dict(self):
+        cfg = VariationConfig(seed=42)
+        result = generate_single_frame_transforms(cfg, _MIXED_JOINTS)
+        assert isinstance(result, dict)
+        assert set(result.keys()) == set(_MIXED_JOINTS)
+
+    def test_returns_chaos_transform_instances(self):
+        cfg = VariationConfig(seed=42)
+        result = generate_single_frame_transforms(cfg, _MIXED_JOINTS)
+        for xform in result.values():
+            assert isinstance(xform, ChaosTransform)
+
+    def test_seed_determinism(self):
+        cfg_a = VariationConfig(seed=77)
+        cfg_b = VariationConfig(seed=77)
+        assert generate_single_frame_transforms(cfg_a, _MIXED_JOINTS) == \
+               generate_single_frame_transforms(cfg_b, _MIXED_JOINTS)
+
+    def test_matches_first_frame_of_multi(self):
+        """Single-frame output with a given seed must equal frame 1 of the multi-frame version."""
+        cfg = VariationConfig(frame_count=5, seed=42)
+        multi = generate_chaos_transforms(cfg, _MIXED_JOINTS)
+        single = generate_single_frame_transforms(cfg, _MIXED_JOINTS)
+        assert single == multi[1]
+
+    def test_empty_joint_list(self):
+        cfg = VariationConfig(seed=42)
+        result = generate_single_frame_transforms(cfg, [])
+        assert result == {}
+
+    def test_symmetry_preserved(self):
+        cfg = VariationConfig(seed=42)
+        result = generate_single_frame_transforms(cfg, _MIXED_JOINTS)
+        left = result["LeftBrowBind"]
+        right = result["RightBrowBind"]
+        assert left.location[0] == pytest.approx(-right.location[0])
+        assert left.location[1] == pytest.approx(right.location[1])
+        assert left.rotation[0] == pytest.approx(right.rotation[0])
+        assert left.rotation[1] == pytest.approx(-right.rotation[1])
 
 
 class TestSymmetry:

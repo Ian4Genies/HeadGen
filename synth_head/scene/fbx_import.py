@@ -11,14 +11,14 @@ import bpy
 def import_fbx_and_classify(
     context: bpy.types.Context,
     filepath: str,
-) -> tuple[str | None, str | None]:
-    """Import an FBX file and return the names of the head mesh and armature.
+) -> tuple[bpy.types.Object | None, bpy.types.Object | None]:
+    """Import an FBX file and return the head mesh and armature objects.
 
     Any objects that are neither the head geo nor the armature are deleted
     immediately after import. Orphaned mesh data-blocks are also purged.
 
     Returns:
-        (head_geo_name, armature_name) — either may be None if not found.
+        (head_geo, armature) — either may be None if not found.
     """
     before_names = {obj.name for obj in bpy.data.objects}
 
@@ -27,19 +27,18 @@ def import_fbx_and_classify(
     after_names = {obj.name for obj in bpy.data.objects}
     new_names = after_names - before_names
 
-    head_geo_name = next(
-        (
-            n for n in new_names
-            if bpy.data.objects[n].type == "MESH" and n.startswith("headOnly_geo")
-        ),
+    new_objects = [bpy.data.objects[n] for n in new_names]
+
+    head_geo = next(
+        (o for o in new_objects if o.type == "MESH" and o.name.startswith("headOnly_geo")),
         None,
     )
-    armature_name = next(
-        (n for n in new_names if bpy.data.objects[n].type == "ARMATURE"),
+    armature = next(
+        (o for o in new_objects if o.type == "ARMATURE"),
         None,
     )
 
-    keep = {n for n in (head_geo_name, armature_name) if n}
+    keep = {o.name for o in (head_geo, armature) if o}
     to_delete = new_names - keep
 
     bpy.ops.object.select_all(action="DESELECT")
@@ -50,7 +49,7 @@ def import_fbx_and_classify(
 
     purge_orphan_meshes()
 
-    return head_geo_name, armature_name
+    return head_geo, armature
 
 
 def purge_orphan_meshes() -> None:

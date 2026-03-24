@@ -10,6 +10,15 @@ from .variation import (
     generate_chaos_transforms,
     generate_single_frame_transforms,
 )
+from .blendshapes import (
+    VARIATION_SHAPES,
+    EXPRESSION_SHAPES,
+    BlendshapeConfig,
+    classify_variation_shapes,
+    classify_expression_shapes,
+    generate_blendshape_weights,
+    generate_single_frame_blendshape_weights,
+)
 
 __all__ = [
     "clamp",
@@ -21,4 +30,11 @@ __all__ = [
     "classify_joints",
     "generate_chaos_transforms",
     "generate_single_frame_transforms",
+    "VARIATION_SHAPES",
+    "EXPRESSION_SHAPES",
+    "BlendshapeConfig",
+    "classify_variation_shapes",
+    "classify_expression_shapes",
+    "generate_blendshape_weights",
+    "generate_single_frame_blendshape_weights",
 ]

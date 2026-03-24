@@ -3,18 +3,22 @@ import importlib
 if "bpy" in locals():
     from . import core, operators
     from .core import math, modifiers as core_modifiers, variation, ref_keys
+    from .core import blendshapes as core_blendshapes
     from . import scene
     from .scene import fbx_import, chaos_anim, modifiers as scene_modifiers, refs as scene_refs
+    from .scene import blendshapes as scene_blendshapes
 
     importlib.reload(math)
     importlib.reload(core_modifiers)
     importlib.reload(variation)
     importlib.reload(ref_keys)
+    importlib.reload(core_blendshapes)
     importlib.reload(core)
     importlib.reload(fbx_import)
     importlib.reload(chaos_anim)
     importlib.reload(scene_modifiers)
     importlib.reload(scene_refs)
+    importlib.reload(scene_blendshapes)
     importlib.reload(scene)
     importlib.reload(operators)
 

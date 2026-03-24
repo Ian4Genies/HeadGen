@@ -16,7 +16,13 @@ from .core.variation import (
 )
 from .scene.fbx_import import import_fbx_and_classify
 from .scene.refs import get_ref, set_ref
+from .core.blendshapes import (
+    BlendshapeConfig,
+    generate_blendshape_weights,
+    generate_single_frame_blendshape_weights,
+)
 from .core.modifiers import SmoothCorrectiveConfig
+from .scene.blendshapes import apply_blendshape_keyframes, apply_blendshape_single_frame
 from .scene.chaos_anim import collect_chaos_joints, apply_chaos_keyframes, apply_chaos_single_frame
 from .scene.modifiers import add_smooth_corrective
 
@@ -96,11 +102,17 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         chaos_joints = collect_chaos_joints(armature, CHAOS_JOINT_NAMES)
         self.report({"INFO"}, f"Chaos joints found: {[b.name for b in chaos_joints]}")
 
-        config = VariationConfig()
-        transforms = generate_chaos_transforms(config, [b.name for b in chaos_joints])
+        chaos_config = VariationConfig()
+        transforms = generate_chaos_transforms(chaos_config, [b.name for b in chaos_joints])
         apply_chaos_keyframes(context, armature, chaos_joints, transforms)
 
-        add_smooth_corrective(get_ref(context, MESH), SmoothCorrectiveConfig())
+        head_mesh = get_ref(context, MESH)
+        bs_config = BlendshapeConfig(frame_count=chaos_config.frame_count)
+        bs_weights = generate_blendshape_weights(bs_config)
+        apply_blendshape_keyframes(context, head_mesh, bs_weights)
+        self.report({"INFO"}, f"Blendshape keys applied for {bs_config.frame_count} frames")
+
+        add_smooth_corrective(head_mesh, SmoothCorrectiveConfig())
 
         bpy.ops.wm.save_as_mainfile(filepath=_SAVE_PATH)
         return {"FINISHED"}
@@ -120,19 +132,28 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
             self.report({"ERROR"}, "No armature stored — run Variation Pipeline first")
             return {"CANCELLED"}
 
+        head_mesh = get_ref(context, MESH)
+        if not head_mesh:
+            self.report({"ERROR"}, "No mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+
         chaos_joints = collect_chaos_joints(armature, CHAOS_JOINT_NAMES)
         if not chaos_joints:
             self.report({"ERROR"}, "No chaos joints found on armature")
             return {"CANCELLED"}
 
-        config = VariationConfig()
+        chaos_config = VariationConfig()
         transforms = generate_single_frame_transforms(
-            config, [b.name for b in chaos_joints],
+            chaos_config, [b.name for b in chaos_joints],
         )
         apply_chaos_single_frame(context, armature, chaos_joints, transforms)
 
+        bs_config = BlendshapeConfig()
+        bs_weights = generate_single_frame_blendshape_weights(bs_config)
+        apply_blendshape_single_frame(context, head_mesh, bs_weights)
+
         frame = context.scene.frame_current
-        self.report({"INFO"}, f"Randomized {len(chaos_joints)} joints on frame {frame}")
+        self.report({"INFO"}, f"Randomized {len(chaos_joints)} joints + blendshapes on frame {frame}")
         return {"FINISHED"}
 
 

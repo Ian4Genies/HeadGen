@@ -10,10 +10,10 @@ if "bpy" in locals():
 
     importlib.reload(math)
     importlib.reload(core_modifiers)
-    importlib.reload(constraints)
-    importlib.reload(variation)
     importlib.reload(ref_keys)
+    importlib.reload(variation)
     importlib.reload(core_blendshapes)
+    importlib.reload(constraints)
     importlib.reload(core)
     importlib.reload(fbx_import)
     importlib.reload(chaos_anim)
@@ -41,14 +41,21 @@ classes = operators.CLASSES
 
 
 def register():
+    try:
+        unregister()
+    except Exception:
+        pass
+
     for cls in classes:
         bpy.utils.register_class(cls)
     bpy.types.Scene.synth_head = bpy.props.PointerProperty(
         type=operators.SYNTHHEAD_PG_PipelineRefs,
     )
+    bpy.types.VIEW3D_MT_object.append(operators._draw_menu)
 
 
 def unregister():
+    bpy.types.VIEW3D_MT_object.remove(operators._draw_menu)
     del bpy.types.Scene.synth_head
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)

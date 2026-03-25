@@ -176,10 +176,28 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class SYNTHHEAD_MT_main_menu(bpy.types.Menu):
+    bl_idname = "SYNTHHEAD_MT_main_menu"
+    bl_label = "Synth Head"
+
+    def draw(self, _context):
+        layout = self.layout
+        layout.operator(SYNTHHEAD_OT_hello.bl_idname)
+        layout.operator(SYNTHHEAD_OT_ping.bl_idname)
+        layout.separator()
+        layout.operator(SYNTHHEAD_OT_VariationPipeline.bl_idname)
+        layout.operator(SYNTHHEAD_OT_RandomizeFace.bl_idname)
+
+
+def _draw_menu(self, _context):
+    self.layout.menu(SYNTHHEAD_MT_main_menu.bl_idname)
+
+
 CLASSES = [
     SYNTHHEAD_PG_PipelineRefs,
     SYNTHHEAD_OT_hello,
     SYNTHHEAD_OT_ping,
     SYNTHHEAD_OT_VariationPipeline,
     SYNTHHEAD_OT_RandomizeFace,
+    SYNTHHEAD_MT_main_menu,
 ]

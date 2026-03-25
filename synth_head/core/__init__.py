@@ -14,6 +14,7 @@ from .constraints import (
 from .modifiers import SmoothCorrectiveConfig
 from .variation import (
     CHAOS_JOINT_NAMES,
+    DEFAULT_JOINT_OVERRIDES,
     ChaosTransform,
     VariationConfig,
     classify_joints,
@@ -43,6 +44,7 @@ __all__ = [
     "validate_rules",
     "SmoothCorrectiveConfig",
     "CHAOS_JOINT_NAMES",
+    "DEFAULT_JOINT_OVERRIDES",
     "ChaosTransform",
     "VariationConfig",
     "classify_joints",

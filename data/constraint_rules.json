@@ -5,6 +5,7 @@
     "MouthBind.location.y": { "min": -0.1, "max": 0.1 },
     "JAW_DROP": { "min": 0.0, "max": 0.8 },
     "MOUTH_LOWERER": { "min": 0.0, "max": 0.5 }
+    
   },
   "relational_rules": [
     {

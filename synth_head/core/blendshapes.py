@@ -140,6 +140,24 @@ EXPRESSION_SHAPES: list[str] = [
 
 
 # ---------------------------------------------------------------------------
+# Per-shape override defaults
+# ---------------------------------------------------------------------------
+
+DEFAULT_VARIATION_OVERRIDES: dict[str, float] = {
+    # Variation shapes are normalized within each feature group, so the
+    # override here caps the *maximum contribution* any single shape can
+    # receive from that group's budget.  Values are in [0, max_variation].
+    # Add entries for any shape that should be capped below the group max.
+}
+
+DEFAULT_EXPRESSION_OVERRIDES: dict[str, float] = {
+    # Expression shapes that need tighter individual caps than expression_max.
+    "CHEEK_PUFF_L":      0.3,
+    "CHEEK_PUFF_R":      0.3,
+}
+
+
+# ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
 
@@ -149,11 +167,17 @@ class BlendshapeConfig:
     seed: int | None = None
 
     variation_shapes: list[str] = field(default_factory=lambda: list(VARIATION_SHAPES))
-    max_var_shapes: int = 3
-    max_variation: float = 1.0
+    max_var_shapes: int = 4
+    max_variation: float = 1
+    variation_overrides: dict[str, float] = field(
+        default_factory=lambda: dict(DEFAULT_VARIATION_OVERRIDES),
+    )
 
     expression_shapes: list[str] = field(default_factory=lambda: list(EXPRESSION_SHAPES))
-    expression_max: float = 0.2
+    expression_max: float = 0
+    expression_overrides: dict[str, float] = field(
+        default_factory=lambda: dict(DEFAULT_EXPRESSION_OVERRIDES),
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -225,6 +249,15 @@ def classify_expression_shapes(
 # Weight generation (single frame — shared inner function)
 # ---------------------------------------------------------------------------
 
+def _resolve_shape_max(
+    name: str,
+    global_max: float,
+    overrides: dict[str, float],
+) -> float:
+    """Return the per-shape max, falling back to *global_max* if not overridden."""
+    return overrides.get(name, global_max)
+
+
 def _generate_blendshape_weights(
     rng: random.Random,
     var_groups: dict[str, list[str]],
@@ -233,20 +266,29 @@ def _generate_blendshape_weights(
     max_var_shapes: int,
     max_variation: float,
     expression_max: float,
+    variation_overrides: dict[str, float] | None = None,
+    expression_overrides: dict[str, float] | None = None,
 ) -> dict[str, float]:
     """Generate one frame of blendshape weights.
 
     Variation shapes: for each feature group, pick 1..max_var_shapes shapes
-    and distribute *max_variation* across them randomly.
+    and distribute *max_variation* across them randomly.  Any shape with a
+    ``variation_overrides`` entry is additionally capped at that value after
+    normalization.
 
-    Expression shapes: L/R pairs get the same random value in [0, expression_max];
-    center shapes get an independent random value.
+    Expression shapes: L/R pairs get the same random value sampled from
+    [0, per-shape max]; center shapes get an independent random value.
+    Per-shape maxes are resolved from ``expression_overrides``, falling back
+    to *expression_max*.
     """
+    var_ov = variation_overrides or {}
+    expr_ov = expression_overrides or {}
     weights: dict[str, float] = {}
 
     for _feature, members in var_groups.items():
         count = rng.randint(1, min(max_var_shapes, len(members)))
         selected = rng.sample(members, count)
+        selected_set = set(selected)
 
         raw = [rng.random() for _ in selected]
         total = sum(raw)
@@ -256,15 +298,28 @@ def _generate_blendshape_weights(
             normalized = [v / total * max_variation for v in raw]
 
         for name, weight in zip(selected, normalized):
-            weights[name] = weight
+            cap = _resolve_shape_max(name, max_variation, var_ov)
+            weights[name] = min(weight, cap)
+
+        for name in members:
+            if name not in selected_set:
+                weights[name] = 0.0
+
+    all_expr = {n for pair in expr_pairs for n in pair} | set(expr_center)
+    for name in all_expr:
+        weights[name] = 0.0
 
     for left, right in expr_pairs:
-        val = rng.uniform(0.0, expression_max)
+        left_max = _resolve_shape_max(left, expression_max, expr_ov)
+        right_max = _resolve_shape_max(right, expression_max, expr_ov)
+        shared_max = min(left_max, right_max)
+        val = rng.uniform(0.0, shared_max)
         weights[left] = val
         weights[right] = val
 
     for name in expr_center:
-        weights[name] = rng.uniform(0.0, expression_max)
+        shape_max = _resolve_shape_max(name, expression_max, expr_ov)
+        weights[name] = rng.uniform(0.0, shape_max)
 
     return weights
 
@@ -285,6 +340,7 @@ def generate_blendshape_weights(
         frame: _generate_blendshape_weights(
             rng, var_groups, expr_pairs, expr_center,
             config.max_var_shapes, config.max_variation, config.expression_max,
+            config.variation_overrides, config.expression_overrides,
         )
         for frame in range(1, config.frame_count + 1)
     }
@@ -301,4 +357,5 @@ def generate_single_frame_blendshape_weights(
     return _generate_blendshape_weights(
         rng, var_groups, expr_pairs, expr_center,
         config.max_var_shapes, config.max_variation, config.expression_max,
+        config.variation_overrides, config.expression_overrides,
     )

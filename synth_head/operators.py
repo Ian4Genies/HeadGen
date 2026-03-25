@@ -23,9 +23,19 @@ from .core.blendshapes import (
 )
 from .core.constraints import load_rules, flatten_params, unflatten_params, constrain
 from .core.modifiers import SmoothCorrectiveConfig
-from .scene.blendshapes import apply_blendshape_keyframes, apply_blendshape_single_frame
-from .scene.chaos_anim import collect_chaos_joints, apply_chaos_keyframes, apply_chaos_single_frame
+from .scene.blendshapes import (
+    apply_blendshape_keyframes,
+    apply_blendshape_single_frame,
+    _apply_weights_to_shape_keys,
+)
+from .scene.chaos_anim import (
+    collect_chaos_joints,
+    apply_chaos_keyframes,
+    apply_chaos_single_frame,
+    _apply_transforms_to_bones,
+)
 from .scene.modifiers import add_smooth_corrective
+from .scene.reset import reset_frame
 
 _FBX_PATH = "C:/Genies/01_Repo/02_Blender/HeadGen/data/genericGenie-0013-unified_rig.fbx"
 _SAVE_PATH = "C:/Genies/01_Repo/02_Blender/HeadGen/data/gen13_genie_chaos.blend"
@@ -122,9 +132,17 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
             constrained_transforms[frame] = xforms
             constrained_bs[frame] = weights
 
-        apply_chaos_keyframes(context, armature, chaos_joints, constrained_transforms)
-        apply_blendshape_keyframes(context, head_mesh, constrained_bs)
-        self.report({"INFO"}, f"Blendshape keys applied for {bs_config.frame_count} frames")
+        context.view_layer.objects.active = armature
+        bpy.ops.object.mode_set(mode="POSE")
+
+        for frame in range(1, chaos_config.frame_count + 1):
+            context.scene.frame_set(frame)
+            reset_frame(chaos_joints, head_mesh, frame)
+            _apply_transforms_to_bones(chaos_joints, constrained_transforms[frame], frame)
+            _apply_weights_to_shape_keys(head_mesh, constrained_bs[frame], frame)
+
+        bpy.ops.object.mode_set(mode="OBJECT")
+        self.report({"INFO"}, f"Applied {chaos_config.frame_count} frames (reset + joints + blendshapes)")
 
         add_smooth_corrective(head_mesh, SmoothCorrectiveConfig())
 
@@ -168,10 +186,15 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         flat = constrain(flat, rules)
         transforms, bs_weights = unflatten_params(flat, joint_names)
 
-        apply_chaos_single_frame(context, armature, chaos_joints, transforms)
-        apply_blendshape_single_frame(context, head_mesh, bs_weights)
-
         frame = context.scene.frame_current
+        context.view_layer.objects.active = armature
+        bpy.ops.object.mode_set(mode="POSE")
+
+        reset_frame(chaos_joints, head_mesh, frame)
+        _apply_transforms_to_bones(chaos_joints, transforms, frame)
+        _apply_weights_to_shape_keys(head_mesh, bs_weights, frame)
+
+        bpy.ops.object.mode_set(mode="OBJECT")
         self.report({"INFO"}, f"Randomized {len(chaos_joints)} joints + blendshapes on frame {frame}")
         return {"FINISHED"}
 

@@ -24,6 +24,8 @@ from .variation import (
 from .blendshapes import (
     VARIATION_SHAPES,
     EXPRESSION_SHAPES,
+    DEFAULT_VARIATION_OVERRIDES,
+    DEFAULT_EXPRESSION_OVERRIDES,
     BlendshapeConfig,
     classify_variation_shapes,
     classify_expression_shapes,
@@ -52,6 +54,8 @@ __all__ = [
     "generate_single_frame_transforms",
     "VARIATION_SHAPES",
     "EXPRESSION_SHAPES",
+    "DEFAULT_VARIATION_OVERRIDES",
+    "DEFAULT_EXPRESSION_OVERRIDES",
     "BlendshapeConfig",
     "classify_variation_shapes",
     "classify_expression_shapes",

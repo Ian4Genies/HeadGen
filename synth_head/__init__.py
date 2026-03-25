@@ -7,6 +7,7 @@ if "bpy" in locals():
     from . import scene
     from .scene import fbx_import, chaos_anim, modifiers as scene_modifiers, refs as scene_refs
     from .scene import blendshapes as scene_blendshapes
+    from .scene import reset as scene_reset
 
     importlib.reload(math)
     importlib.reload(core_modifiers)
@@ -20,6 +21,7 @@ if "bpy" in locals():
     importlib.reload(scene_modifiers)
     importlib.reload(scene_refs)
     importlib.reload(scene_blendshapes)
+    importlib.reload(scene_reset)
     importlib.reload(scene)
     importlib.reload(operators)
 

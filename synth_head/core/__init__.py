@@ -1,6 +1,16 @@
 """Public API for synth_head.core."""
 
 from .math import clamp, euler_degrees_to_quaternion
+from .constraints import (
+    ConstraintRules,
+    ValidationReport,
+    constrain,
+    expand_joint_keys,
+    flatten_params,
+    load_rules,
+    unflatten_params,
+    validate_rules,
+)
 from .modifiers import SmoothCorrectiveConfig
 from .variation import (
     CHAOS_JOINT_NAMES,
@@ -23,6 +33,14 @@ from .blendshapes import (
 __all__ = [
     "clamp",
     "euler_degrees_to_quaternion",
+    "ConstraintRules",
+    "ValidationReport",
+    "constrain",
+    "expand_joint_keys",
+    "flatten_params",
+    "load_rules",
+    "unflatten_params",
+    "validate_rules",
     "SmoothCorrectiveConfig",
     "CHAOS_JOINT_NAMES",
     "ChaosTransform",

@@ -21,6 +21,7 @@ from .core.blendshapes import (
     generate_blendshape_weights,
     generate_single_frame_blendshape_weights,
 )
+from .core.constraints import load_rules, flatten_params, unflatten_params, constrain
 from .core.modifiers import SmoothCorrectiveConfig
 from .scene.blendshapes import apply_blendshape_keyframes, apply_blendshape_single_frame
 from .scene.chaos_anim import collect_chaos_joints, apply_chaos_keyframes, apply_chaos_single_frame
@@ -28,6 +29,7 @@ from .scene.modifiers import add_smooth_corrective
 
 _FBX_PATH = "C:/Genies/01_Repo/02_Blender/HeadGen/data/genericGenie-0013-unified_rig.fbx"
 _SAVE_PATH = "C:/Genies/01_Repo/02_Blender/HeadGen/data/gen13_genie_chaos.blend"
+_RULES_PATH = "C:/Genies/01_Repo/02_Blender/HeadGen/data/constraint_rules.json"
 
 
 class SYNTHHEAD_PG_PipelineRefs(bpy.types.PropertyGroup):
@@ -103,13 +105,25 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         self.report({"INFO"}, f"Chaos joints found: {[b.name for b in chaos_joints]}")
 
         chaos_config = VariationConfig()
-        transforms = generate_chaos_transforms(chaos_config, [b.name for b in chaos_joints])
-        apply_chaos_keyframes(context, armature, chaos_joints, transforms)
+        joint_names = [b.name for b in chaos_joints]
+        all_transforms = generate_chaos_transforms(chaos_config, joint_names)
 
         head_mesh = get_ref(context, MESH)
         bs_config = BlendshapeConfig(frame_count=chaos_config.frame_count)
-        bs_weights = generate_blendshape_weights(bs_config)
-        apply_blendshape_keyframes(context, head_mesh, bs_weights)
+        all_bs_weights = generate_blendshape_weights(bs_config)
+
+        rules = load_rules(_RULES_PATH)
+        constrained_transforms: dict[int, dict] = {}
+        constrained_bs: dict[int, dict[str, float]] = {}
+        for frame in range(1, chaos_config.frame_count + 1):
+            flat = flatten_params(all_transforms[frame], all_bs_weights[frame])
+            flat = constrain(flat, rules)
+            xforms, weights = unflatten_params(flat, joint_names)
+            constrained_transforms[frame] = xforms
+            constrained_bs[frame] = weights
+
+        apply_chaos_keyframes(context, armature, chaos_joints, constrained_transforms)
+        apply_blendshape_keyframes(context, head_mesh, constrained_bs)
         self.report({"INFO"}, f"Blendshape keys applied for {bs_config.frame_count} frames")
 
         add_smooth_corrective(head_mesh, SmoothCorrectiveConfig())
@@ -143,13 +157,18 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
             return {"CANCELLED"}
 
         chaos_config = VariationConfig()
-        transforms = generate_single_frame_transforms(
-            chaos_config, [b.name for b in chaos_joints],
-        )
-        apply_chaos_single_frame(context, armature, chaos_joints, transforms)
+        joint_names = [b.name for b in chaos_joints]
+        transforms = generate_single_frame_transforms(chaos_config, joint_names)
 
         bs_config = BlendshapeConfig()
         bs_weights = generate_single_frame_blendshape_weights(bs_config)
+
+        rules = load_rules(_RULES_PATH)
+        flat = flatten_params(transforms, bs_weights)
+        flat = constrain(flat, rules)
+        transforms, bs_weights = unflatten_params(flat, joint_names)
+
+        apply_chaos_single_frame(context, armature, chaos_joints, transforms)
         apply_blendshape_single_frame(context, head_mesh, bs_weights)
 
         frame = context.scene.frame_current

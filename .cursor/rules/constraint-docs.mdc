@@ -1,0 +1,28 @@
+# Constraint Rule Documentation Sync
+
+## Trigger
+
+When adding, removing, or modifying a rule type in `synth_head/core/constraints.py`:
+- Adding a new entry to `_RULE_HANDLERS`
+- Adding a new `_apply_*` handler function
+- Changing the fields or behavior of an existing handler
+
+## Required action
+
+Update `docs/constraints.md` to match. Specifically:
+
+1. Add a new `## Rule type: <name>` section with:
+   - **What it does** — plain-English description of the rule behavior
+   - **When to use it** — 2-3 concrete use cases
+   - **Fields** — table of all JSON fields, types, and whether required
+   - **Examples** — at least 2 real-world JSON snippets
+   - **Boilerplate** — a minimal copy-paste-ready JSON block
+2. Add the new rule type to the **Full file boilerplate** section at the bottom.
+3. If the new rule type introduces a new field pattern (e.g. a nested object),
+   document it in the **Parameter key format** or **Evaluation order** sections
+   if relevant.
+
+## Verification
+
+After updating the doc, confirm it lists every key in `_RULE_HANDLERS` and
+that no documented rule type is missing from the code.

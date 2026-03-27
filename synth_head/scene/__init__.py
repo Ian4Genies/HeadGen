@@ -6,6 +6,12 @@ from .modifiers import add_smooth_corrective
 from .refs import get_ref, set_ref
 from .blendshapes import apply_blendshape_keyframes, apply_blendshape_single_frame
 from .reset import reset_frame, reset_bones, reset_shape_keys
+from .snapshot import (
+    read_bone_transforms,
+    read_shape_key_values,
+    apply_bone_transforms,
+    apply_shape_key_values,
+)
 
 __all__ = [
     "import_fbx_and_classify",
@@ -21,4 +27,8 @@ __all__ = [
     "reset_frame",
     "reset_bones",
     "reset_shape_keys",
+    "read_bone_transforms",
+    "read_shape_key_values",
+    "apply_bone_transforms",
+    "apply_shape_key_values",
 ]

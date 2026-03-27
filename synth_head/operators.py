@@ -36,10 +36,24 @@ from .scene.chaos_anim import (
 )
 from .scene.modifiers import add_smooth_corrective
 from .scene.reset import reset_frame
+from .scene.snapshot import (
+    read_bone_transforms,
+    read_shape_key_values,
+    apply_bone_transforms,
+    apply_shape_key_values,
+)
+from .core.snapshot import build_snapshot, save_snapshot, load_snapshot
+from .core.blendshapes import VARIATION_SHAPES, EXPRESSION_SHAPES
+
+import json
+from pathlib import Path
 
 _FBX_PATH = "C:/Genies/01_Repo/02_Blender/HeadGen/data/genericGenie-0013-unified_rig.fbx"
 _SAVE_PATH = "C:/Genies/01_Repo/02_Blender/HeadGen/data/gen13_genie_chaos.blend"
 _RULES_PATH = "C:/Genies/01_Repo/02_Blender/HeadGen/data/constraint_rules.json"
+_DATA_DIR = Path("C:/Genies/01_Repo/02_Blender/HeadGen/data")
+_ISSUES_DIR = _DATA_DIR / "head-issues"
+_GOOD_DIR = _DATA_DIR / "head-good"
 
 
 class SYNTHHEAD_PG_PipelineRefs(bpy.types.PropertyGroup):
@@ -199,6 +213,142 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         return {"FINISHED"}
 
 
+def _save_head_snapshot(operator, context, label: str, directory: Path) -> set[str]:
+    """Shared logic for Save Head Issue / Save Good Head operators."""
+    armature = get_ref(context, ARMATURE)
+    if not armature:
+        operator.report({"ERROR"}, "No armature stored — run Variation Pipeline first")
+        return {"CANCELLED"}
+
+    head_mesh = get_ref(context, MESH)
+    if not head_mesh:
+        operator.report({"ERROR"}, "No mesh stored — run Variation Pipeline first")
+        return {"CANCELLED"}
+
+    joint_data = read_bone_transforms(armature, CHAOS_JOINT_NAMES)
+    var_shapes, expr_shapes = read_shape_key_values(
+        head_mesh, list(VARIATION_SHAPES), list(EXPRESSION_SHAPES),
+    )
+
+    rules_raw: dict = {}
+    rules_path = Path(_RULES_PATH)
+    if rules_path.exists():
+        with rules_path.open("r", encoding="utf-8") as f:
+            rules_raw = json.load(f)
+
+    snapshot = build_snapshot(
+        chaos_joints=joint_data,
+        variation_shapes=var_shapes,
+        expression_shapes=expr_shapes,
+        rules_raw=rules_raw,
+        frame=context.scene.frame_current,
+        label=label,
+        note=operator.note,
+    )
+
+    saved = save_snapshot(snapshot, directory)
+    operator.report({"INFO"}, f"Saved {label} snapshot → {saved.name}")
+    return {"FINISHED"}
+
+
+class SYNTHHEAD_OT_SaveHeadIssue(bpy.types.Operator):
+    """Save current head state as an issue snapshot"""
+
+    bl_idname = "synth_head.save_head_issue"
+    bl_label = "Synth Head: Save Head Issue"
+    bl_description = "Snapshot all tracked head data to data/head-issues/"
+    bl_options = {"REGISTER"}
+
+    note: bpy.props.StringProperty(
+        name="Note",
+        description="Optional description of the issue",
+        default="",
+    )
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self, width=400)
+
+    def draw(self, context):
+        self.layout.prop(self, "note", text="Note")
+
+    def execute(self, context):
+        return _save_head_snapshot(self, context, "issue", _ISSUES_DIR)
+
+
+class SYNTHHEAD_OT_SaveGoodHead(bpy.types.Operator):
+    """Save current head state as a good-head reference snapshot"""
+
+    bl_idname = "synth_head.save_good_head"
+    bl_label = "Synth Head: Save Good Head"
+    bl_description = "Snapshot all tracked head data to data/head-good/"
+    bl_options = {"REGISTER"}
+
+    note: bpy.props.StringProperty(
+        name="Note",
+        description="Optional note about this head",
+        default="",
+    )
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self, width=400)
+
+    def draw(self, context):
+        self.layout.prop(self, "note", text="Note")
+
+    def execute(self, context):
+        return _save_head_snapshot(self, context, "good", _GOOD_DIR)
+
+
+class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
+    """Load a saved head snapshot and apply it on the current frame"""
+
+    bl_idname = "synth_head.load_head_data"
+    bl_label = "Synth Head: Load Head Data"
+    bl_description = "Load a snapshot JSON and apply transforms + shape keys"
+    bl_options = {"REGISTER", "UNDO"}
+
+    filepath: bpy.props.StringProperty(subtype="FILE_PATH")
+    filter_glob: bpy.props.StringProperty(default="*.json", options={"HIDDEN"})
+
+    def invoke(self, context, event):
+        self.filepath = str(_DATA_DIR) + "\\"
+        context.window_manager.fileselect_add(self)
+        return {"RUNNING_MODAL"}
+
+    def execute(self, context):
+        armature = get_ref(context, ARMATURE)
+        if not armature:
+            self.report({"ERROR"}, "No armature stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+
+        head_mesh = get_ref(context, MESH)
+        if not head_mesh:
+            self.report({"ERROR"}, "No mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+
+        snapshot = load_snapshot(self.filepath)
+        frame = context.scene.frame_current
+
+        chaos_joints = collect_chaos_joints(armature, CHAOS_JOINT_NAMES)
+
+        context.view_layer.objects.active = armature
+        bpy.ops.object.mode_set(mode="POSE")
+
+        reset_frame(chaos_joints, head_mesh, frame)
+        apply_bone_transforms(armature, snapshot.get("chaos_joints", {}), frame)
+
+        all_shapes: dict[str, float] = {}
+        all_shapes.update(snapshot.get("variation_shapes", {}))
+        all_shapes.update(snapshot.get("expression_shapes", {}))
+        apply_shape_key_values(head_mesh, all_shapes, frame)
+
+        bpy.ops.object.mode_set(mode="OBJECT")
+
+        src = Path(self.filepath).name
+        self.report({"INFO"}, f"Loaded snapshot '{src}' on frame {frame}")
+        return {"FINISHED"}
+
+
 class SYNTHHEAD_MT_main_menu(bpy.types.Menu):
     bl_idname = "SYNTHHEAD_MT_main_menu"
     bl_label = "Synth Head"
@@ -210,6 +360,10 @@ class SYNTHHEAD_MT_main_menu(bpy.types.Menu):
         layout.separator()
         layout.operator(SYNTHHEAD_OT_VariationPipeline.bl_idname)
         layout.operator(SYNTHHEAD_OT_RandomizeFace.bl_idname)
+        layout.separator()
+        layout.operator(SYNTHHEAD_OT_SaveHeadIssue.bl_idname)
+        layout.operator(SYNTHHEAD_OT_SaveGoodHead.bl_idname)
+        layout.operator(SYNTHHEAD_OT_LoadHeadData.bl_idname)
 
 
 def _draw_menu(self, _context):
@@ -222,5 +376,8 @@ CLASSES = [
     SYNTHHEAD_OT_ping,
     SYNTHHEAD_OT_VariationPipeline,
     SYNTHHEAD_OT_RandomizeFace,
+    SYNTHHEAD_OT_SaveHeadIssue,
+    SYNTHHEAD_OT_SaveGoodHead,
+    SYNTHHEAD_OT_LoadHeadData,
     SYNTHHEAD_MT_main_menu,
 ]

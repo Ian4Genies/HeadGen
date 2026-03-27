@@ -21,6 +21,7 @@ from .variation import (
     generate_chaos_transforms,
     generate_single_frame_transforms,
 )
+from .snapshot import build_snapshot, save_snapshot, load_snapshot
 from .blendshapes import (
     VARIATION_SHAPES,
     EXPRESSION_SHAPES,
@@ -61,4 +62,7 @@ __all__ = [
     "classify_expression_shapes",
     "generate_blendshape_weights",
     "generate_single_frame_blendshape_weights",
+    "build_snapshot",
+    "save_snapshot",
+    "load_snapshot",
 ]

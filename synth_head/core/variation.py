@@ -20,37 +20,103 @@ CHAOS_JOINT_NAMES: frozenset[str] = frozenset({
     "RightEyeSocketBind",
     "LeftEyeSocketBind",
     "FaceBind",
+    "NeckBind",
 })
 
 DEFAULT_JOINT_OVERRIDES: dict[str, float] = {
     # --- FaceBind — moves the whole face, needs tight limits ---------------
-    "FaceBind.location":   0.02,
-    "FaceBind.rotation":   0.0,
-    "FaceBind.scale":      0.02,
+    # Not present in BodyConfig; keep conservative values.
+    "FaceBind.location":     0.005,
+    "FaceBind.rotation":     0.0,
+    "FaceBind.scale":        0.02,
 
     # --- JawBind -----------------------------------------------------------
-    "JawBind.location":    0.15,
-    "JawBind.rotation.x":  8.0,
+    # JawWidth:  scale.x [0.9, 1.2]  → ±0.1 (take conservative side)
+    # JawLength: scale.y [0.95, 1.1] → ±0.05
+    "JawBind.scale.x":       0.1,
+    "JawBind.scale.y":       0.05,
+    "JawBind.scale.z":       0.0,
+    "JawBind.location":      0.0,
+    "JawBind.rotation":      0.0,
 
     # --- MouthBind ---------------------------------------------------------
-    "MouthBind.location":  0.1,
-    "MouthBind.rotation":  5.0,
+    # LipWidth:        scale.x [0.8, 1.2]  → ±0.2
+    # LipFullness:     scale.y [0.65, 1.3] → ±0.35 (conservative: 0.35)
+    # LipPositionVert: loc.y   ±0.005
+    "MouthBind.scale.x":     0.2,
+    "MouthBind.scale.y":     0.35,
+    "MouthBind.scale.z":     0.0,
+    "MouthBind.location.x":  0.0,
+    "MouthBind.location.y":  0.005,
+    "MouthBind.location.z":  0.0,
+    "MouthBind.rotation":    0.0,
 
     # --- MouthInnerBind ----------------------------------------------------
-    "MouthInnerBind.location": 0.08,
-    "MouthInnerBind.rotation": 4.0,
+    # LipWidth:        scale.x [0.9, 1.1]  → ±0.1
+    # LipFullness:     scale.y [0.825, 1.075] → ±0.075
+    # LipPositionVert: loc.y   ±0.0025
+    "MouthInnerBind.scale.x":    0.1,
+    "MouthInnerBind.scale.y":    0.075,
+    "MouthInnerBind.scale.z":    0.0,
+    "MouthInnerBind.location.x": 0.0,
+    "MouthInnerBind.location.y": 0.0025,
+    "MouthInnerBind.location.z": 0.0,
+    "MouthInnerBind.rotation":   0.0,
 
     # --- NoseBind ----------------------------------------------------------
-    "NoseBind.location":   0.1,
-    "NoseBind.rotation.x": 5.0,
+    # NoseWidth:        scale.x [0.65, 1.65] → ±0.35 (conservative)
+    # NoseHeight:       scale.y [0.75, 1.4]  → ±0.25 (conservative)
+    # NoseProjection:   scale.z [0.75, 1.25] → ±0.25
+    # NoseTilt:         rot.x   [-10, 20]    → ±10 (conservative)
+    # NosePositionVert: loc.y   ±0.005
+    "NoseBind.scale.x":      0.35,
+    "NoseBind.scale.y":      0.25,
+    "NoseBind.scale.z":      0.25,
+    "NoseBind.location.x":   0.0,
+    "NoseBind.location.y":   0.005,
+    "NoseBind.location.z":   0.0,
+    "NoseBind.rotation.x":   10.0,
+    "NoseBind.rotation.y":   0.0,
+    "NoseBind.rotation.z":   0.0,
 
-    # --- Brow pair (keyed to Left; Right inherits via symmetry) ------------
-    "LeftBrowBind.location":   0.15,
-    "LeftBrowBind.rotation":   8.0,
+    # --- BrowBind pair (Left keyed; Right inherits via symmetry) -----------
+    # BrowThickness:    scale.y [0.75, 1.25]  → ±0.25
+    # BrowLength:       scale.x [0.9,  1.1]   → ±0.1;  loc.x ±0.001
+    # BrowPositionVert: rot.x   [-5, 5]        → ±5°
+    # BrowSpacing:      rot.y   [-8, 3] Right / [8, -3] Left → ±3 (conservative)
+    "LeftBrowBind.scale.x":      0.1,
+    "LeftBrowBind.scale.y":      0.25,
+    "LeftBrowBind.scale.z":      0.0,
+    "LeftBrowBind.location.x":   0.001,
+    "LeftBrowBind.location.y":   0.0,
+    "LeftBrowBind.location.z":   0.0,
+    "LeftBrowBind.rotation.x":   5.0,
+    "LeftBrowBind.rotation.y":   3.0,
+    "LeftBrowBind.rotation.z":   0.0,
 
-    # --- EyeSocket pair (keyed to Left) ------------------------------------
-    "LeftEyeSocketBind.location":   0.1,
-    "LeftEyeSocketBind.rotation":   6.0,
+    # --- EyeSocketBind pair (Left keyed) -----------------------------------
+    # EyeSize:          scale.x,y [0.9, 1.1]  → ±0.1;  loc.x ±0.001
+    # EyePositionVert:  loc.y     ±0.006
+    # EyeSpacing:       loc.x     ±0.004  (dominates over EyeSize loc.x)
+    # EyeTilt:          rot.z     ±10°
+    "LeftEyeSocketBind.scale.x":      0.1,
+    "LeftEyeSocketBind.scale.y":      0.1,
+    "LeftEyeSocketBind.scale.z":      0.0,
+    "LeftEyeSocketBind.location.x":   0.004,
+    "LeftEyeSocketBind.location.y":   0.006,
+    "LeftEyeSocketBind.location.z":   0.0,
+    "LeftEyeSocketBind.rotation.x":   0.0,
+    "LeftEyeSocketBind.rotation.y":   0.0,
+    "LeftEyeSocketBind.rotation.z":   10.0,
+
+    # --- NeckBind ----------------------------------------------------------
+    # WeightHeadNeck: scale.x [0.8, 1.25] → ±0.2 (conservative)
+    #                 scale.z [0.87, 1.15] → ±0.13 (conservative)
+    "NeckBind.scale.x":      0.2,
+    "NeckBind.scale.y":      0.0,
+    "NeckBind.scale.z":      0.13,
+    "NeckBind.location":     0.0,
+    "NeckBind.rotation":     0.0,
 }
 
 

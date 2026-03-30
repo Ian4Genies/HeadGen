@@ -1,0 +1,312 @@
+{
+  "version": 1,
+  "timestamp": "2026-03-30T18:09:17",
+  "frame": 86,
+  "label": "issue",
+  "note": "eyes are to circular",
+  "chaos_joints": {
+    "JawBind": {
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_quaternion": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.035335898399353,
+        1.0314421653747559,
+        1.0
+      ]
+    },
+    "MouthBind": {
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_quaternion": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.8978822827339172,
+        1.2149158716201782,
+        1.0
+      ]
+    },
+    "MouthInnerBind": {
+      "location": [
+        0.0,
+        -0.0005395491025410593,
+        0.0
+      ],
+      "rotation_quaternion": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.03966224193573,
+        1.0039770603179932,
+        1.0
+      ]
+    },
+    "NoseBind": {
+      "location": [
+        0.0,
+        -0.0034847857896238565,
+        0.0
+      ],
+      "rotation_quaternion": [
+        0.9982377290725708,
+        -0.05934205278754234,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.8472397923469543,
+        1.2357425689697266,
+        0.8324559926986694
+      ]
+    },
+    "LeftBrowBind": {
+      "location": [
+        0.0004057624901179224,
+        0.0,
+        0.0
+      ],
+      "rotation_quaternion": [
+        0.9992353916168213,
+        0.03884054347872734,
+        -0.004477714654058218,
+        0.0001740499574225396
+      ],
+      "scale": [
+        1.0822274684906006,
+        0.8828352093696594,
+        1.0
+      ]
+    },
+    "RightBrowBind": {
+      "location": [
+        -0.0004057624901179224,
+        0.0,
+        0.0
+      ],
+      "rotation_quaternion": [
+        0.9992353916168213,
+        0.03884054347872734,
+        0.004477714654058218,
+        -0.0001740499574225396
+      ],
+      "scale": [
+        1.0822274684906006,
+        0.8828352093696594,
+        1.0
+      ]
+    },
+    "RightEyeSocketBind": {
+      "location": [
+        0.0008806028636172414,
+        -0.004941410850733519,
+        0.0
+      ],
+      "rotation_quaternion": [
+        0.9996898770332336,
+        0.0,
+        0.0,
+        0.024904003366827965
+      ],
+      "scale": [
+        0.9240155220031738,
+        1.0156733989715576,
+        1.0
+      ]
+    },
+    "LeftEyeSocketBind": {
+      "location": [
+        -0.0008806028636172414,
+        -0.004941410850733519,
+        0.0
+      ],
+      "rotation_quaternion": [
+        0.9996898770332336,
+        0.0,
+        0.0,
+        -0.024904003366827965
+      ],
+      "scale": [
+        0.9240155220031738,
+        1.0156733989715576,
+        1.0
+      ]
+    },
+    "FaceBind": {
+      "location": [
+        0.0,
+        0.001243694219738245,
+        0.0035402080975472927
+      ],
+      "rotation_quaternion": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.9813046455383301,
+        1.01498281955719,
+        0.9887904524803162
+      ]
+    },
+    "NeckBind": {
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_quaternion": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.163952350616455,
+        1.0,
+        1.0319584608078003
+      ]
+    }
+  },
+  "variation_shapes": {
+    "eyes_female_varGp01A": 0.0,
+    "eyes_female_varGp01B": 0.0,
+    "eyes_female_varGp01C": 0.0,
+    "eyes_female_varGp01E": 0.0,
+    "eyes_female_varGp01G": 0.0,
+    "eyes_female_varGp01I": 0.0,
+    "eyes_male_varGp01D": 0.0,
+    "eyes_male_varGp01F": 0.30005204677581787,
+    "eyes_male_varGp01H": 0.0,
+    "eyes_male_varGp01J": 0.32681119441986084,
+    "eyes_male_varGp01K": 0.0,
+    "eyes_male_varGp01L": 0.3731367588043213,
+    "jaw_female_varGp01A": 0.39473801851272583,
+    "jaw_female_varGp01B": 0.0,
+    "jaw_female_varGp01D": 0.0,
+    "jaw_female_varGp01F": 0.0,
+    "jaw_female_varGp01H": 0.6052619814872742,
+    "jaw_female_varGp01K": 0.0,
+    "jaw_male_varGp01A": 0.0,
+    "jaw_male_varGp01D": 0.0,
+    "jaw_male_varGp01E": 0.0,
+    "jaw_male_varGp01H": 0.0,
+    "jaw_male_varGp01K": 0.0,
+    "jaw_male_varGp01L": 0.0,
+    "lips_female_varGp01C": 0.0,
+    "lips_female_varGp01D": 0.0,
+    "lips_female_varGp01E": 0.0,
+    "lips_female_varGp01F": 0.0,
+    "lips_female_varGp01I": 0.0,
+    "lips_female_varGp01J": 0.34523552656173706,
+    "lips_male_varGp01D": 0.0,
+    "lips_male_varGp01F": 0.0,
+    "lips_male_varGp01G": 0.0,
+    "lips_male_varGp01H": 0.6547644734382629,
+    "lips_male_varGp01I": 0.0,
+    "lips_male_varGp01K": 0.0,
+    "nose_female_varGp01A": 0.0,
+    "nose_female_varGp01C": 0.5169746279716492,
+    "nose_female_varGp01D": 0.4830254018306732,
+    "nose_female_varGp01F": 0.0,
+    "nose_female_varGp01H": 0.0,
+    "nose_female_varGp01K": 0.0,
+    "nose_male_varGp01A": 0.0,
+    "nose_male_varGp01D": 0.0,
+    "nose_male_varGp01E": 0.0,
+    "nose_male_varGp01G": 0.0,
+    "nose_male_varGp01I": 0.0,
+    "nose_male_varGp01K": 0.0
+  },
+  "expression_shapes": {
+    "BROW_LOWERER_L": 0.0,
+    "BROW_LOWERER_R": 0.0,
+    "CHEEK_PUFF_L": 0.1949717104434967,
+    "CHEEK_PUFF_R": 0.1949717104434967,
+    "CHEEK_RAISER_L": 0.0,
+    "CHEEK_RAISER_R": 0.0,
+    "CHEEK_SUCK_L": 0.0,
+    "CHEEK_SUCK_R": 0.0,
+    "CHIN_DEPRESSOR_B": 0.0,
+    "CHIN_RAISER_B": 0.0,
+    "CHIN_RAISER_T": 0.0,
+    "DIMPLER_L": 0.0,
+    "DIMPLER_R": 0.0,
+    "EYES_CLOSED_L": 0.0,
+    "EYES_CLOSED_R": 0.0,
+    "EYES_LOOK_DOWN_L": 0.0,
+    "EYES_LOOK_DOWN_R": 0.0,
+    "EYES_LOOK_LEFT_L": 0.0,
+    "EYES_LOOK_LEFT_R": 0.0,
+    "EYES_LOOK_RIGHT_L": 0.0,
+    "EYES_LOOK_RIGHT_R": 0.0,
+    "EYES_LOOK_UP_L": 0.0,
+    "EYES_LOOK_UP_R": 0.0,
+    "INNER_BROW_CONTRACTOR_L": 0.0,
+    "INNER_BROW_CONTRACTOR_R": 0.0,
+    "INNER_BROW_RAISER_L": 0.0,
+    "INNER_BROW_RAISER_R": 0.0,
+    "JAW_COMPRESSOR": 0.0,
+    "JAW_DROP": 0.0,
+    "JAW_RETREAT": 0.0,
+    "JAW_SIDEWAYS_LEFT": 0.0,
+    "JAW_SIDEWAYS_RIGHT": 0.0,
+    "JAW_THRUST": 0.0,
+    "LID_TIGHTENER_L": 0.0,
+    "LID_TIGHTENER_R": 0.0,
+    "LIPS_TOWARD": 0.0,
+    "LIP_CORNER_DEPRESSOR_L": 0.0,
+    "LIP_CORNER_DEPRESSOR_R": 0.0,
+    "LIP_CORNER_PULLER_L": 0.0,
+    "LIP_CORNER_PULLER_R": 0.0,
+    "LIP_FUNNELER_LB": 0.0,
+    "LIP_FUNNELER_LT": 0.0,
+    "LIP_FUNNELER_RB": 0.0,
+    "LIP_FUNNELER_RT": 0.0,
+    "LIP_PRESSOR_L": 0.0,
+    "LIP_PRESSOR_R": 0.0,
+    "LIP_PUCKER_L": 0.0,
+    "LIP_PUCKER_R": 0.0,
+    "LIP_STRETCHER_L": 0.0,
+    "LIP_STRETCHER_R": 0.0,
+    "LIP_SUCK_LB": 0.0,
+    "LIP_SUCK_LT": 0.0,
+    "LIP_SUCK_RB": 0.0,
+    "LIP_SUCK_RT": 0.0,
+    "LIP_TIGHTENER_L": 0.0,
+    "LIP_TIGHTENER_R": 0.0,
+    "LOWER_LIP_DEPRESSOR_L": 0.0,
+    "LOWER_LIP_DEPRESSOR_R": 0.0,
+    "MOUTH_LEFT": 0.0,
+    "MOUTH_LOWERER": 0.0,
+    "MOUTH_RAISER": 0.0,
+    "MOUTH_RIGHT": 0.0,
+    "NOSE_WRINKLER_L": 0.0,
+    "NOSE_WRINKLER_R": 0.0,
+    "OUTER_BROW_RAISER_L": 0.0,
+    "OUTER_BROW_RAISER_R": 0.0,
+    "UPPER_LID_RAISER_L": 0.0,
+    "UPPER_LID_RAISER_R": 0.0,
+    "UPPER_LIP_RAISER_L": 0.0,
+    "UPPER_LIP_RAISER_R": 0.0
+  },
+  "rules_snapshot": {}
+}

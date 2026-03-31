@@ -1,0 +1,40 @@
+---
+description: Protects joint and shape include lists from being modified without explicit user instruction
+alwaysApply: true
+---
+
+# Include Lists Are User-Controlled Source of Truth
+
+The following string-based include/exclude lists are **locked** and must NEVER be modified unless the user explicitly asks for a change to that list:
+
+## Locked lists
+
+### `data/config/chaos_joints.json`
+- `joint_names` array — the list of chaos joints to process
+
+**Hard rule: `NeckBind` must NEVER be added back to `joint_names`. It was deliberately removed for quality reasons.**
+
+### `data/config/blendshapes.json`
+- `variation_shapes` array
+- `expression_shapes` array
+- `independent_shapes` keys (the shape names themselves)
+
+### `synth_head/core/variation.py`
+- `CHAOS_JOINT_NAMES` frozenset
+
+### `synth_head/core/blendshapes.py`
+- `VARIATION_SHAPES` list
+- `EXPRESSION_SHAPES` list
+
+## What IS still freely modifiable
+
+- Numeric values (overrides, ranges, thresholds, weights, factors)
+- Constraint rules in `constraints.json`
+- Any new lists when explicitly asked to create them
+
+## When creating new lists
+
+Populate them freely when asked, but shortly after ask the user:
+> "Should this list be locked in as a source of truth, or is it still open to AI edits?"
+
+Once confirmed locked, add it to this rule.

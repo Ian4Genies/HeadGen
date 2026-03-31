@@ -125,7 +125,7 @@
     "UPPER_LIP_RAISER_R"
   ],
   "independent_shapes": {
-    "nose_male_varGp01G": { "min": 0.0, "max": 1.0, "mirror_sides": false }
+    "nose_male_varGp01G": { "min": 0.0, "max": 0.3, "mirror_sides": false }
   },
 
   "expression_max":   0.0,

@@ -28,21 +28,33 @@
       "type":        "ratio_clamp",
       "numerator":   "NoseBind.scale.z",
       "denominator": "NoseBind.scale.x",
-      "max_ratio":   1.1
+      "max_ratio":   0.95
     },
     {
       "type":        "product_clamp",
       "param_a":     "NoseBind.scale.z",
       "param_b":     "NoseBind.scale.x",
-      "max_product": 1.25
+      "max_product": 1.1
+    },
+    {
+      "type":        "ratio_clamp",
+      "numerator":   "NoseBind.scale.y",
+      "denominator": "NoseBind.scale.x",
+      "max_ratio":   1.0
+    },
+    {
+      "type":        "product_clamp",
+      "param_a":     "NoseBind.scale.y",
+      "param_b":     "NoseBind.scale.x",
+      "max_product": 1.15
     },
     {
       "type":      "conditional_bias",
       "direction": "raise",
       "target":    "nose_male_varGp01G",
       "drivers": [
-        { "param": "NoseBind.rotation.x", "range": [0.0, 8.0], "map": [0.0, 1.0] },
-        { "param": "NoseBind.scale.x",    "range": [1.0, 0.7], "map": [0.0, 1.0] }
+        { "param": "NoseBind.rotation.x", "range": [0.0, -8.0], "map": [0.0, 1.0] },
+        { "param": "NoseBind.scale.x",    "range": [1.0,  0.7], "map": [0.0, 1.0] }
       ],
       "combine":  "min",
       "max_bias": 1.0
@@ -50,10 +62,42 @@
     {
       "type":      "conditional_bias",
       "direction": "suppress",
+      "target":    "nose_male_varGp01G",
+      "drivers": [
+        { "param": "NoseBind.rotation.x", "range": [0.0, 8.0], "map": [0.0, 1.0] }
+      ],
+      "combine":  "min",
+      "max_bias": 1.0
+    },
+    {
+      "type":      "conditional_bias",
+      "direction": "suppress",
+      "target":    "nose_male_varGp01G",
+      "drivers": [
+        { "param": "NoseBind.scale.y", "range": [1.0, 1.25], "map": [0.0, 0.3] }
+      ],
+      "combine":  "min",
+      "max_bias": 1.0
+    },
+    {
+      "type": "cross_proportion_clamp",
+      "if":   { "param": "NoseBind.rotation.x", "above":  4.0 },
+      "and":  { "param": "NoseBind.scale.y",    "above":  1.1 },
+      "then_clamp": { "param": "NoseBind.scale.y", "max": 1.1 }
+    },
+    {
+      "type": "cross_proportion_clamp",
+      "if":   { "param": "NoseBind.scale.y",    "above":  1.15 },
+      "and":  { "param": "NoseBind.rotation.x", "above":  2.0  },
+      "then_clamp": { "param": "NoseBind.rotation.x", "max": 2.0 }
+    },
+    {
+      "type":      "conditional_bias",
+      "direction": "suppress",
       "target":    "nose_female_varGp01K",
       "drivers": [
-        { "param": "NoseBind.rotation.x", "range": [0.0, 8.0], "map": [0.0, 1.0] },
-        { "param": "NoseBind.scale.x",    "range": [1.0, 0.7], "map": [0.0, 1.0] }
+        { "param": "NoseBind.rotation.x", "range": [0.0, -8.0], "map": [0.0, 1.0] },
+        { "param": "NoseBind.scale.x",    "range": [1.0,  0.7], "map": [0.0, 1.0] }
       ],
       "combine":  "min",
       "max_bias": 1.0

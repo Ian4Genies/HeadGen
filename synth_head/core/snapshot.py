@@ -12,17 +12,18 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-SNAPSHOT_VERSION = 1
+SNAPSHOT_VERSION = 2
 
 
 def build_snapshot(
     chaos_joints: dict[str, dict],
     variation_shapes: dict[str, float],
     expression_shapes: dict[str, float],
-    rules_raw: dict,
     frame: int,
     label: str,
     note: str = "",
+    config_snapshot: dict | None = None,
+    rules_raw: dict | None = None,
 ) -> dict:
     """Assemble a complete snapshot dict ready for serialization.
 
@@ -30,12 +31,13 @@ def build_snapshot(
         chaos_joints: ``{bone_name: {location: [...], rotation_quaternion: [...], scale: [...]}}``
         variation_shapes: ``{shape_name: value}``
         expression_shapes: ``{shape_name: value}``
-        rules_raw: Verbatim content of constraint_rules.json at save time.
         frame: The Blender frame number this snapshot was taken on.
         label: ``"issue"`` or ``"good"`` — used in the filename.
         note: Optional freeform note describing the snapshot.
+        config_snapshot: Full config directory contents (v2+).
+        rules_raw: Legacy v1 rules_snapshot (kept for backward compat).
     """
-    return {
+    snap: dict = {
         "version": SNAPSHOT_VERSION,
         "timestamp": datetime.now().isoformat(timespec="seconds"),
         "frame": frame,
@@ -44,8 +46,12 @@ def build_snapshot(
         "chaos_joints": chaos_joints,
         "variation_shapes": variation_shapes,
         "expression_shapes": expression_shapes,
-        "rules_snapshot": rules_raw,
     }
+    if config_snapshot is not None:
+        snap["config_snapshot"] = config_snapshot
+    if rules_raw is not None:
+        snap["rules_snapshot"] = rules_raw
+    return snap
 
 
 def save_snapshot(snapshot: dict, directory: str | Path) -> Path:

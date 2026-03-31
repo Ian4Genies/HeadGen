@@ -33,6 +33,7 @@ from .blendshapes import (
     generate_blendshape_weights,
     generate_single_frame_blendshape_weights,
 )
+from .config import RunnerConfig, PipelineConfig, load_config
 
 __all__ = [
     "clamp",
@@ -65,4 +66,7 @@ __all__ = [
     "build_snapshot",
     "save_snapshot",
     "load_snapshot",
+    "RunnerConfig",
+    "PipelineConfig",
+    "load_config",
 ]

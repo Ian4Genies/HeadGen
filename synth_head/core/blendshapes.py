@@ -179,6 +179,25 @@ class BlendshapeConfig:
         default_factory=lambda: dict(DEFAULT_EXPRESSION_OVERRIDES),
     )
 
+    @classmethod
+    def from_dict(
+        cls,
+        data: dict,
+        frame_count: int = 400,
+        seed: int | None = None,
+    ) -> "BlendshapeConfig":
+        return cls(
+            frame_count=frame_count,
+            seed=seed,
+            variation_shapes=data.get("variation_shapes", list(VARIATION_SHAPES)),
+            max_var_shapes=data.get("max_var_shapes", 4),
+            max_variation=data.get("max_variation", 1.0),
+            variation_overrides=data.get("variation_overrides", dict(DEFAULT_VARIATION_OVERRIDES)),
+            expression_shapes=data.get("expression_shapes", list(EXPRESSION_SHAPES)),
+            expression_max=data.get("expression_max", 0.0),
+            expression_overrides=data.get("expression_overrides", dict(DEFAULT_EXPRESSION_OVERRIDES)),
+        )
+
 
 # ---------------------------------------------------------------------------
 # Classification helpers

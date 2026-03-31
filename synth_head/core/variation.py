@@ -139,6 +139,23 @@ class VariationConfig:
         default_factory=lambda: dict(DEFAULT_JOINT_OVERRIDES),
     )
 
+    @classmethod
+    def from_dict(
+        cls,
+        data: dict,
+        frame_count: int = 400,
+        seed: int | None = None,
+    ) -> "VariationConfig":
+        return cls(
+            frame_count=frame_count,
+            seed=seed,
+            transform_max=data.get("transform_max", 0.2),
+            rotate_max=data.get("rotate_max", 10.0),
+            scale_max=data.get("scale_max", 0.2),
+            enable_scale=data.get("enable_scale", True),
+            joint_overrides=data.get("overrides", dict(DEFAULT_JOINT_OVERRIDES)),
+        )
+
 
 def _resolve_range(
     joint_name: str,

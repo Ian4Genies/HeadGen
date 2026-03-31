@@ -9,20 +9,16 @@ import bpy
 from .core.math import clamp
 from .core.ref_keys import MESH, ARMATURE
 from .core.variation import (
-    CHAOS_JOINT_NAMES,
-    VariationConfig,
     generate_chaos_transforms,
     generate_single_frame_transforms,
 )
 from .scene.fbx_import import import_fbx_and_classify
 from .scene.refs import get_ref, set_ref
 from .core.blendshapes import (
-    BlendshapeConfig,
     generate_blendshape_weights,
     generate_single_frame_blendshape_weights,
 )
-from .core.constraints import load_rules, flatten_params, unflatten_params, constrain
-from .core.modifiers import SmoothCorrectiveConfig
+from .core.constraints import flatten_params, unflatten_params, constrain
 from .scene.blendshapes import (
     apply_blendshape_keyframes,
     apply_blendshape_single_frame,
@@ -43,17 +39,79 @@ from .scene.snapshot import (
     apply_shape_key_values,
 )
 from .core.snapshot import build_snapshot, save_snapshot, load_snapshot
-from .core.blendshapes import VARIATION_SHAPES, EXPRESSION_SHAPES
+from .core.config import load_config, PipelineConfig
 
 import json
 from pathlib import Path
 
-_FBX_PATH = "C:/Genies/01_Repo/02_Blender/HeadGen/data/genericGenie-0013-unified_rig.fbx"
-_SAVE_PATH = "C:/Genies/01_Repo/02_Blender/HeadGen/data/gen13_genie_chaos.blend"
-_RULES_PATH = "C:/Genies/01_Repo/02_Blender/HeadGen/data/constraint_rules.json"
-_DATA_DIR = Path("C:/Genies/01_Repo/02_Blender/HeadGen/data")
-_ISSUES_DIR = _DATA_DIR / "head-issues"
-_GOOD_DIR = _DATA_DIR / "head-good"
+_ADDON_DIR = Path(__file__).resolve().parent
+_PROJECT_DIR = _ADDON_DIR.parent
+_CONFIG_DIR = _PROJECT_DIR / "data" / "config"
+
+DEBUG_CONFIG = True
+
+
+def _get_config() -> PipelineConfig:
+    """Load the pipeline config from the standard config directory."""
+    cfg = load_config(_CONFIG_DIR)
+
+    if DEBUG_CONFIG:
+        _debug_config(cfg)
+
+    return cfg
+
+
+def _debug_config(cfg: PipelineConfig) -> None:
+    """Print a full config dump to the system console."""
+    def p(msg: str) -> None:
+        print(f"[SynthHead] {msg}")
+
+    p(f"Config loaded from: {_CONFIG_DIR}")
+    p(f"Config dir exists:  {_CONFIG_DIR.exists()}")
+
+    p("--- RUNNER ---")
+    p(f"  frame_count:     {cfg.runner.frame_count}")
+    p(f"  seed:            {cfg.runner.seed}")
+    p(f"  fbx_path:        {cfg.runner.fbx_path}")
+    p(f"  save_blend_path: {cfg.runner.save_blend_path}")
+    p(f"  issues_dir:      {cfg.runner.issues_dir}")
+    p(f"  good_dir:        {cfg.runner.good_dir}")
+
+    p(f"--- CHAOS JOINTS ({len(cfg.chaos_joint_names)}) ---")
+    p(f"  names:          {sorted(cfg.chaos_joint_names)}")
+    p(f"  transform_max:  {cfg.variation.transform_max}")
+    p(f"  rotate_max:     {cfg.variation.rotate_max}")
+    p(f"  scale_max:      {cfg.variation.scale_max}")
+    p(f"  enable_scale:   {cfg.variation.enable_scale}")
+    p(f"  overrides ({len(cfg.variation.joint_overrides)}):")
+    for k, v in sorted(cfg.variation.joint_overrides.items()):
+        p(f"    {k}: {v}")
+
+    p(f"--- BLENDSHAPES ---")
+    p(f"  variation_shapes ({len(cfg.blendshapes.variation_shapes)}): {cfg.blendshapes.variation_shapes}")
+    p(f"  max_var_shapes:  {cfg.blendshapes.max_var_shapes}")
+    p(f"  max_variation:   {cfg.blendshapes.max_variation}")
+    p(f"  variation_overrides: {cfg.blendshapes.variation_overrides}")
+    p(f"  expression_shapes ({len(cfg.blendshapes.expression_shapes)}): {cfg.blendshapes.expression_shapes}")
+    p(f"  expression_max:  {cfg.blendshapes.expression_max}")
+    p(f"  expression_overrides: {cfg.blendshapes.expression_overrides}")
+
+    p(f"--- CONSTRAINTS ---")
+    p(f"  hard_clamps ({len(cfg.constraints.hard_clamps)}):")
+    for k, v in cfg.constraints.hard_clamps.items():
+        p(f"    {k}: min={v.min}  max={v.max}")
+    p(f"  relational_rules ({len(cfg.constraints.relational_rules)}):")
+    for r in cfg.constraints.relational_rules:
+        p(f"    {r}")
+
+    p(f"--- MODIFIERS ---")
+    p(f"  factor:           {cfg.modifiers.factor}")
+    p(f"  iterations:       {cfg.modifiers.iterations}")
+    p(f"  scale:            {cfg.modifiers.scale}")
+    p(f"  smooth_type:      {cfg.modifiers.smooth_type}")
+    p(f"  use_only_smooth:  {cfg.modifiers.use_only_smooth}")
+    p(f"  use_pin_boundary: {cfg.modifiers.use_pin_boundary}")
+    p(f"  rest_source:      {cfg.modifiers.rest_source}")
 
 
 class SYNTHHEAD_PG_PipelineRefs(bpy.types.PropertyGroup):
@@ -110,7 +168,11 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
-        head_geo_obj, armature_obj = import_fbx_and_classify(context, _FBX_PATH)
+        cfg = _get_config()
+
+        head_geo_obj, armature_obj = import_fbx_and_classify(
+            context, cfg.runner.fbx_path,
+        )
 
         if not head_geo_obj:
             self.report({"ERROR"}, "headOnly_geo mesh not found in FBX — aborting")
@@ -125,23 +187,21 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         self.report({"INFO"}, f"head geo: '{head_geo_obj.name}'")
 
         armature = get_ref(context, ARMATURE)
-        chaos_joints = collect_chaos_joints(armature, CHAOS_JOINT_NAMES)
+        chaos_joints = collect_chaos_joints(armature, cfg.chaos_joint_names)
         self.report({"INFO"}, f"Chaos joints found: {[b.name for b in chaos_joints]}")
 
-        chaos_config = VariationConfig()
         joint_names = [b.name for b in chaos_joints]
-        all_transforms = generate_chaos_transforms(chaos_config, joint_names)
+        all_transforms = generate_chaos_transforms(cfg.variation, joint_names)
 
         head_mesh = get_ref(context, MESH)
-        bs_config = BlendshapeConfig(frame_count=chaos_config.frame_count)
-        all_bs_weights = generate_blendshape_weights(bs_config)
+        all_bs_weights = generate_blendshape_weights(cfg.blendshapes)
 
-        rules = load_rules(_RULES_PATH)
         constrained_transforms: dict[int, dict] = {}
         constrained_bs: dict[int, dict[str, float]] = {}
-        for frame in range(1, chaos_config.frame_count + 1):
+        fc = cfg.runner.frame_count
+        for frame in range(1, fc + 1):
             flat = flatten_params(all_transforms[frame], all_bs_weights[frame])
-            flat = constrain(flat, rules)
+            flat = constrain(flat, cfg.constraints)
             xforms, weights = unflatten_params(flat, joint_names)
             constrained_transforms[frame] = xforms
             constrained_bs[frame] = weights
@@ -149,18 +209,18 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         context.view_layer.objects.active = armature
         bpy.ops.object.mode_set(mode="POSE")
 
-        for frame in range(1, chaos_config.frame_count + 1):
+        for frame in range(1, fc + 1):
             context.scene.frame_set(frame)
             reset_frame(chaos_joints, head_mesh, frame)
             _apply_transforms_to_bones(chaos_joints, constrained_transforms[frame], frame)
             _apply_weights_to_shape_keys(head_mesh, constrained_bs[frame], frame)
 
         bpy.ops.object.mode_set(mode="OBJECT")
-        self.report({"INFO"}, f"Applied {chaos_config.frame_count} frames (reset + joints + blendshapes)")
+        self.report({"INFO"}, f"Applied {fc} frames (reset + joints + blendshapes)")
 
-        add_smooth_corrective(head_mesh, SmoothCorrectiveConfig())
+        add_smooth_corrective(head_mesh, cfg.modifiers)
 
-        bpy.ops.wm.save_as_mainfile(filepath=_SAVE_PATH)
+        bpy.ops.wm.save_as_mainfile(filepath=cfg.runner.save_blend_path)
         return {"FINISHED"}
 
 
@@ -183,21 +243,19 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
             self.report({"ERROR"}, "No mesh stored — run Variation Pipeline first")
             return {"CANCELLED"}
 
-        chaos_joints = collect_chaos_joints(armature, CHAOS_JOINT_NAMES)
+        cfg = _get_config()
+
+        chaos_joints = collect_chaos_joints(armature, cfg.chaos_joint_names)
         if not chaos_joints:
             self.report({"ERROR"}, "No chaos joints found on armature")
             return {"CANCELLED"}
 
-        chaos_config = VariationConfig()
         joint_names = [b.name for b in chaos_joints]
-        transforms = generate_single_frame_transforms(chaos_config, joint_names)
+        transforms = generate_single_frame_transforms(cfg.variation, joint_names)
+        bs_weights = generate_single_frame_blendshape_weights(cfg.blendshapes)
 
-        bs_config = BlendshapeConfig()
-        bs_weights = generate_single_frame_blendshape_weights(bs_config)
-
-        rules = load_rules(_RULES_PATH)
         flat = flatten_params(transforms, bs_weights)
-        flat = constrain(flat, rules)
+        flat = constrain(flat, cfg.constraints)
         transforms, bs_weights = unflatten_params(flat, joint_names)
 
         frame = context.scene.frame_current
@@ -213,6 +271,16 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         return {"FINISHED"}
 
 
+def _load_config_dir_raw(cfg: PipelineConfig) -> dict:
+    """Read every JSON file in the config directory for embedding in snapshots."""
+    raw: dict = {}
+    if cfg.config_dir.is_dir():
+        for p in sorted(cfg.config_dir.glob("*.json")):
+            with p.open("r", encoding="utf-8") as f:
+                raw[p.stem] = json.load(f)
+    return raw
+
+
 def _save_head_snapshot(operator, context, label: str, directory: Path) -> set[str]:
     """Shared logic for Save Head Issue / Save Good Head operators."""
     armature = get_ref(context, ARMATURE)
@@ -225,22 +293,22 @@ def _save_head_snapshot(operator, context, label: str, directory: Path) -> set[s
         operator.report({"ERROR"}, "No mesh stored — run Variation Pipeline first")
         return {"CANCELLED"}
 
-    joint_data = read_bone_transforms(armature, CHAOS_JOINT_NAMES)
+    cfg = _get_config()
+
+    joint_data = read_bone_transforms(armature, cfg.chaos_joint_names)
     var_shapes, expr_shapes = read_shape_key_values(
-        head_mesh, list(VARIATION_SHAPES), list(EXPRESSION_SHAPES),
+        head_mesh,
+        cfg.blendshapes.variation_shapes,
+        cfg.blendshapes.expression_shapes,
     )
 
-    rules_raw: dict = {}
-    rules_path = Path(_RULES_PATH)
-    if rules_path.exists():
-        with rules_path.open("r", encoding="utf-8") as f:
-            rules_raw = json.load(f)
+    config_raw = _load_config_dir_raw(cfg)
 
     snapshot = build_snapshot(
         chaos_joints=joint_data,
         variation_shapes=var_shapes,
         expression_shapes=expr_shapes,
-        rules_raw=rules_raw,
+        config_snapshot=config_raw,
         frame=context.scene.frame_current,
         label=label,
         note=operator.note,
@@ -272,7 +340,8 @@ class SYNTHHEAD_OT_SaveHeadIssue(bpy.types.Operator):
         self.layout.prop(self, "note", text="Note")
 
     def execute(self, context):
-        return _save_head_snapshot(self, context, "issue", _ISSUES_DIR)
+        cfg = _get_config()
+        return _save_head_snapshot(self, context, "issue", Path(cfg.runner.issues_dir))
 
 
 class SYNTHHEAD_OT_SaveGoodHead(bpy.types.Operator):
@@ -296,7 +365,8 @@ class SYNTHHEAD_OT_SaveGoodHead(bpy.types.Operator):
         self.layout.prop(self, "note", text="Note")
 
     def execute(self, context):
-        return _save_head_snapshot(self, context, "good", _GOOD_DIR)
+        cfg = _get_config()
+        return _save_head_snapshot(self, context, "good", Path(cfg.runner.good_dir))
 
 
 class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
@@ -311,7 +381,8 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
     filter_glob: bpy.props.StringProperty(default="*.json", options={"HIDDEN"})
 
     def invoke(self, context, event):
-        self.filepath = str(_DATA_DIR) + "\\"
+        data_dir = _PROJECT_DIR / "data"
+        self.filepath = str(data_dir) + "\\"
         context.window_manager.fileselect_add(self)
         return {"RUNNING_MODAL"}
 
@@ -326,10 +397,11 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
             self.report({"ERROR"}, "No mesh stored — run Variation Pipeline first")
             return {"CANCELLED"}
 
+        cfg = _get_config()
         snapshot = load_snapshot(self.filepath)
         frame = context.scene.frame_current
 
-        chaos_joints = collect_chaos_joints(armature, CHAOS_JOINT_NAMES)
+        chaos_joints = collect_chaos_joints(armature, cfg.chaos_joint_names)
 
         context.view_layer.objects.active = armature
         bpy.ops.object.mode_set(mode="POSE")

@@ -107,6 +107,19 @@ class ConstraintRules:
     hard_clamps: dict[str, ClampRange] = field(default_factory=dict)
     relational_rules: list[dict] = field(default_factory=list)
 
+    @classmethod
+    def from_dict(cls, raw: dict) -> "ConstraintRules":
+        clamps: dict[str, ClampRange] = {}
+        for key, bounds in raw.get("hard_clamps", {}).items():
+            clamps[key] = ClampRange(
+                min=bounds.get("min"),
+                max=bounds.get("max"),
+            )
+        return cls(
+            hard_clamps=clamps,
+            relational_rules=raw.get("relational_rules", []),
+        )
+
 
 # ---------------------------------------------------------------------------
 # Loading
@@ -117,18 +130,7 @@ def load_rules(path: str | Path) -> ConstraintRules:
     p = Path(path)
     with p.open("r", encoding="utf-8") as f:
         raw = json.load(f)
-
-    clamps: dict[str, ClampRange] = {}
-    for key, bounds in raw.get("hard_clamps", {}).items():
-        clamps[key] = ClampRange(
-            min=bounds.get("min"),
-            max=bounds.get("max"),
-        )
-
-    return ConstraintRules(
-        hard_clamps=clamps,
-        relational_rules=raw.get("relational_rules", []),
-    )
+    return ConstraintRules.from_dict(raw)
 
 
 # ---------------------------------------------------------------------------

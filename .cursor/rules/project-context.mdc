@@ -18,7 +18,13 @@ alwaysApply: true
     - `__init__.py`
     - Add one file per logical domain of scene operations
   - `tests/` — pytest tests; mirrors the core/ structure, one test file per core module
-- `data/` — reference mesh data (shape key lists, geo info)
+- `data/` — reference mesh data, config, and snapshots
+  - `config/` — JSON-based pipeline configuration (swappable per-project)
+    - `runner.json` — frame count, seed, file paths
+    - `chaos_joints.json` — joint names, global maxes, per-joint overrides
+    - `blendshapes.json` — shape lists, variation/expression maxes and overrides
+    - `constraints.json` — hard clamps and relational rules
+    - `modifiers.json` — smooth corrective settings
 - `requirements.txt` — venv dependencies (bpy==5.0.1, fake-bpy-module-5.0, pytest)
 - `pyproject.toml` — pytest configuration
 - `.venv/` — Python 3.11 virtual environment (not committed)
@@ -40,6 +46,15 @@ operators.py  →  scene/  →  core/
 - If a function takes only plain Python types (float, dict, list, str, etc.) → put it in `core/`
 - If a function takes a `bpy.types.*` argument or reads/writes scene state → put it in `scene/`
 - If it wires a Blender UI action to scene/ or core/ logic → put it in `operators.py`
+
+### Configuration
+
+- All tuneable parameters live in `data/config/*.json`, not in Python source.
+- `core/config.py` loads the directory into a `PipelineConfig` dataclass tree.
+- Dataclass defaults remain as fallbacks when no JSON is present.
+- To swap configurations: copy/replace the entire `data/config/` directory.
+- Operators call `_get_config()` at execution time so JSON edits take effect
+  without reloading the addon.
 
 ### General rules
 

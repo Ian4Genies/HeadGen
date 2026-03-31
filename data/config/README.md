@@ -157,6 +157,7 @@ Applied after generation to enforce hard limits and relational rules. Rules run 
     { "type": "conditional_clamp", ... },
     { "type": "mutual_dampen", ... },
     { "type": "ratio_clamp", ... },
+    { "type": "product_clamp", ... },
     { "type": "cross_proportion_clamp", ... }
   ]
 }
@@ -223,18 +224,40 @@ Scales a group of params proportionally if their combined absolute values exceed
 ---
 
 #### `ratio_clamp`
-Scales `numerator` down when `numerator / denominator > max_ratio`. Use for proportion-based limits (e.g. nose length-to-width).
+Scales `numerator` down when `numerator / denominator > max_ratio`. Use for proportion-based limits (e.g. nose length-to-width ratio cap).
 
 ```json
 {
   "type":        "ratio_clamp",
   "numerator":   "NoseBind.scale.z",
   "denominator": "NoseBind.scale.x",
-  "max_ratio":   1.4
+  "max_ratio":   1.1
 }
 ```
 
 If `denominator` is zero, the rule is silently skipped.
+
+---
+
+#### `product_clamp`
+Scales `param_a` down when `param_a * param_b > max_product`. Use for inverse-proportion guards where two values share a total "budget" — e.g. a wide nose (`param_b` large) should have a shorter Z ceiling (`param_a` clamped down accordingly.
+
+```json
+{
+  "type":        "product_clamp",
+  "param_a":     "NoseBind.scale.z",
+  "param_b":     "NoseBind.scale.x",
+  "max_product": 1.25
+}
+```
+
+**How it differs from `ratio_clamp`:**
+- `ratio_clamp` prevents Z from being disproportionately large relative to X at *any* X value (fixed ceiling on the ratio).
+- `product_clamp` enforces that as X grows, the allowed Z ceiling *shrinks proportionally* — a wide nose gets a tighter height limit.
+
+Pair both rules together on the same params for full coverage: the ratio cap handles narrow/tall noses, the product cap handles wide/tall noses.
+
+If `param_b` is zero, the rule is silently skipped.
 
 ---
 

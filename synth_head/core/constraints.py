@@ -248,6 +248,42 @@ def _apply_ratio_clamp(flat: dict[str, float], rule: dict) -> None:
     flat[num_key] = denominator * max_ratio
 
 
+def _apply_product_clamp(flat: dict[str, float], rule: dict) -> None:
+    """Clamp param_a when param_a * param_b exceeds a product budget.
+
+    JSON schema::
+
+        {
+          "type":        "product_clamp",
+          "param_a":     "NoseBind.scale.z",
+          "param_b":     "NoseBind.scale.x",
+          "max_product": 1.3
+        }
+
+    When ``param_a * param_b > max_product`` (and param_b != 0),
+    ``param_a`` is scaled down so the product equals ``max_product``.
+    Use this when two values should stay inversely proportional — e.g. a
+    wide nose should get a shorter Z ceiling.
+    Missing params are silently skipped.
+    """
+    a_key: str = rule.get("param_a", "")
+    b_key: str = rule.get("param_b", "")
+    max_product: float = rule.get("max_product", 1.0)
+
+    if a_key not in flat or b_key not in flat:
+        return
+
+    b = flat[b_key]
+    if b == 0.0:
+        return
+
+    product = flat[a_key] * b
+    if product <= max_product:
+        return
+
+    flat[a_key] = max_product / b
+
+
 def _apply_cross_proportion_clamp(flat: dict[str, float], rule: dict) -> None:
     """Clamp a target when two independent conditions are simultaneously true.
 
@@ -299,6 +335,7 @@ _RULE_HANDLERS = {
     "conditional_clamp": _apply_conditional_clamp,
     "mutual_dampen": _apply_mutual_dampen,
     "ratio_clamp": _apply_ratio_clamp,
+    "product_clamp": _apply_product_clamp,
     "cross_proportion_clamp": _apply_cross_proportion_clamp,
 }
 
@@ -354,6 +391,11 @@ def _collect_rule_keys(rules: ConstraintRules) -> set[str]:
             keys.add(rule["numerator"])
         if "denominator" in rule:
             keys.add(rule["denominator"])
+        # product_clamp
+        if "param_a" in rule:
+            keys.add(rule["param_a"])
+        if "param_b" in rule:
+            keys.add(rule["param_b"])
         # cross_proportion_clamp
         for cond_key in ("if", "and"):
             cond = rule.get(cond_key, {})

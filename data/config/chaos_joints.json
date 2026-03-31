@@ -8,8 +8,7 @@
     "RightBrowBind",
     "RightEyeSocketBind",
     "LeftEyeSocketBind",
-    "FaceBind",
-    "NeckBind"
+    "FaceBind"
   ],
   "transform_max": 0.2,
   "rotate_max":    10.0,
@@ -21,12 +20,12 @@
     "FaceBind.scale":                 0.02,
 
     "JawBind.scale.x":               0.1,
-    "JawBind.scale.y":               0.05,
+    "JawBind.scale.y":               0.04,
     "JawBind.scale.z":               0.0,
     "JawBind.location":              0.0,
     "JawBind.rotation":              0.0,
 
-    "MouthBind.scale.x":             0.2,
+    "MouthBind.scale.x":             0.15,
     "MouthBind.scale.y":             0.35,
     "MouthBind.scale.z":             0.0,
     "MouthBind.location.x":          0.0,
@@ -42,13 +41,13 @@
     "MouthInnerBind.location.z":     0.0,
     "MouthInnerBind.rotation":       0.0,
 
-    "NoseBind.scale.x":              0.35,
+    "NoseBind.scale.x":              0.30,
     "NoseBind.scale.y":              0.25,
-    "NoseBind.scale.z":              0.25,
+    "NoseBind.scale.z":              0.20,
     "NoseBind.location.x":           0.0,
     "NoseBind.location.y":           0.005,
     "NoseBind.location.z":           0.0,
-    "NoseBind.rotation.x":           10.0,
+    "NoseBind.rotation.x":           8.0,
     "NoseBind.rotation.y":           0.0,
     "NoseBind.rotation.z":           0.0,
 
@@ -70,7 +69,7 @@
     "LeftEyeSocketBind.location.z":  0.0,
     "LeftEyeSocketBind.rotation.x":  0.0,
     "LeftEyeSocketBind.rotation.y":  0.0,
-    "LeftEyeSocketBind.rotation.z":  10.0,
+    "LeftEyeSocketBind.rotation.z":  7.0,
 
     "NeckBind.scale.x":              0.2,
     "NeckBind.scale.y":              0.0,

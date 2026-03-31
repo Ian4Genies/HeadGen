@@ -1,7 +1,7 @@
 {
   "hard_clamps": {
-    "JawBind.location.y":  { "min": -0.15, "max": 0.15 },
-    "JawBind.rotation.x":  { "min": -8.0,  "max": 8.0  },
+    "JawBind.location.y":   { "min": -0.15, "max": 0.15 },
+    "JawBind.rotation.x":   { "min": -8.0,  "max": 8.0  },
     "MouthBind.location.y": { "min": -0.1,  "max": 0.1  },
     "JAW_DROP":             { "min": 0.0,   "max": 0.8  },
     "MOUTH_LOWERER":        { "min": 0.0,   "max": 0.5  }
@@ -11,18 +11,42 @@
       "type":   "scale_follow",
       "target": "MouthBind.location.y",
       "source": "JawBind.location.y",
-      "factor": 0.5
+      "factor": 0.3
     },
     {
       "type":      "conditional_clamp",
       "target":    "MOUTH_LOWERER",
-      "condition": { "param": "JAW_DROP", "above": 0.5 },
+      "condition": { "param": "JAW_DROP", "above": 0.3 },
       "max":       0.2
     },
     {
       "type":         "mutual_dampen",
       "params":       ["JAW_DROP", "JAW_THRUST"],
       "max_combined": 1.0
+    },
+    {
+      "type":        "ratio_clamp",
+      "numerator":   "NoseBind.scale.z",
+      "denominator": "NoseBind.scale.x",
+      "max_ratio":   1.1
+    },
+    {
+      "type":        "product_clamp",
+      "param_a":     "NoseBind.scale.z",
+      "param_b":     "NoseBind.scale.x",
+      "max_product": 1.25
+    },
+    {
+      "type": "cross_proportion_clamp",
+      "if":   { "param": "LeftEyeSocketBind.scale.x", "above": 1.05 },
+      "and":  { "param": "NoseBind.scale.x",          "below": 0.80 },
+      "then_clamp": { "param": "LeftEyeSocketBind.scale.x", "max": 1.05 }
+    },
+    {
+      "type": "cross_proportion_clamp",
+      "if":   { "param": "MouthBind.scale.x", "above": 1.10 },
+      "and":  { "param": "NoseBind.scale.x",  "below": 0.80 },
+      "then_clamp": { "param": "MouthBind.scale.x", "max": 1.10 }
     }
   ]
 }

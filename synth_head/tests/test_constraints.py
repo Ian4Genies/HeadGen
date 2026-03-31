@@ -398,6 +398,63 @@ class TestRatioClamp:
 
 
 # ---------------------------------------------------------------------------
+# product_clamp
+# ---------------------------------------------------------------------------
+
+class TestProductClamp:
+    def _rule(self, a: str, b: str, max_product: float) -> list[dict]:
+        return [{"type": "product_clamp", "param_a": a,
+                 "param_b": b, "max_product": max_product}]
+
+    def test_product_exceeded_param_a_scaled_down(self):
+        """Wide nose (b=1.5) + tall nose (a=1.0) → product 1.5 > 1.25, a clamped."""
+        flat = {"scale_z": 1.0, "scale_x": 1.5}
+        result = apply_relational_rules(flat, self._rule("scale_z", "scale_x", 1.25))
+        assert result["scale_z"] == pytest.approx(1.25 / 1.5)
+
+    def test_product_within_budget_unchanged(self):
+        flat = {"scale_z": 0.8, "scale_x": 1.2}
+        result = apply_relational_rules(flat, self._rule("scale_z", "scale_x", 1.25))
+        assert result["scale_z"] == pytest.approx(0.8)
+
+    def test_product_exactly_at_budget_unchanged(self):
+        flat = {"scale_z": 1.0, "scale_x": 1.25}
+        result = apply_relational_rules(flat, self._rule("scale_z", "scale_x", 1.25))
+        assert result["scale_z"] == pytest.approx(1.0)
+
+    def test_zero_param_b_skipped(self):
+        flat = {"scale_z": 2.0, "scale_x": 0.0}
+        result = apply_relational_rules(flat, self._rule("scale_z", "scale_x", 1.25))
+        assert result["scale_z"] == pytest.approx(2.0)
+
+    def test_missing_param_a_skipped(self):
+        flat = {"scale_x": 1.5}
+        result = apply_relational_rules(flat, self._rule("GONE", "scale_x", 1.25))
+        assert "GONE" not in result
+
+    def test_missing_param_b_skipped(self):
+        flat = {"scale_z": 1.5}
+        result = apply_relational_rules(flat, self._rule("scale_z", "GONE", 1.25))
+        assert result["scale_z"] == pytest.approx(1.5)
+
+    def test_narrow_nose_allows_tall_z(self):
+        """Narrow nose (b=0.8): budget 1.25 → allowed a = 1.25/0.8 = 1.5625."""
+        flat = {"scale_z": 1.5, "scale_x": 0.8}
+        result = apply_relational_rules(flat, self._rule("scale_z", "scale_x", 1.25))
+        assert result["scale_z"] == pytest.approx(1.5)  # 1.5 * 0.8 = 1.2 < 1.25, no clamp
+
+    def test_validation_indexes_product_clamp_keys(self):
+        rules = ConstraintRules(relational_rules=[{
+            "type": "product_clamp",
+            "param_a": "NOSE_Z",
+            "param_b": "NOSE_X",
+            "max_product": 1.25,
+        }])
+        report = validate_rules(rules, {"NOSE_Z", "NOSE_X"})
+        assert report.stale_keys == []
+
+
+# ---------------------------------------------------------------------------
 # cross_proportion_clamp
 # ---------------------------------------------------------------------------
 

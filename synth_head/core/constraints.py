@@ -330,6 +330,97 @@ def _apply_cross_proportion_clamp(flat: dict[str, float], rule: dict) -> None:
     flat[target] = v
 
 
+def _apply_conditional_bias(flat: dict[str, float], rule: dict) -> None:
+    """Drive a target up or down based on one or more param signals.
+
+    Each driver remaps its param from an input ``range`` to a 0–1 signal via
+    ``map``.  Signals are combined with ``combine`` (``"min"``, ``"max"``, or
+    ``"average"``; default ``"min"``).
+
+    ``direction`` controls the effect:
+
+    * ``"raise"`` (default) — target is set to ``max(current, signal * max_bias)``.
+      The target will never be *lowered* below its generated value.
+    * ``"suppress"`` — target is set to ``min(current, (1 - signal) * max_bias)``.
+      As the signal grows (conditions intensify), the ceiling shrinks toward 0.
+      The target will never be *raised* above its generated value.
+
+    JSON schema (raise — bias up)::
+
+        {
+          "type":      "conditional_bias",
+          "target":    "nose_male_varGp01G",
+          "direction": "raise",
+          "drivers": [
+            {"param": "NoseBind.rotation.x", "range": [0.0, 8.0], "map": [0.0, 1.0]},
+            {"param": "NoseBind.scale.x",    "range": [1.0, 0.7], "map": [0.0, 1.0]}
+          ],
+          "combine":  "min",
+          "max_bias": 1.0
+        }
+
+    JSON schema (suppress — push ceiling down aggressively)::
+
+        {
+          "type":      "conditional_bias",
+          "target":    "nose_female_varGp01K",
+          "direction": "suppress",
+          "drivers": [
+            {"param": "NoseBind.rotation.x", "range": [0.0, 8.0], "map": [0.0, 1.0]},
+            {"param": "NoseBind.scale.x",    "range": [1.0, 0.7], "map": [0.0, 1.0]}
+          ],
+          "combine":  "min",
+          "max_bias": 1.0
+        }
+
+    ``range`` is [in_lo, in_hi] — the param value range to remap.
+    ``map``   is [out_lo, out_hi] — the output signal range (usually [0, 1]).
+    Values outside ``range`` are clamped to the mapped boundary.
+    Missing params skip that driver (it contributes 0 to the combined signal).
+    """
+    target = rule.get("target", "")
+    if target not in flat:
+        return
+
+    drivers: list[dict] = rule.get("drivers", [])
+    combine: str = rule.get("combine", "min")
+    max_bias: float = float(rule.get("max_bias", 1.0))
+    direction: str = rule.get("direction", "raise")
+
+    signals: list[float] = []
+    for driver in drivers:
+        param = driver.get("param", "")
+        if param not in flat:
+            signals.append(0.0)
+            continue
+        in_lo, in_hi = driver["range"]
+        out_lo, out_hi = driver["map"]
+        val = flat[param]
+        if in_hi == in_lo:
+            t = 0.0
+        else:
+            t = (val - in_lo) / (in_hi - in_lo)
+        t = max(0.0, min(1.0, t))
+        signals.append(out_lo + t * (out_hi - out_lo))
+
+    if not signals:
+        return
+
+    if combine == "max":
+        combined = max(signals)
+    elif combine == "average":
+        combined = sum(signals) / len(signals)
+    else:
+        combined = min(signals)
+
+    if direction == "suppress":
+        ceiling = (1.0 - combined) * max_bias
+        flat[target] = min(flat[target], ceiling)
+    else:
+        bias_floor = combined * max_bias
+        flat[target] = max(flat[target], bias_floor)
+
+
 _RULE_HANDLERS = {
     "scale_follow": _apply_scale_follow,
     "conditional_clamp": _apply_conditional_clamp,
@@ -337,6 +428,7 @@ _RULE_HANDLERS = {
     "ratio_clamp": _apply_ratio_clamp,
     "product_clamp": _apply_product_clamp,
     "cross_proportion_clamp": _apply_cross_proportion_clamp,
+    "conditional_bias": _apply_conditional_bias,
 }
 
 
@@ -404,6 +496,12 @@ def _collect_rule_keys(rules: ConstraintRules) -> set[str]:
         then_clamp = rule.get("then_clamp", {})
         if "param" in then_clamp:
             keys.add(then_clamp["param"])
+        # conditional_bias
+        if "target" in rule and rule.get("type") == "conditional_bias":
+            keys.add(rule["target"])
+        for driver in rule.get("drivers", []):
+            if "param" in driver:
+                keys.add(driver["param"])
     return keys
 
 

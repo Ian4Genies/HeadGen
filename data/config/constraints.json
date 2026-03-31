@@ -37,6 +37,28 @@
       "max_product": 1.25
     },
     {
+      "type":      "conditional_bias",
+      "direction": "raise",
+      "target":    "nose_male_varGp01G",
+      "drivers": [
+        { "param": "NoseBind.rotation.x", "range": [0.0, 8.0], "map": [0.0, 1.0] },
+        { "param": "NoseBind.scale.x",    "range": [1.0, 0.7], "map": [0.0, 1.0] }
+      ],
+      "combine":  "min",
+      "max_bias": 1.0
+    },
+    {
+      "type":      "conditional_bias",
+      "direction": "suppress",
+      "target":    "nose_female_varGp01K",
+      "drivers": [
+        { "param": "NoseBind.rotation.x", "range": [0.0, 8.0], "map": [0.0, 1.0] },
+        { "param": "NoseBind.scale.x",    "range": [1.0, 0.7], "map": [0.0, 1.0] }
+      ],
+      "combine":  "min",
+      "max_bias": 1.0
+    },
+    {
       "type": "cross_proportion_clamp",
       "if":   { "param": "LeftEyeSocketBind.scale.x", "above": 1.05 },
       "and":  { "param": "NoseBind.scale.x",          "below": 0.80 },

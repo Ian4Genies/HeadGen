@@ -150,6 +150,12 @@ DEFAULT_VARIATION_OVERRIDES: dict[str, float] = {
     # Add entries for any shape that should be capped below the group max.
 }
 
+# Independent shapes: always-on shapes generated outside the variation group
+# lottery.  Each entry is {"min": float, "max": float}.  An optional
+# "mirror_sides" flag (default False) will look up the opposite-side sibling
+# (Left↔Right / _L↔_R / _LB↔_RB / _LT↔_RT) and set it to the same value.
+DEFAULT_INDEPENDENT_SHAPES: dict[str, dict] = {}
+
 DEFAULT_EXPRESSION_OVERRIDES: dict[str, float] = {
     # Expression shapes that need tighter individual caps than expression_max.
     "CHEEK_PUFF_L":      0.3,
@@ -179,6 +185,12 @@ class BlendshapeConfig:
         default_factory=lambda: dict(DEFAULT_EXPRESSION_OVERRIDES),
     )
 
+    # Always-on shapes that bypass the variation lottery.
+    # dict[shape_name, {"min": float, "max": float, "mirror_sides": bool}]
+    independent_shapes: dict[str, dict] = field(
+        default_factory=lambda: dict(DEFAULT_INDEPENDENT_SHAPES),
+    )
+
     @classmethod
     def from_dict(
         cls,
@@ -186,6 +198,7 @@ class BlendshapeConfig:
         frame_count: int = 400,
         seed: int | None = None,
     ) -> "BlendshapeConfig":
+        raw_indep = data.get("independent_shapes", dict(DEFAULT_INDEPENDENT_SHAPES))
         return cls(
             frame_count=frame_count,
             seed=seed,
@@ -196,6 +209,9 @@ class BlendshapeConfig:
             expression_shapes=data.get("expression_shapes", list(EXPRESSION_SHAPES)),
             expression_max=data.get("expression_max", 0.0),
             expression_overrides=data.get("expression_overrides", dict(DEFAULT_EXPRESSION_OVERRIDES)),
+            independent_shapes={
+                k: dict(v) for k, v in raw_indep.items()
+            },
         )
 
 
@@ -277,6 +293,29 @@ def _resolve_shape_max(
     return overrides.get(name, global_max)
 
 
+def _mirror_shape_name(name: str) -> str | None:
+    """Return the opposite-side sibling name, or None if no side token found.
+
+    Suffix tokens (_L, _R, _LB, _RB, _LT, _RT) are only matched at the end of
+    the string.  Word tokens (Left, Right) are matched anywhere (first occurrence).
+    First match wins.
+    """
+    # Suffix-only patterns checked longest-first so _LB/_RB beat _L/_R.
+    for suffix, replacement in [("_LB", "_RB"), ("_RB", "_LB"),
+                                 ("_LT", "_RT"), ("_RT", "_LT"),
+                                 ("_L",  "_R"),  ("_R",  "_L")]:
+        if name.endswith(suffix):
+            return name[: -len(suffix)] + replacement
+
+    # Word tokens matched anywhere (first occurrence).
+    for token, replacement in [("Left", "Right"), ("Right", "Left")]:
+        idx = name.find(token)
+        if idx != -1:
+            return name[:idx] + replacement + name[idx + len(token):]
+
+    return None
+
+
 def _generate_blendshape_weights(
     rng: random.Random,
     var_groups: dict[str, list[str]],
@@ -287,6 +326,7 @@ def _generate_blendshape_weights(
     expression_max: float,
     variation_overrides: dict[str, float] | None = None,
     expression_overrides: dict[str, float] | None = None,
+    independent_shapes: dict[str, dict] | None = None,
 ) -> dict[str, float]:
     """Generate one frame of blendshape weights.
 
@@ -299,9 +339,15 @@ def _generate_blendshape_weights(
     [0, per-shape max]; center shapes get an independent random value.
     Per-shape maxes are resolved from ``expression_overrides``, falling back
     to *expression_max*.
+
+    Independent shapes: always-on shapes generated with their own [min, max]
+    range, completely outside the variation group lottery.  When
+    ``mirror_sides`` is true the opposite-side sibling (if it exists in the
+    weights dict or is explicitly named) receives the same value.
     """
     var_ov = variation_overrides or {}
     expr_ov = expression_overrides or {}
+    indep = independent_shapes or {}
     weights: dict[str, float] = {}
 
     for _feature, members in var_groups.items():
@@ -340,6 +386,16 @@ def _generate_blendshape_weights(
         shape_max = _resolve_shape_max(name, expression_max, expr_ov)
         weights[name] = rng.uniform(0.0, shape_max)
 
+    for name, spec in indep.items():
+        lo = float(spec.get("min", 0.0))
+        hi = float(spec.get("max", 1.0))
+        val = rng.uniform(lo, hi)
+        weights[name] = val
+        if spec.get("mirror_sides", False):
+            sibling = _mirror_shape_name(name)
+            if sibling is not None:
+                weights[sibling] = val
+
     return weights
 
 
@@ -360,6 +416,7 @@ def generate_blendshape_weights(
             rng, var_groups, expr_pairs, expr_center,
             config.max_var_shapes, config.max_variation, config.expression_max,
             config.variation_overrides, config.expression_overrides,
+            config.independent_shapes,
         )
         for frame in range(1, config.frame_count + 1)
     }
@@ -377,4 +434,5 @@ def generate_single_frame_blendshape_weights(
         rng, var_groups, expr_pairs, expr_center,
         config.max_var_shapes, config.max_variation, config.expression_max,
         config.variation_overrides, config.expression_overrides,
+        config.independent_shapes,
     )

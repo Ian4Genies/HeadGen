@@ -530,3 +530,171 @@ class TestCrossProportionClamp:
         }])
         report = validate_rules(rules, {"EYE", "NOSE"})
         assert report.stale_keys == []
+
+
+# ---------------------------------------------------------------------------
+# conditional_bias
+# ---------------------------------------------------------------------------
+
+class TestConditionalBias:
+    def _rule(
+        self,
+        target: str,
+        drivers: list[dict],
+        combine: str = "min",
+        max_bias: float = 1.0,
+    ) -> list[dict]:
+        return [{
+            "type": "conditional_bias",
+            "target": target,
+            "drivers": drivers,
+            "combine": combine,
+            "max_bias": max_bias,
+        }]
+
+    def test_single_driver_full_signal_raises_floor(self):
+        """Driver fully activated → bias floor = max_bias → target raised."""
+        flat = {"target": 0.0, "rot": 8.0}
+        drivers = [{"param": "rot", "range": [0.0, 8.0], "map": [0.0, 1.0]}]
+        result = apply_relational_rules(flat, self._rule("target", drivers, max_bias=0.8))
+        assert result["target"] == pytest.approx(0.8)
+
+    def test_single_driver_partial_signal(self):
+        """Driver at midpoint → bias floor = 0.5 * max_bias."""
+        flat = {"target": 0.0, "rot": 4.0}
+        drivers = [{"param": "rot", "range": [0.0, 8.0], "map": [0.0, 1.0]}]
+        result = apply_relational_rules(flat, self._rule("target", drivers, max_bias=1.0))
+        assert result["target"] == pytest.approx(0.5)
+
+    def test_target_above_floor_not_lowered(self):
+        """If current value already exceeds floor, it must not be reduced."""
+        flat = {"target": 0.9, "rot": 4.0}
+        drivers = [{"param": "rot", "range": [0.0, 8.0], "map": [0.0, 1.0]}]
+        result = apply_relational_rules(flat, self._rule("target", drivers, max_bias=1.0))
+        assert result["target"] == pytest.approx(0.9)
+
+    def test_combine_min_uses_lowest_signal(self):
+        """Two drivers: one full, one half → min = 0.5 → floor = 0.5."""
+        flat = {"target": 0.0, "rot": 8.0, "scale": 0.85}
+        drivers = [
+            {"param": "rot",   "range": [0.0, 8.0], "map": [0.0, 1.0]},
+            {"param": "scale", "range": [1.0, 0.7], "map": [0.0, 1.0]},
+        ]
+        result = apply_relational_rules(flat, self._rule("target", drivers, combine="min"))
+        assert result["target"] == pytest.approx(0.5)
+
+    def test_combine_max_uses_highest_signal(self):
+        """Two drivers: one full, one zero → max = 1.0 → floor = 1.0."""
+        flat = {"target": 0.0, "rot": 8.0, "scale": 1.0}
+        drivers = [
+            {"param": "rot",   "range": [0.0, 8.0], "map": [0.0, 1.0]},
+            {"param": "scale", "range": [1.0, 0.7], "map": [0.0, 1.0]},
+        ]
+        result = apply_relational_rules(flat, self._rule("target", drivers, combine="max"))
+        assert result["target"] == pytest.approx(1.0)
+
+    def test_combine_average(self):
+        """Two drivers: signals 1.0 and 0.0 → average = 0.5."""
+        flat = {"target": 0.0, "a": 8.0, "b": 1.0}
+        drivers = [
+            {"param": "a", "range": [0.0, 8.0], "map": [0.0, 1.0]},
+            {"param": "b", "range": [1.0, 0.7], "map": [0.0, 1.0]},
+        ]
+        result = apply_relational_rules(flat, self._rule("target", drivers, combine="average"))
+        assert result["target"] == pytest.approx(0.5)
+
+    def test_driver_value_clamped_at_range_boundary(self):
+        """Values beyond range are clamped, not extrapolated."""
+        flat = {"target": 0.0, "rot": 999.0}
+        drivers = [{"param": "rot", "range": [0.0, 8.0], "map": [0.0, 1.0]}]
+        result = apply_relational_rules(flat, self._rule("target", drivers))
+        assert result["target"] == pytest.approx(1.0)
+
+    def test_missing_driver_param_contributes_zero(self):
+        """Missing driver param → signal 0 → combine=min → floor 0."""
+        flat = {"target": 0.0}
+        drivers = [{"param": "MISSING", "range": [0.0, 8.0], "map": [0.0, 1.0]}]
+        result = apply_relational_rules(flat, self._rule("target", drivers))
+        assert result["target"] == pytest.approx(0.0)
+
+    def test_missing_target_skipped(self):
+        """Missing target key → rule silently skipped, no KeyError."""
+        flat = {"rot": 8.0}
+        drivers = [{"param": "rot", "range": [0.0, 8.0], "map": [0.0, 1.0]}]
+        result = apply_relational_rules(flat, self._rule("MISSING", drivers))
+        assert "MISSING" not in result
+
+    def test_zero_signal_no_change(self):
+        """Driver at range lo → signal 0 → floor 0 → target unchanged."""
+        flat = {"target": 0.3, "rot": 0.0}
+        drivers = [{"param": "rot", "range": [0.0, 8.0], "map": [0.0, 1.0]}]
+        result = apply_relational_rules(flat, self._rule("target", drivers))
+        assert result["target"] == pytest.approx(0.3)
+
+    def test_validation_indexes_conditional_bias_keys(self):
+        rules = ConstraintRules(relational_rules=[{
+            "type": "conditional_bias",
+            "target": "SHAPE",
+            "drivers": [{"param": "ROT", "range": [0.0, 1.0], "map": [0.0, 1.0]}],
+        }])
+        report = validate_rules(rules, {"SHAPE", "ROT"})
+        assert report.stale_keys == []
+
+    # --- suppress direction ---
+
+    def test_suppress_full_signal_zeros_target(self):
+        """Signal = 1.0, max_bias = 1.0 → ceiling = 0.0 → target clamped to 0."""
+        flat = {"target": 0.8, "rot": 8.0}
+        drivers = [{"param": "rot", "range": [0.0, 8.0], "map": [0.0, 1.0]}]
+        rule = [{"type": "conditional_bias", "direction": "suppress",
+                 "target": "target", "drivers": drivers, "max_bias": 1.0}]
+        result = apply_relational_rules(flat, rule)
+        assert result["target"] == pytest.approx(0.0)
+
+    def test_suppress_zero_signal_no_change(self):
+        """Signal = 0.0 → ceiling = max_bias → no suppression."""
+        flat = {"target": 0.8, "rot": 0.0}
+        drivers = [{"param": "rot", "range": [0.0, 8.0], "map": [0.0, 1.0]}]
+        rule = [{"type": "conditional_bias", "direction": "suppress",
+                 "target": "target", "drivers": drivers, "max_bias": 1.0}]
+        result = apply_relational_rules(flat, rule)
+        assert result["target"] == pytest.approx(0.8)
+
+    def test_suppress_partial_signal_partial_ceiling(self):
+        """Signal = 0.5 → ceiling = 0.5 → target clamped from 0.8 to 0.5."""
+        flat = {"target": 0.8, "rot": 4.0}
+        drivers = [{"param": "rot", "range": [0.0, 8.0], "map": [0.0, 1.0]}]
+        rule = [{"type": "conditional_bias", "direction": "suppress",
+                 "target": "target", "drivers": drivers, "max_bias": 1.0}]
+        result = apply_relational_rules(flat, rule)
+        assert result["target"] == pytest.approx(0.5)
+
+    def test_suppress_target_below_ceiling_unchanged(self):
+        """Target already below ceiling → suppress does not raise it."""
+        flat = {"target": 0.1, "rot": 4.0}
+        drivers = [{"param": "rot", "range": [0.0, 8.0], "map": [0.0, 1.0]}]
+        rule = [{"type": "conditional_bias", "direction": "suppress",
+                 "target": "target", "drivers": drivers, "max_bias": 1.0}]
+        result = apply_relational_rules(flat, rule)
+        assert result["target"] == pytest.approx(0.1)
+
+    def test_suppress_max_bias_scales_ceiling(self):
+        """Signal = 0.5, max_bias = 0.6 → ceiling = 0.5 * 0.6 = 0.3."""
+        flat = {"target": 0.8, "rot": 4.0}
+        drivers = [{"param": "rot", "range": [0.0, 8.0], "map": [0.0, 1.0]}]
+        rule = [{"type": "conditional_bias", "direction": "suppress",
+                 "target": "target", "drivers": drivers, "max_bias": 0.6}]
+        result = apply_relational_rules(flat, rule)
+        assert result["target"] == pytest.approx((1.0 - 0.5) * 0.6)
+
+    def test_raise_is_default_direction(self):
+        """Omitting direction should behave identically to direction='raise'."""
+        flat_a = {"target": 0.0, "rot": 8.0}
+        flat_b = {"target": 0.0, "rot": 8.0}
+        drivers = [{"param": "rot", "range": [0.0, 8.0], "map": [0.0, 1.0]}]
+        rule_default = [{"type": "conditional_bias",
+                         "target": "target", "drivers": drivers, "max_bias": 1.0}]
+        rule_raise   = [{"type": "conditional_bias", "direction": "raise",
+                         "target": "target", "drivers": drivers, "max_bias": 1.0}]
+        assert apply_relational_rules(flat_a, rule_default)["target"] == \
+               apply_relational_rules(flat_b, rule_raise)["target"]

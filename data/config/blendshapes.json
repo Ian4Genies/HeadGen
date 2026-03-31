@@ -45,7 +45,6 @@
     "nose_male_varGp01A",
     "nose_male_varGp01D",
     "nose_male_varGp01E",
-    "nose_male_varGp01G",
     "nose_male_varGp01I",
     "nose_male_varGp01K"
   ],
@@ -125,6 +124,10 @@
     "UPPER_LIP_RAISER_L",
     "UPPER_LIP_RAISER_R"
   ],
+  "independent_shapes": {
+    "nose_male_varGp01G": { "min": 0.0, "max": 1.0, "mirror_sides": false }
+  },
+
   "expression_max":   0.0,
   "expression_overrides": {
     "CHEEK_PUFF_L": 0.3,

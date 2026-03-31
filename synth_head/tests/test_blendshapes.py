@@ -9,6 +9,7 @@ from synth_head.core.blendshapes import (
     DEFAULT_EXPRESSION_OVERRIDES,
     BlendshapeConfig,
     _resolve_shape_max,
+    _mirror_shape_name,
     classify_variation_shapes,
     classify_expression_shapes,
     generate_blendshape_weights,
@@ -90,8 +91,8 @@ class TestBlendshapeConfig:
         cfg = BlendshapeConfig()
         assert cfg.frame_count == 400
         assert cfg.max_var_shapes == 4
-        assert cfg.max_variation == pytest.approx(0.5)
-        assert cfg.expression_max == pytest.approx(0.2)
+        assert cfg.max_variation == pytest.approx(1.0)
+        assert cfg.expression_max == pytest.approx(0.0)
         assert cfg.seed is None
 
     def test_defaults_to_default_overrides(self):
@@ -375,3 +376,115 @@ class TestVariationZeroing:
                 active_sum = sum(frame_weights[n] for n in members if frame_weights[n] > 0.0)
                 assert active_sum == pytest.approx(0.8), \
                     f"{feature} active sum {active_sum} != 0.8"
+
+
+class TestMirrorShapeName:
+    def test_left_to_right(self):
+        assert _mirror_shape_name("eye_Left_shape") == "eye_Right_shape"
+
+    def test_right_to_left(self):
+        assert _mirror_shape_name("eye_Right_shape") == "eye_Left_shape"
+
+    def test_suffix_l_to_r(self):
+        assert _mirror_shape_name("BROW_LOWERER_L") == "BROW_LOWERER_R"
+
+    def test_suffix_r_to_l(self):
+        assert _mirror_shape_name("BROW_LOWERER_R") == "BROW_LOWERER_L"
+
+    def test_lb_to_rb(self):
+        assert _mirror_shape_name("LIP_FUNNELER_LB") == "LIP_FUNNELER_RB"
+
+    def test_rb_to_lb(self):
+        assert _mirror_shape_name("LIP_FUNNELER_RB") == "LIP_FUNNELER_LB"
+
+    def test_lt_to_rt(self):
+        assert _mirror_shape_name("LIP_FUNNELER_LT") == "LIP_FUNNELER_RT"
+
+    def test_rt_to_lt(self):
+        assert _mirror_shape_name("LIP_FUNNELER_RT") == "LIP_FUNNELER_LT"
+
+    def test_no_side_token_returns_none(self):
+        assert _mirror_shape_name("nose_male_varGp01G") is None
+
+    def test_first_token_wins(self):
+        # "Left" appears before "_L" would match, so Left→Right wins
+        assert _mirror_shape_name("LeftBrowBind") == "RightBrowBind"
+
+
+class TestIndependentShapes:
+    def _cfg(self, indep: dict, seed: int = 42, frames: int = 10) -> BlendshapeConfig:
+        return BlendshapeConfig(
+            seed=seed,
+            frame_count=frames,
+            variation_shapes=[],
+            expression_shapes=[],
+            independent_shapes=indep,
+        )
+
+    def test_shape_present_every_frame(self):
+        cfg = self._cfg({"my_shape": {"min": 0.0, "max": 1.0}})
+        result = generate_blendshape_weights(cfg)
+        for frame_weights in result.values():
+            assert "my_shape" in frame_weights
+
+    def test_value_within_range(self):
+        cfg = self._cfg({"my_shape": {"min": 0.2, "max": 0.6}}, frames=50)
+        result = generate_blendshape_weights(cfg)
+        for frame_weights in result.values():
+            assert 0.2 - 1e-9 <= frame_weights["my_shape"] <= 0.6 + 1e-9
+
+    def test_not_always_same_value(self):
+        cfg = self._cfg({"my_shape": {"min": 0.0, "max": 1.0}}, frames=20)
+        result = generate_blendshape_weights(cfg)
+        values = [fw["my_shape"] for fw in result.values()]
+        assert len(set(values)) > 1, "Expected variation across frames"
+
+    def test_seed_determinism(self):
+        cfg_a = self._cfg({"s": {"min": 0.0, "max": 1.0}}, seed=7)
+        cfg_b = self._cfg({"s": {"min": 0.0, "max": 1.0}}, seed=7)
+        assert generate_blendshape_weights(cfg_a) == generate_blendshape_weights(cfg_b)
+
+    def test_mirror_sides_sets_sibling(self):
+        cfg = self._cfg(
+            {"BROW_LOWERER_L": {"min": 0.0, "max": 1.0, "mirror_sides": True}},
+            frames=10,
+        )
+        result = generate_blendshape_weights(cfg)
+        for frame_weights in result.values():
+            assert "BROW_LOWERER_R" in frame_weights
+            assert frame_weights["BROW_LOWERER_L"] == pytest.approx(
+                frame_weights["BROW_LOWERER_R"]
+            )
+
+    def test_mirror_sides_false_no_sibling(self):
+        cfg = self._cfg(
+            {"BROW_LOWERER_L": {"min": 0.0, "max": 1.0, "mirror_sides": False}},
+        )
+        result = generate_blendshape_weights(cfg)
+        for frame_weights in result.values():
+            assert "BROW_LOWERER_R" not in frame_weights
+
+    def test_no_side_token_mirror_is_noop(self):
+        cfg = self._cfg(
+            {"nose_male_varGp01G": {"min": 0.0, "max": 1.0, "mirror_sides": True}},
+        )
+        result = generate_blendshape_weights(cfg)
+        for frame_weights in result.values():
+            assert "nose_male_varGp01G" in frame_weights
+
+    def test_independent_shape_not_in_variation_group(self):
+        """An independent shape should not be zeroed by the variation logic."""
+        cfg = BlendshapeConfig(
+            seed=42, frame_count=20,
+            variation_shapes=["nose_male_varGp01A", "nose_male_varGp01D"],
+            expression_shapes=[],
+            independent_shapes={"nose_indep": {"min": 0.3, "max": 0.3}},
+        )
+        result = generate_blendshape_weights(cfg)
+        for frame_weights in result.values():
+            assert frame_weights.get("nose_indep") == pytest.approx(0.3)
+
+    def test_empty_independent_shapes_no_error(self):
+        cfg = self._cfg({})
+        result = generate_blendshape_weights(cfg)
+        assert len(result) == 10

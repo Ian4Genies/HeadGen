@@ -111,6 +111,10 @@ Controls variation (facial structure) and expression shape key generation.
   "max_variation": 1.0,
   "variation_overrides": {},
 
+  "independent_shapes": {
+    "nose_male_varGp01G": { "min": 0.0, "max": 1.0, "mirror_sides": false }
+  },
+
   "expression_shapes": ["JAW_DROP", "BROW_LOWERER_L", ...],
   "expression_max": 0.0,
   "expression_overrides": {
@@ -141,6 +145,34 @@ Shapes are grouped by feature prefix (`eyes_`, `jaw_`, `lips_`, `nose_`). Within
 
 `_L` / `_R` suffix pairs always receive the same random value (bilateral symmetry). `_LB`/`_RB` and `_LT`/`_RT` pairs follow the same rule.
 
+### Independent shapes
+
+Always-on shapes that bypass the variation group lottery entirely. Each shape gets its own random value sampled from `[min, max]` on every frame, independent of any other shape.
+
+| Field | Type | Description |
+|---|---|---|
+| key | string | Shape key name |
+| `min` | float | Minimum random value (usually `0.0`) |
+| `max` | float | Maximum random value (usually `1.0`) |
+| `mirror_sides` | bool | If `true`, the opposite-side sibling receives the same value |
+
+**`mirror_sides` token lookup order** (first match wins):
+
+| Token in name | Replaced with |
+|---|---|
+| `Left` | `Right` |
+| `Right` | `Left` |
+| `_LB` | `_RB` |
+| `_RB` | `_LB` |
+| `_LT` | `_RT` |
+| `_RT` | `_LT` |
+| `_L` | `_R` |
+| `_R` | `_L` |
+
+If no side token is found, `mirror_sides` has no effect.
+
+> **Note:** shapes listed here should be removed from `variation_shapes` to avoid double-generation.
+
 ---
 
 ## constraints.json
@@ -158,7 +190,8 @@ Applied after generation to enforce hard limits and relational rules. Rules run 
     { "type": "mutual_dampen", ... },
     { "type": "ratio_clamp", ... },
     { "type": "product_clamp", ... },
-    { "type": "cross_proportion_clamp", ... }
+    { "type": "cross_proportion_clamp", ... },
+    { "type": "conditional_bias", ... }
   ]
 }
 ```
@@ -275,6 +308,61 @@ Clamps a target only when two independent conditions are simultaneously true. Us
 
 Both `"if"` and `"and"` conditions support `"above"` and/or `"below"` threshold keys.
 `"then_clamp"` supports `"min"` and/or `"max"`.
+
+---
+
+#### `conditional_bias`
+Drives a target shape value up or down based on one or more parameter signals. Use `"raise"` to bias a shape higher when geometry indicates a type (e.g. upturned small nose favours a nostril shape). Use `"suppress"` to aggressively zero out a shape under the same conditions (e.g. a shape redundant with nose slimming should disappear when the nose is already narrow and upturned).
+
+**`direction: "raise"`** — floor is raised. Target will never be set *below* its generated value.
+
+```json
+{
+  "type":      "conditional_bias",
+  "direction": "raise",
+  "target":    "nose_male_varGp01G",
+  "drivers": [
+    { "param": "NoseBind.rotation.x", "range": [0.0, 8.0], "map": [0.0, 1.0] },
+    { "param": "NoseBind.scale.x",    "range": [1.0, 0.7], "map": [0.0, 1.0] }
+  ],
+  "combine":  "min",
+  "max_bias": 1.0
+}
+```
+
+**`direction: "suppress"`** — ceiling is lowered. As signal grows toward 1.0, the ceiling shrinks toward 0. Target will never be set *above* its generated value.
+
+```json
+{
+  "type":      "conditional_bias",
+  "direction": "suppress",
+  "target":    "nose_female_varGp01K",
+  "drivers": [
+    { "param": "NoseBind.rotation.x", "range": [0.0, 8.0], "map": [0.0, 1.0] },
+    { "param": "NoseBind.scale.x",    "range": [1.0, 0.7], "map": [0.0, 1.0] }
+  ],
+  "combine":  "min",
+  "max_bias": 1.0
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `target` | string | Shape key to drive |
+| `direction` | string | `"raise"` (default) or `"suppress"` |
+| `drivers` | list | One or more signal sources |
+| `drivers[].param` | string | Parameter to read (joint transform or shape key) |
+| `drivers[].range` | [float, float] | Input value range `[in_lo, in_hi]` to remap from |
+| `drivers[].map` | [float, float] | Output signal range `[out_lo, out_hi]` (usually `[0.0, 1.0]`) |
+| `combine` | string | How to combine signals: `"min"` (default), `"max"`, or `"average"` |
+| `max_bias` | float | Scale factor on the floor/ceiling (`raise` floor = `signal × max_bias`; `suppress` ceiling = `(1 − signal) × max_bias`) |
+
+**How `combine` works:**
+- `"min"` — *all* drivers must be active for full effect (strictest; AND-style)
+- `"max"` — any single driver at peak produces full effect (OR-style)
+- `"average"` — blends proportionally across all drivers
+
+Values outside a driver's `range` are clamped to the mapped boundary. Missing params contribute `0` to the combined signal.
 
 ---
 

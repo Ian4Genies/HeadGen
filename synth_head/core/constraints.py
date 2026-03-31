@@ -330,6 +330,61 @@ def _apply_cross_proportion_clamp(flat: dict[str, float], rule: dict) -> None:
     flat[target] = v
 
 
+def _apply_sandwich_clamp(flat: dict[str, float], rule: dict) -> None:
+    """Keep a target parameter sandwiched between two anchor parameters.
+
+    The floor and ceiling are derived dynamically from the live values of two
+    anchor params (sorted so the rule is stable even if the anchors cross each
+    other).  A ``tolerance`` value widens the permitted band symmetrically
+    beyond the anchor range, allowing a small amount of creative overshoot.
+
+    ``target_sign`` (-1 or 1, default 1) multiplies the target value before
+    comparison and divides it back after writing.  Use -1 when the target joint
+    axis is physically inverted relative to the anchor joints — e.g. when
+    ``MouthBind.location.y`` is positive-down while the anchor joints are
+    positive-up.
+
+    .. note::
+        ``target_sign`` is a per-axis scalar workaround.  In the future this
+        could be replaced by a world-space vector declaration that fully
+        describes each joint's local-to-world axis mapping, removing the need
+        for per-rule sign overrides.
+
+    JSON schema::
+
+        {
+          "type":        "sandwich_clamp",
+          "target":      "MouthBind.location.y",
+          "target_sign": -1,
+          "floor":       "NoseBind.location.y",
+          "ceiling":     "JawBind.location.y",
+          "tolerance":   0.05
+        }
+
+    Missing params are silently skipped.
+    """
+    target_key: str = rule.get("target", "")
+    floor_key: str = rule.get("floor", "")
+    ceiling_key: str = rule.get("ceiling", "")
+    target_sign: float = float(rule.get("target_sign", 1))
+    tolerance: float = float(rule.get("tolerance", 0.0))
+
+    if target_key not in flat or floor_key not in flat or ceiling_key not in flat:
+        return
+
+    # Sort anchors dynamically — the rule is stable even when they cross.
+    anchor_lo = min(flat[floor_key], flat[ceiling_key])
+    anchor_hi = max(flat[floor_key], flat[ceiling_key])
+
+    lo = anchor_lo - tolerance
+    hi = anchor_hi + tolerance
+
+    effective = flat[target_key] * target_sign
+    effective = effective if effective >= lo else lo
+    effective = effective if effective <= hi else hi
+    flat[target_key] = effective / target_sign
+
+
 def _apply_conditional_bias(flat: dict[str, float], rule: dict) -> None:
     """Drive a target up or down based on one or more param signals.
 
@@ -428,6 +483,7 @@ _RULE_HANDLERS = {
     "ratio_clamp": _apply_ratio_clamp,
     "product_clamp": _apply_product_clamp,
     "cross_proportion_clamp": _apply_cross_proportion_clamp,
+    "sandwich_clamp": _apply_sandwich_clamp,
     "conditional_bias": _apply_conditional_bias,
 }
 

@@ -8,6 +8,15 @@
   },
   "relational_rules": [
     {
+      "title":       "Mouth Y stays sandwiched between nose and jaw Y",
+      "type":        "sandwich_clamp",
+      "target":      "MouthBind.location.y",
+      "target_sign": -1,
+      "floor":       "NoseBind.location.y",
+      "ceiling":     "JawBind.location.y",
+      "tolerance":   0.05
+    },
+    {
       "title":  "Mouth follows jaw forward/back",
       "type":   "scale_follow",
       "target": "MouthBind.location.y",

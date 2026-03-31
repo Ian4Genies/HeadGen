@@ -185,6 +185,7 @@ Applied after generation to enforce hard limits and relational rules. Rules run 
     "JAW_DROP": { "min": 0.0, "max": 0.8 }
   },
   "relational_rules": [
+    { "type": "sandwich_clamp", ... },
     { "type": "scale_follow", ... },
     { "type": "conditional_clamp", ... },
     { "type": "mutual_dampen", ... },
@@ -316,6 +317,32 @@ Clamps a target only when two independent conditions are simultaneously true. Us
 
 Both `"if"` and `"and"` conditions support `"above"` and/or `"below"` threshold keys.
 `"then_clamp"` supports `"min"` and/or `"max"`.
+
+---
+
+#### `sandwich_clamp`
+Keeps a target parameter sandwiched between two live anchor parameters. The permitted band is derived dynamically from the anchor values (sorted, so the rule stays stable if the anchors cross each other), then widened by `tolerance` on each side to allow controlled overshoot.
+
+```json
+{
+  "type":        "sandwich_clamp",
+  "target":      "MouthBind.location.y",
+  "target_sign": -1,
+  "floor":       "NoseBind.location.y",
+  "ceiling":     "JawBind.location.y",
+  "tolerance":   0.05
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `target` | string | Parameter to constrain |
+| `floor` | string | Lower anchor parameter |
+| `ceiling` | string | Upper anchor parameter |
+| `tolerance` | float | Extra wiggle room added beyond each anchor value (default `0.0`) |
+| `target_sign` | int | `1` (default) or `-1`. Set to `-1` when the target joint's axis is physically inverted relative to the anchor joints |
+
+`floor` and `ceiling` are sorted at runtime so the label is semantic only — either can be the numerically larger value without breaking the rule. Missing params are silently skipped.
 
 ---
 

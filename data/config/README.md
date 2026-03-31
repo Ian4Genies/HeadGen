@@ -207,11 +207,19 @@ Absolute min/max applied to any parameter after all relational rules.
 }
 ```
 
-Keys can be joint parameters (`JointName.channel.axis`) or blendshape names. Both `"min"` and `"max"` are optional.
+Keys can be joint parameters (`JointName.channel.axis`) or blendshape names. Both `"min"` and `"max"` are optional. Hard clamp entries do not currently support a `title` field (the key name itself serves as the identifier).
 
 ---
 
 ### Relational rule types
+
+All relational rule objects accept an optional `"title"` string field for documentation purposes. It is ignored by the constraint engine and has no effect on evaluation.
+
+```json
+{ "title": "Human-readable label", "type": "scale_follow", ... }
+```
+
+---
 
 #### `scale_follow`
 Forces `target = source × factor`. Runs before hard clamps.

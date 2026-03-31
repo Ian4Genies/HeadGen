@@ -8,47 +8,55 @@
   },
   "relational_rules": [
     {
+      "title":  "Mouth follows jaw forward/back",
       "type":   "scale_follow",
       "target": "MouthBind.location.y",
       "source": "JawBind.location.y",
       "factor": 0.3
     },
     {
+      "title":     "Suppress mouth lowerer when jaw drops",
       "type":      "conditional_clamp",
       "target":    "MOUTH_LOWERER",
       "condition": { "param": "JAW_DROP", "above": 0.3 },
       "max":       0.2
     },
     {
+      "title":        "Jaw drop and jaw thrust share a combined budget",
       "type":         "mutual_dampen",
       "params":       ["JAW_DROP", "JAW_THRUST"],
       "max_combined": 1.0
     },
     {
+      "title":       "Nose Z/X ratio cap (narrow-tall limit)",
       "type":        "ratio_clamp",
       "numerator":   "NoseBind.scale.z",
       "denominator": "NoseBind.scale.x",
       "max_ratio":   0.95
     },
     {
+      "title":       "Nose Z*X product cap (wide-tall limit)",
       "type":        "product_clamp",
       "param_a":     "NoseBind.scale.z",
       "param_b":     "NoseBind.scale.x",
       "max_product": 1.1
     },
     {
+      "title":       "Nose Y/X ratio cap (narrow-wide limit)",
       "type":        "ratio_clamp",
       "numerator":   "NoseBind.scale.y",
       "denominator": "NoseBind.scale.x",
       "max_ratio":   1.0
     },
     {
+      "title":       "Nose Y*X product cap (wide-tall limit)",
       "type":        "product_clamp",
       "param_a":     "NoseBind.scale.y",
       "param_b":     "NoseBind.scale.x",
       "max_product": 1.15
     },
     {
+      "title":     "Raise male nostril shape for upturned narrow noses",
       "type":      "conditional_bias",
       "direction": "raise",
       "target":    "nose_male_varGp01G",
@@ -60,6 +68,7 @@
       "max_bias": 1.0
     },
     {
+      "title":     "Suppress male nostril shape for downturned noses",
       "type":      "conditional_bias",
       "direction": "suppress",
       "target":    "nose_male_varGp01G",
@@ -70,6 +79,7 @@
       "max_bias": 1.0
     },
     {
+      "title":     "Suppress male nostril shape for wide noses",
       "type":      "conditional_bias",
       "direction": "suppress",
       "target":    "nose_male_varGp01G",
@@ -80,18 +90,21 @@
       "max_bias": 1.0
     },
     {
+      "title":      "Cap nose Y scale when downturned",
       "type": "cross_proportion_clamp",
       "if":   { "param": "NoseBind.rotation.x", "above":  4.0 },
       "and":  { "param": "NoseBind.scale.y",    "above":  1.1 },
       "then_clamp": { "param": "NoseBind.scale.y", "max": 1.1 }
     },
     {
+      "title":      "Cap nose rotation when nose is wide",
       "type": "cross_proportion_clamp",
       "if":   { "param": "NoseBind.scale.y",    "above":  1.15 },
       "and":  { "param": "NoseBind.rotation.x", "above":  2.0  },
       "then_clamp": { "param": "NoseBind.rotation.x", "max": 2.0 }
     },
     {
+      "title":     "Suppress female nostril shape for upturned narrow noses",
       "type":      "conditional_bias",
       "direction": "suppress",
       "target":    "nose_female_varGp01K",
@@ -103,15 +116,17 @@
       "max_bias": 1.0
     },
     {
+      "title": "Cap eye socket width when nose is narrow",
       "type": "cross_proportion_clamp",
       "if":   { "param": "LeftEyeSocketBind.scale.x", "above": 1.05 },
-      "and":  { "param": "NoseBind.scale.x",          "below": 0.80 },
+      "and":  { "param": "NoseBind.scale.x",          "below": 1 },
       "then_clamp": { "param": "LeftEyeSocketBind.scale.x", "max": 1.05 }
     },
     {
+      "title": "Cap mouth width when nose is narrow",
       "type": "cross_proportion_clamp",
       "if":   { "param": "MouthBind.scale.x", "above": 1.10 },
-      "and":  { "param": "NoseBind.scale.x",  "below": 0.80 },
+      "and":  { "param": "NoseBind.scale.x",  "below": 1 },
       "then_clamp": { "param": "MouthBind.scale.x", "max": 1.10 }
     }
   ]

@@ -349,3 +349,127 @@ class TestLoadRules:
         rules = load_rules(rules_path)
         assert len(rules.hard_clamps) > 0
         assert len(rules.relational_rules) > 0
+
+
+# ---------------------------------------------------------------------------
+# ratio_clamp
+# ---------------------------------------------------------------------------
+
+class TestRatioClamp:
+    def _rule(self, num: str, den: str, max_ratio: float) -> list[dict]:
+        return [{"type": "ratio_clamp", "numerator": num,
+                 "denominator": den, "max_ratio": max_ratio}]
+
+    def test_ratio_exceeded_numerator_scaled_down(self):
+        flat = {"scale_z": 1.5, "scale_x": 1.0}
+        result = apply_relational_rules(flat, self._rule("scale_z", "scale_x", 1.4))
+        assert result["scale_z"] == pytest.approx(1.4)
+
+    def test_ratio_within_threshold_unchanged(self):
+        flat = {"scale_z": 1.2, "scale_x": 1.0}
+        result = apply_relational_rules(flat, self._rule("scale_z", "scale_x", 1.4))
+        assert result["scale_z"] == pytest.approx(1.2)
+
+    def test_ratio_exactly_at_threshold_unchanged(self):
+        flat = {"scale_z": 1.4, "scale_x": 1.0}
+        result = apply_relational_rules(flat, self._rule("scale_z", "scale_x", 1.4))
+        assert result["scale_z"] == pytest.approx(1.4)
+
+    def test_zero_denominator_skipped(self):
+        flat = {"scale_z": 1.5, "scale_x": 0.0}
+        result = apply_relational_rules(flat, self._rule("scale_z", "scale_x", 1.4))
+        assert result["scale_z"] == pytest.approx(1.5)
+
+    def test_missing_numerator_skipped(self):
+        flat = {"scale_x": 1.0}
+        result = apply_relational_rules(flat, self._rule("GONE", "scale_x", 1.4))
+        assert "GONE" not in result
+
+    def test_missing_denominator_skipped(self):
+        flat = {"scale_z": 1.5}
+        result = apply_relational_rules(flat, self._rule("scale_z", "GONE", 1.4))
+        assert result["scale_z"] == pytest.approx(1.5)
+
+    def test_respects_denominator_value(self):
+        """Threshold is relative to denominator, not absolute."""
+        flat = {"scale_z": 1.2, "scale_x": 0.8}
+        result = apply_relational_rules(flat, self._rule("scale_z", "scale_x", 1.4))
+        assert result["scale_z"] == pytest.approx(0.8 * 1.4)
+
+
+# ---------------------------------------------------------------------------
+# cross_proportion_clamp
+# ---------------------------------------------------------------------------
+
+class TestCrossProportionClamp:
+    def _rule(
+        self,
+        if_param: str, if_above: float,
+        and_param: str, and_below: float,
+        clamp_param: str, clamp_max: float,
+    ) -> list[dict]:
+        return [{
+            "type": "cross_proportion_clamp",
+            "if":   {"param": if_param,   "above": if_above},
+            "and":  {"param": and_param,  "below": and_below},
+            "then_clamp": {"param": clamp_param, "max": clamp_max},
+        }]
+
+    def test_both_conditions_true_clamps_target(self):
+        flat = {"eye": 1.1, "nose": 0.75, "eye_clamp": 1.1}
+        rules = self._rule("eye", 1.05, "nose", 0.80, "eye_clamp", 1.05)
+        result = apply_relational_rules(flat, rules)
+        assert result["eye_clamp"] == pytest.approx(1.05)
+
+    def test_if_condition_false_no_clamp(self):
+        flat = {"eye": 1.0, "nose": 0.75, "eye_clamp": 1.0}
+        rules = self._rule("eye", 1.05, "nose", 0.80, "eye_clamp", 1.05)
+        result = apply_relational_rules(flat, rules)
+        assert result["eye_clamp"] == pytest.approx(1.0)
+
+    def test_and_condition_false_no_clamp(self):
+        flat = {"eye": 1.1, "nose": 0.85, "eye_clamp": 1.1}
+        rules = self._rule("eye", 1.05, "nose", 0.80, "eye_clamp", 1.05)
+        result = apply_relational_rules(flat, rules)
+        assert result["eye_clamp"] == pytest.approx(1.1)
+
+    def test_both_conditions_false_no_clamp(self):
+        flat = {"eye": 1.0, "nose": 0.85, "eye_clamp": 1.1}
+        rules = self._rule("eye", 1.05, "nose", 0.80, "eye_clamp", 1.05)
+        result = apply_relational_rules(flat, rules)
+        assert result["eye_clamp"] == pytest.approx(1.1)
+
+    def test_missing_if_param_skipped(self):
+        flat = {"nose": 0.75, "eye_clamp": 1.1}
+        rules = self._rule("GONE", 1.05, "nose", 0.80, "eye_clamp", 1.05)
+        result = apply_relational_rules(flat, rules)
+        assert result["eye_clamp"] == pytest.approx(1.1)
+
+    def test_missing_and_param_skipped(self):
+        flat = {"eye": 1.1, "eye_clamp": 1.1}
+        rules = self._rule("eye", 1.05, "GONE", 0.80, "eye_clamp", 1.05)
+        result = apply_relational_rules(flat, rules)
+        assert result["eye_clamp"] == pytest.approx(1.1)
+
+    def test_missing_target_param_skipped(self):
+        flat = {"eye": 1.1, "nose": 0.75}
+        rules = self._rule("eye", 1.05, "nose", 0.80, "GONE", 1.05)
+        result = apply_relational_rules(flat, rules)
+        assert "GONE" not in result
+
+    def test_value_already_within_clamp_unchanged(self):
+        flat = {"eye": 1.1, "nose": 0.75, "eye_clamp": 1.0}
+        rules = self._rule("eye", 1.05, "nose", 0.80, "eye_clamp", 1.05)
+        result = apply_relational_rules(flat, rules)
+        assert result["eye_clamp"] == pytest.approx(1.0)
+
+    def test_validation_indexes_cross_proportion_keys(self):
+        """validate_rules should include all params referenced in cross_proportion_clamp."""
+        rules = ConstraintRules(relational_rules=[{
+            "type": "cross_proportion_clamp",
+            "if":   {"param": "EYE"},
+            "and":  {"param": "NOSE"},
+            "then_clamp": {"param": "EYE"},
+        }])
+        report = validate_rules(rules, {"EYE", "NOSE"})
+        assert report.stale_keys == []

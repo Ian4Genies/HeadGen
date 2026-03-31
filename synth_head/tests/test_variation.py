@@ -229,35 +229,44 @@ class TestSymmetry:
 
 class TestResolveRange:
     def test_global_fallback(self):
-        assert _resolve_range("FaceBind", "location", 0.2, {}) == pytest.approx(0.2)
+        lo, hi = _resolve_range("FaceBind", "location", 0.2, {})
+        assert lo == pytest.approx(-0.2)
+        assert hi == pytest.approx(0.2)
 
     def test_override_wins(self):
         ov = {"FaceBind.location": 0.05}
-        assert _resolve_range("FaceBind", "location", 0.2, ov) == pytest.approx(0.05)
+        lo, hi = _resolve_range("FaceBind", "location", 0.2, ov)
+        assert lo == pytest.approx(-0.05)
+        assert hi == pytest.approx(0.05)
 
     def test_unrelated_override_ignored(self):
         ov = {"NoseBind.location": 0.05}
-        assert _resolve_range("FaceBind", "location", 0.2, ov) == pytest.approx(0.2)
+        lo, hi = _resolve_range("FaceBind", "location", 0.2, ov)
+        assert lo == pytest.approx(-0.2)
+        assert hi == pytest.approx(0.2)
 
     def test_channel_specificity(self):
         ov = {"FaceBind.location": 0.05, "FaceBind.rotation": 2.0}
-        assert _resolve_range("FaceBind", "location", 0.2, ov) == pytest.approx(0.05)
-        assert _resolve_range("FaceBind", "rotation", 10.0, ov) == pytest.approx(2.0)
-        assert _resolve_range("FaceBind", "scale", 0.2, ov) == pytest.approx(0.2)
+        lo, hi = _resolve_range("FaceBind", "location", 0.2, ov)
+        assert (lo, hi) == pytest.approx((-0.05, 0.05))
+        lo, hi = _resolve_range("FaceBind", "rotation", 10.0, ov)
+        assert (lo, hi) == pytest.approx((-2.0, 2.0))
+        lo, hi = _resolve_range("FaceBind", "scale", 0.2, ov)
+        assert (lo, hi) == pytest.approx((-0.2, 0.2))
 
     def test_axis_override_wins_over_channel(self):
         ov = {"FaceBind.location": 0.1, "FaceBind.location.x": 0.01}
-        assert _resolve_range("FaceBind", "location", 0.2, ov, "x") == pytest.approx(0.01)
-        assert _resolve_range("FaceBind", "location", 0.2, ov, "y") == pytest.approx(0.1)
+        assert _resolve_range("FaceBind", "location", 0.2, ov, "x") == pytest.approx((-0.01, 0.01))
+        assert _resolve_range("FaceBind", "location", 0.2, ov, "y") == pytest.approx((-0.1, 0.1))
 
     def test_axis_override_wins_over_global(self):
         ov = {"FaceBind.location.z": 0.03}
-        assert _resolve_range("FaceBind", "location", 0.2, ov, "z") == pytest.approx(0.03)
-        assert _resolve_range("FaceBind", "location", 0.2, ov, "x") == pytest.approx(0.2)
+        assert _resolve_range("FaceBind", "location", 0.2, ov, "z") == pytest.approx((-0.03, 0.03))
+        assert _resolve_range("FaceBind", "location", 0.2, ov, "x") == pytest.approx((-0.2, 0.2))
 
     def test_axis_none_ignores_axis_keys(self):
         ov = {"FaceBind.location": 0.1, "FaceBind.location.x": 0.01}
-        assert _resolve_range("FaceBind", "location", 0.2, ov) == pytest.approx(0.1)
+        assert _resolve_range("FaceBind", "location", 0.2, ov) == pytest.approx((-0.1, 0.1))
 
 
 class TestJointOverrides:
@@ -436,3 +445,80 @@ class TestJointOverrides:
             assert left_form in overridden_joints, (
                 f"{name} (checked as {left_form}) has no entry in DEFAULT_JOINT_OVERRIDES"
             )
+
+
+# ---------------------------------------------------------------------------
+# Asymmetric range overrides
+# ---------------------------------------------------------------------------
+
+class TestAsymmetricOverrides:
+    def test_symmetric_float_still_works(self):
+        """A plain float override still produces the symmetric range."""
+        lo, hi = _resolve_range("NoseBind", "rotation", 10.0, {"NoseBind.rotation": 5.0}, "x")
+        assert lo == pytest.approx(-5.0)
+        assert hi == pytest.approx(5.0)
+
+    def test_asymmetric_dict_override(self):
+        """A dict override returns the exact min/max specified."""
+        lo, hi = _resolve_range(
+            "NoseBind", "rotation", 10.0,
+            {"NoseBind.rotation.x": {"min": -5.0, "max": 8.0}},
+            "x",
+        )
+        assert lo == pytest.approx(-5.0)
+        assert hi == pytest.approx(8.0)
+
+    def test_asymmetric_channel_level_override(self):
+        """Asymmetric dict at channel level is resolved correctly."""
+        lo, hi = _resolve_range(
+            "FaceBind", "location", 0.2,
+            {"FaceBind.location": {"min": -0.001, "max": 0.01}},
+        )
+        assert lo == pytest.approx(-0.001)
+        assert hi == pytest.approx(0.01)
+
+    def test_axis_key_wins_over_channel_key_asymmetric(self):
+        """Per-axis asymmetric key takes priority over channel-level float."""
+        lo, hi = _resolve_range(
+            "NoseBind", "rotation", 10.0,
+            {
+                "NoseBind.rotation": 8.0,
+                "NoseBind.rotation.x": {"min": -3.0, "max": 9.0},
+            },
+            "x",
+        )
+        assert lo == pytest.approx(-3.0)
+        assert hi == pytest.approx(9.0)
+
+    def test_asymmetric_range_respected_in_generation(self):
+        """Generated values for an asymmetric override must stay within [min, max]."""
+        cfg = VariationConfig(
+            frame_count=200,
+            seed=7,
+            joint_overrides={"NoseBind.rotation.x": {"min": -3.0, "max": 9.0}},
+        )
+        result = generate_chaos_transforms(cfg, ["NoseBind"])
+        for frame_data in result.values():
+            rot_x = frame_data["NoseBind"].rotation[0]
+            assert -3.0 <= rot_x <= 9.0
+
+    def test_asymmetric_range_uses_full_window(self):
+        """With enough frames, values should appear on both sides of zero."""
+        cfg = VariationConfig(
+            frame_count=200,
+            seed=7,
+            joint_overrides={"NoseBind.rotation.x": {"min": -3.0, "max": 9.0}},
+        )
+        result = generate_chaos_transforms(cfg, ["NoseBind"])
+        vals = [frame_data["NoseBind"].rotation[0] for frame_data in result.values()]
+        assert max(vals) > 5.0, "Should reach into positive range"
+        assert min(vals) < -1.0, "Should reach into negative range"
+
+    def test_comment_key_stripped_from_overrides(self):
+        """_comment keys in JSON are ignored and never passed to override resolution."""
+        cfg = VariationConfig.from_dict(
+            {"overrides": {"_comment": "ignored", "NoseBind.rotation.x": 5.0}},
+            frame_count=1,
+        )
+        assert "_comment" not in cfg.joint_overrides
+        assert "NoseBind.rotation.x" in cfg.joint_overrides

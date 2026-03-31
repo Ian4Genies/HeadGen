@@ -23,7 +23,10 @@ CHAOS_JOINT_NAMES: frozenset[str] = frozenset({
     "NeckBind",
 })
 
-DEFAULT_JOINT_OVERRIDES: dict[str, float] = {
+# Override values may be either:
+#   float           → symmetric range, sampled from [-value, +value]
+#   {"min": float, "max": float}  → asymmetric range, sampled from [min, max]
+DEFAULT_JOINT_OVERRIDES: dict[str, float | dict] = {
     # --- FaceBind — moves the whole face, needs tight limits ---------------
     # Not present in BodyConfig; keep conservative values.
     "FaceBind.location":     0.005,
@@ -135,7 +138,7 @@ class VariationConfig:
     scale_max: float = 0.2
     seed: int | None = None
     enable_scale: bool = True
-    joint_overrides: dict[str, float] = field(
+    joint_overrides: dict[str, float | dict] = field(
         default_factory=lambda: dict(DEFAULT_JOINT_OVERRIDES),
     )
 
@@ -146,6 +149,8 @@ class VariationConfig:
         frame_count: int = 400,
         seed: int | None = None,
     ) -> "VariationConfig":
+        raw_overrides = data.get("overrides", dict(DEFAULT_JOINT_OVERRIDES))
+        overrides = {k: v for k, v in raw_overrides.items() if not k.startswith("_")}
         return cls(
             frame_count=frame_count,
             seed=seed,
@@ -153,7 +158,7 @@ class VariationConfig:
             rotate_max=data.get("rotate_max", 10.0),
             scale_max=data.get("scale_max", 0.2),
             enable_scale=data.get("enable_scale", True),
-            joint_overrides=data.get("overrides", dict(DEFAULT_JOINT_OVERRIDES)),
+            joint_overrides=overrides,
         )
 
 
@@ -161,22 +166,33 @@ def _resolve_range(
     joint_name: str,
     channel: str,
     global_max: float,
-    overrides: dict[str, float],
+    overrides: dict[str, float | dict],
     axis: str | None = None,
-) -> float:
+) -> tuple[float, float]:
     """Look up the generation range for a joint+channel (optionally per-axis).
 
     Resolution order (most specific wins):
       1. ``"JointName.channel.axis"``  (e.g. ``"FaceBind.location.x"``)
       2. ``"JointName.channel"``       (e.g. ``"FaceBind.location"``)
       3. *global_max* fallback
+
+    The resolved value may be either:
+      float       → symmetric: returns ``(-value, +value)``
+      dict        → asymmetric: returns ``(value["min"], value["max"])``
     """
+    raw: float | dict | None = None
     if axis is not None:
         axis_key = f"{joint_name}.{channel}.{axis}"
         if axis_key in overrides:
-            return overrides[axis_key]
-    channel_key = f"{joint_name}.{channel}"
-    return overrides.get(channel_key, global_max)
+            raw = overrides[axis_key]
+    if raw is None:
+        channel_key = f"{joint_name}.{channel}"
+        raw = overrides.get(channel_key, global_max)
+
+    if isinstance(raw, dict):
+        return (float(raw["min"]), float(raw["max"]))
+    v = float(raw)
+    return (-v, v)
 
 
 def classify_joints(
@@ -245,32 +261,32 @@ def _generate_joint_transforms(
 
     def _scale(joint_name: str) -> tuple[float, float, float]:
         if enable_scale:
-            sx = _resolve_range(joint_name, "scale", s, ov, "x")
-            sy = _resolve_range(joint_name, "scale", s, ov, "y")
-            sz = _resolve_range(joint_name, "scale", s, ov, "z")
+            sx_lo, sx_hi = _resolve_range(joint_name, "scale", s, ov, "x")
+            sy_lo, sy_hi = _resolve_range(joint_name, "scale", s, ov, "y")
+            sz_lo, sz_hi = _resolve_range(joint_name, "scale", s, ov, "z")
             return (
-                1.0 + rng.uniform(-sx, sx),
-                1.0 + rng.uniform(-sy, sy),
-                1.0 + rng.uniform(-sz, sz),
+                1.0 + rng.uniform(sx_lo, sx_hi),
+                1.0 + rng.uniform(sy_lo, sy_hi),
+                1.0 + rng.uniform(sz_lo, sz_hi),
             )
         return identity_scale
 
     joints: dict[str, ChaosTransform] = {}
 
     for left_name, right_name in pairs:
-        ltx = _resolve_range(left_name, "location", t, ov, "x")
-        lty = _resolve_range(left_name, "location", t, ov, "y")
-        ltz = _resolve_range(left_name, "location", t, ov, "z")
-        lrx = _resolve_range(left_name, "rotation", r, ov, "x")
-        lry = _resolve_range(left_name, "rotation", r, ov, "y")
-        lrz = _resolve_range(left_name, "rotation", r, ov, "z")
+        ltx_lo, ltx_hi = _resolve_range(left_name, "location", t, ov, "x")
+        lty_lo, lty_hi = _resolve_range(left_name, "location", t, ov, "y")
+        ltz_lo, ltz_hi = _resolve_range(left_name, "location", t, ov, "z")
+        lrx_lo, lrx_hi = _resolve_range(left_name, "rotation", r, ov, "x")
+        lry_lo, lry_hi = _resolve_range(left_name, "rotation", r, ov, "y")
+        lrz_lo, lrz_hi = _resolve_range(left_name, "rotation", r, ov, "z")
 
-        lx = rng.uniform(-ltx, ltx)
-        ly = rng.uniform(-lty, lty)
-        lz = rng.uniform(-ltz, ltz)
-        rot_x = rng.uniform(-lrx, lrx)
-        rot_y = rng.uniform(-lry, lry)
-        rot_z = rng.uniform(-lrz, lrz)
+        lx = rng.uniform(ltx_lo, ltx_hi)
+        ly = rng.uniform(lty_lo, lty_hi)
+        lz = rng.uniform(ltz_lo, ltz_hi)
+        rot_x = rng.uniform(lrx_lo, lrx_hi)
+        rot_y = rng.uniform(lry_lo, lry_hi)
+        rot_z = rng.uniform(lrz_lo, lrz_hi)
         scale = _scale(left_name)
 
         joints[left_name] = ChaosTransform(
@@ -285,13 +301,13 @@ def _generate_joint_transforms(
         )
 
     for name in center:
-        cty = _resolve_range(name, "location", t, ov, "y")
-        ctz = _resolve_range(name, "location", t, ov, "z")
-        crx = _resolve_range(name, "rotation", r, ov, "x")
+        cty_lo, cty_hi = _resolve_range(name, "location", t, ov, "y")
+        ctz_lo, ctz_hi = _resolve_range(name, "location", t, ov, "z")
+        crx_lo, crx_hi = _resolve_range(name, "rotation", r, ov, "x")
 
         joints[name] = ChaosTransform(
-            location=(0.0, rng.uniform(-cty, cty), rng.uniform(-ctz, ctz)),
-            rotation=(rng.uniform(-crx, crx), 0.0, 0.0),
+            location=(0.0, rng.uniform(cty_lo, cty_hi), rng.uniform(ctz_lo, ctz_hi)),
+            rotation=(rng.uniform(crx_lo, crx_hi), 0.0, 0.0),
             scale=_scale(name),
         )
 

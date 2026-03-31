@@ -1,0 +1,29 @@
+---
+description: Keep data/config/README.md in sync with config schema changes
+globs: data/config/*.json,synth_head/core/config.py,synth_head/core/variation.py,synth_head/core/constraints.py,synth_head/core/modifiers.py,synth_head/core/blendshapes.py
+alwaysApply: false
+---
+
+# Config README Sync Rule
+
+Whenever you modify any of the following, you MUST also update `data/config/README.md`:
+
+## Triggers → what to update in the README
+
+| What changed | README section(s) to update |
+|---|---|
+| New JSON key added to any config file | Matching file's field table |
+| JSON key removed or renamed | Matching file's field table |
+| Override value format changed (e.g. new syntax) | `chaos_joints.json → overrides` section, value format table |
+| New relational rule type added to `constraints.py` | `constraints.json → Relational rule types` — add a new subsection with schema and example |
+| Existing rule type behavior changed | Update that rule's subsection |
+| New config file added | Add it to the Files table and write a new section for it |
+| Config file removed | Remove its entry from the Files table and its section |
+| Path resolution logic changed | Update path descriptions in `runner.json` section |
+
+## Format rules for the README
+
+- Every rule type must have: a one-line description, a JSON schema example, and a field table or inline field notes
+- Every config file section must have a minimal valid JSON example showing all top-level keys
+- Field tables must include: field name, type, and description
+- Do not add implementation details or Python internals — the README is for config authors, not developers

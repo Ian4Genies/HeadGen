@@ -214,10 +214,92 @@ def _apply_mutual_dampen(flat: dict[str, float], rule: dict) -> None:
         flat[p] *= scale_factor
 
 
+def _apply_ratio_clamp(flat: dict[str, float], rule: dict) -> None:
+    """Clamp param_a when param_a / param_b exceeds a ratio threshold.
+
+    JSON schema::
+
+        {
+          "type":      "ratio_clamp",
+          "numerator": "NoseBind.scale.z",
+          "denominator": "NoseBind.scale.x",
+          "max_ratio": 1.4
+        }
+
+    When ``numerator / denominator > max_ratio`` (and denominator != 0),
+    ``numerator`` is scaled down so the ratio equals ``max_ratio``.
+    Missing params are silently skipped.
+    """
+    num_key: str = rule.get("numerator", "")
+    den_key: str = rule.get("denominator", "")
+    max_ratio: float = rule.get("max_ratio", 1.0)
+
+    if num_key not in flat or den_key not in flat:
+        return
+
+    denominator = flat[den_key]
+    if denominator == 0.0:
+        return
+
+    ratio = flat[num_key] / denominator
+    if ratio <= max_ratio:
+        return
+
+    flat[num_key] = denominator * max_ratio
+
+
+def _apply_cross_proportion_clamp(flat: dict[str, float], rule: dict) -> None:
+    """Clamp a target when two independent conditions are simultaneously true.
+
+    JSON schema::
+
+        {
+          "type":   "cross_proportion_clamp",
+          "if":     {"param": "LeftEyeSocketBind.scale.x", "above": 1.05},
+          "and":    {"param": "NoseBind.scale.x", "below": 0.80},
+          "then_clamp": {"param": "LeftEyeSocketBind.scale.x", "max": 1.05}
+        }
+
+    Both conditions must be satisfied simultaneously for the clamp to fire.
+    Each condition supports ``"above"`` and/or ``"below"`` threshold keys.
+    Missing params are silently skipped.
+    """
+    def _check(condition: dict) -> bool:
+        param = condition.get("param", "")
+        if param not in flat:
+            return False
+        val = flat[param]
+        if "above" in condition and val <= condition["above"]:
+            return False
+        if "below" in condition and val >= condition["below"]:
+            return False
+        return True
+
+    if_cond = rule.get("if", {})
+    and_cond = rule.get("and", {})
+
+    if not (_check(if_cond) and _check(and_cond)):
+        return
+
+    then_clamp = rule.get("then_clamp", {})
+    target = then_clamp.get("param", "")
+    if target not in flat:
+        return
+
+    v = flat[target]
+    if "min" in then_clamp:
+        v = v if v >= then_clamp["min"] else then_clamp["min"]
+    if "max" in then_clamp:
+        v = v if v <= then_clamp["max"] else then_clamp["max"]
+    flat[target] = v
+
+
 _RULE_HANDLERS = {
     "scale_follow": _apply_scale_follow,
     "conditional_clamp": _apply_conditional_clamp,
     "mutual_dampen": _apply_mutual_dampen,
+    "ratio_clamp": _apply_ratio_clamp,
+    "cross_proportion_clamp": _apply_cross_proportion_clamp,
 }
 
 
@@ -256,6 +338,7 @@ def _collect_rule_keys(rules: ConstraintRules) -> set[str]:
     keys: set[str] = set()
     keys.update(rules.hard_clamps.keys())
     for rule in rules.relational_rules:
+        # scale_follow / conditional_clamp
         if "target" in rule:
             keys.add(rule["target"])
         if "source" in rule:
@@ -263,8 +346,22 @@ def _collect_rule_keys(rules: ConstraintRules) -> set[str]:
         condition = rule.get("condition", {})
         if "param" in condition:
             keys.add(condition["param"])
+        # mutual_dampen
         for p in rule.get("params", []):
             keys.add(p)
+        # ratio_clamp
+        if "numerator" in rule:
+            keys.add(rule["numerator"])
+        if "denominator" in rule:
+            keys.add(rule["denominator"])
+        # cross_proportion_clamp
+        for cond_key in ("if", "and"):
+            cond = rule.get(cond_key, {})
+            if "param" in cond:
+                keys.add(cond["param"])
+        then_clamp = rule.get("then_clamp", {})
+        if "param" in then_clamp:
+            keys.add(then_clamp["param"])
     return keys
 
 

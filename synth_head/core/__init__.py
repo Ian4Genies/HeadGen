@@ -1,6 +1,6 @@
 """Public API for synth_head.core."""
 
-from .math import clamp, euler_degrees_to_quaternion
+from .math import clamp, euler_degrees_to_quaternion, quaternion_to_euler_degrees
 from .constraints import (
     ConstraintRules,
     ValidationReport,
@@ -34,10 +34,19 @@ from .blendshapes import (
     generate_single_frame_blendshape_weights,
 )
 from .config import RunnerConfig, PipelineConfig, load_config
+from .attractor import (
+    AttractorConfig,
+    PoolCache,
+    get_pool_cache,
+    attract,
+    update_manifest,
+    snapshot_to_flat,
+)
 
 __all__ = [
     "clamp",
     "euler_degrees_to_quaternion",
+    "quaternion_to_euler_degrees",
     "ConstraintRules",
     "ValidationReport",
     "constrain",
@@ -69,4 +78,10 @@ __all__ = [
     "RunnerConfig",
     "PipelineConfig",
     "load_config",
+    "AttractorConfig",
+    "PoolCache",
+    "get_pool_cache",
+    "attract",
+    "update_manifest",
+    "snapshot_to_flat",
 ]

@@ -2,7 +2,7 @@
 
 import math as _math
 
-from mathutils import Euler
+from mathutils import Euler, Quaternion
 
 
 def clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
@@ -23,3 +23,16 @@ def euler_degrees_to_quaternion(
     )
     q = euler.to_quaternion()
     return (q.w, q.x, q.y, q.z)
+
+
+def quaternion_to_euler_degrees(
+    wxyz: tuple[float, float, float, float],
+) -> tuple[float, float, float]:
+    """Convert a (w, x, y, z) quaternion to an XYZ Euler rotation in degrees."""
+    q = Quaternion((wxyz[0], wxyz[1], wxyz[2], wxyz[3]))
+    euler = q.to_euler('XYZ')
+    return (
+        _math.degrees(euler.x),
+        _math.degrees(euler.y),
+        _math.degrees(euler.z),
+    )

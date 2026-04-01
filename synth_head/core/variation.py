@@ -20,7 +20,6 @@ CHAOS_JOINT_NAMES: frozenset[str] = frozenset({
     "RightEyeSocketBind",
     "LeftEyeSocketBind",
     "FaceBind",
-    "NeckBind",
 })
 
 # Override values may be either:

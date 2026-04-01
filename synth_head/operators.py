@@ -19,6 +19,7 @@ from .core.blendshapes import (
     generate_single_frame_blendshape_weights,
 )
 from .core.constraints import flatten_params, unflatten_params, constrain
+from .core.attractor import get_pool_cache, attract, update_manifest
 from .scene.blendshapes import (
     apply_blendshape_keyframes,
     apply_blendshape_single_frame,
@@ -113,6 +114,16 @@ def _debug_config(cfg: PipelineConfig) -> None:
     p(f"  use_pin_boundary: {cfg.modifiers.use_pin_boundary}")
     p(f"  rest_source:      {cfg.modifiers.rest_source}")
 
+    p(f"--- ATTRACTOR ---")
+    p(f"  enabled:          {cfg.attractor.enabled}")
+    p(f"  debug:            {cfg.attractor.debug}")
+    p(f"  good_heads_dir:   {cfg.attractor.good_heads_dir}")
+    p(f"  min_attractors:   {cfg.attractor.min_attractors}")
+    p(f"  max_attractors:   {cfg.attractor.max_attractors}")
+    p(f"  max_influence:    {cfg.attractor.max_influence}")
+    p(f"  distance_weights: {cfg.attractor.distance_weights}")
+    p(f"  exclude_params:   {cfg.attractor.exclude_params}")
+
 
 class SYNTHHEAD_PG_PipelineRefs(bpy.types.PropertyGroup):
     """Live object references managed by the variation pipeline.
@@ -196,11 +207,33 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         head_mesh = get_ref(context, MESH)
         all_bs_weights = generate_blendshape_weights(cfg.blendshapes)
 
+        pool = get_pool_cache()
+        if cfg.attractor.enabled:
+            sync_report = pool.sync(cfg.attractor.good_heads_dir, joint_names)
+            if pool.pool_size > 0:
+                self.report({"INFO"}, f"Attractor pool: {pool.pool_size} good heads")
+                if cfg.attractor.debug and sync_report["changed"]:
+                    print(f"[SynthHead][Attractor] Pool synced — "
+                          f"added: {sync_report['added']}, "
+                          f"removed: {sync_report['removed']}, "
+                          f"total: {sync_report['pool_size']}")
+            else:
+                self.report({"WARNING"}, "Attractor enabled but no good heads found")
+
+        import random as _random
+        attractor_rng = _random.Random(cfg.runner.seed)
+
         constrained_transforms: dict[int, dict] = {}
         constrained_bs: dict[int, dict[str, float]] = {}
         fc = cfg.runner.frame_count
         for frame in range(1, fc + 1):
             flat = flatten_params(all_transforms[frame], all_bs_weights[frame])
+            flat, dbg = attract(flat, pool, cfg.attractor, cfg.variation, cfg.blendshapes, attractor_rng)
+            if dbg is not None:
+                print(f"[SynthHead][Attractor] frame {frame:03d}: "
+                      f"n={dbg['n_selected']}  "
+                      f"mean_delta={dbg['mean_abs_delta']:.5f}  "
+                      f"files={[f.replace('good_frame', 'f') for f in dbg['selected_files']]}")
             flat = constrain(flat, cfg.constraints)
             xforms, weights = unflatten_params(flat, joint_names)
             constrained_transforms[frame] = xforms
@@ -254,7 +287,25 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         transforms = generate_single_frame_transforms(cfg.variation, joint_names)
         bs_weights = generate_single_frame_blendshape_weights(cfg.blendshapes)
 
+        pool = get_pool_cache()
+        if cfg.attractor.enabled:
+            sync_report = pool.sync(cfg.attractor.good_heads_dir, joint_names)
+            if cfg.attractor.debug and sync_report["changed"]:
+                print(f"[SynthHead][Attractor] Pool synced — "
+                      f"added: {sync_report['added']}, "
+                      f"removed: {sync_report['removed']}, "
+                      f"total: {sync_report['pool_size']}")
+
+        import random as _random
+        attractor_rng = _random.Random()
+
         flat = flatten_params(transforms, bs_weights)
+        flat, dbg = attract(flat, pool, cfg.attractor, cfg.variation, cfg.blendshapes, attractor_rng)
+        if dbg is not None:
+            print(f"[SynthHead][Attractor] RandomizeFace: "
+                  f"n={dbg['n_selected']}  "
+                  f"mean_delta={dbg['mean_abs_delta']:.5f}  "
+                  f"files={[f.replace('good_frame', 'f') for f in dbg['selected_files']]}")
         flat = constrain(flat, cfg.constraints)
         transforms, bs_weights = unflatten_params(flat, joint_names)
 
@@ -315,6 +366,7 @@ def _save_head_snapshot(operator, context, label: str, directory: Path) -> set[s
     )
 
     saved = save_snapshot(snapshot, directory)
+    update_manifest(directory)
     operator.report({"INFO"}, f"Saved {label} snapshot → {saved.name}")
     return {"FINISHED"}
 

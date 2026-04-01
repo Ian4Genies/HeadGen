@@ -23,6 +23,7 @@ from .blendshapes import (
 )
 from .constraints import ConstraintRules, ClampRange
 from .modifiers import SmoothCorrectiveConfig
+from .attractor import AttractorConfig
 
 
 def _load_json(path: Path) -> dict:
@@ -70,6 +71,7 @@ class PipelineConfig:
     blendshapes: BlendshapeConfig = field(default_factory=BlendshapeConfig)
     constraints: ConstraintRules = field(default_factory=ConstraintRules)
     modifiers: SmoothCorrectiveConfig = field(default_factory=SmoothCorrectiveConfig)
+    attractor: AttractorConfig = field(default_factory=AttractorConfig)
     chaos_joint_names: frozenset[str] = field(default_factory=lambda: frozenset(CHAOS_JOINT_NAMES))
     config_dir: Path = field(default_factory=lambda: Path("."))
 
@@ -129,12 +131,21 @@ def load_config(config_dir: str | Path) -> PipelineConfig:
     else:
         modifiers = SmoothCorrectiveConfig()
 
+    # --- attractor ---
+    attr_path = d / "attractor.json"
+    if attr_path.exists():
+        attractor = AttractorConfig.from_dict(_load_json(attr_path))
+        attractor = attractor.resolve(project_root)
+    else:
+        attractor = AttractorConfig()
+
     return PipelineConfig(
         runner=runner,
         variation=variation,
         blendshapes=blendshapes,
         constraints=constraints,
         modifiers=modifiers,
+        attractor=attractor,
         chaos_joint_names=joint_names,
         config_dir=d,
     )

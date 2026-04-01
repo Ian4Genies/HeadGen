@@ -1,3 +1,4 @@
 bpy==5.0.1
 fake-bpy-module-5.0
+numpy
 pytest

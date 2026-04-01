@@ -4,6 +4,7 @@ if "bpy" in locals():
     from . import core, operators
     from .core import math, modifiers as core_modifiers, variation, ref_keys, constraints
     from .core import blendshapes as core_blendshapes
+    from .core import attractor as core_attractor
     from .core import config as core_config
     from .core import snapshot as core_snapshot
     from . import scene
@@ -18,6 +19,7 @@ if "bpy" in locals():
     importlib.reload(variation)
     importlib.reload(core_blendshapes)
     importlib.reload(constraints)
+    importlib.reload(core_attractor)
     importlib.reload(core_config)
     importlib.reload(core_snapshot)
     importlib.reload(core)

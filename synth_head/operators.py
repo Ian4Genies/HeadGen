@@ -31,6 +31,7 @@ from .scene.chaos_anim import (
     apply_chaos_single_frame,
     _apply_transforms_to_bones,
 )
+from .scene.materials import randomize_head_material_color
 from .scene.modifiers import add_smooth_corrective
 from .scene.reset import reset_frame
 from .scene.snapshot import (
@@ -180,7 +181,7 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
 
     def execute(self, context):
         cfg = _get_config()
-
+        # --- 1. IMPORT & VALIDATE ---
         head_geo_obj, armature_obj = import_fbx_and_classify(
             context, cfg.runner.fbx_path,
         )
@@ -196,18 +197,24 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         set_ref(context, MESH, head_geo_obj)
         set_ref(context, ARMATURE, armature_obj)
         self.report({"INFO"}, f"head geo: '{head_geo_obj.name}'")
-
+        # --- 2. GENERATE RAW PARAMETERS ---
         armature = get_ref(context, ARMATURE)
         chaos_joints = collect_chaos_joints(armature, cfg.chaos_joint_names)
         self.report({"INFO"}, f"Chaos joints found: {[b.name for b in chaos_joints]}")
 
         joint_names = [b.name for b in chaos_joints]
+        # generate_chaos_transforms generates a dict of joint names to transforms
         all_transforms = generate_chaos_transforms(cfg.variation, joint_names)
-
+        # generate_blendshape_weights generates a dict of shape names to weights
         head_mesh = get_ref(context, MESH)
         all_bs_weights = generate_blendshape_weights(cfg.blendshapes)
 
+        # --- 3. SYNC ATTRACTOR POOL---
+        # get_pool_cache returns a PoolCache object
+        # PoolCache is a dict of frame numbers to dicts of joint names to transforms
+        # The dicts of joint names to transforms are the attractor pool
         pool = get_pool_cache()
+        # if attractor is enabled, sync the pool
         if cfg.attractor.enabled:
             sync_report = pool.sync(cfg.attractor.good_heads_dir, joint_names)
             if pool.pool_size > 0:
@@ -222,35 +229,45 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
 
         import random as _random
         attractor_rng = _random.Random(cfg.runner.seed)
-
+        # --- 4. CONSTRAIN EACH FRAME (attract → constrain → split) ---
         constrained_transforms: dict[int, dict] = {}
         constrained_bs: dict[int, dict[str, float]] = {}
         fc = cfg.runner.frame_count
         for frame in range(1, fc + 1):
+            # flat is a dict of param names to values
             flat = flatten_params(all_transforms[frame], all_bs_weights[frame])
+            # attract nudges the flat params toward the attractor pool
+            # dbg is a dict of debug info
             flat, dbg = attract(flat, pool, cfg.attractor, cfg.variation, cfg.blendshapes, attractor_rng)
+            # print debug info if it exists
             if dbg is not None:
                 print(f"[SynthHead][Attractor] frame {frame:03d}: "
                       f"n={dbg['n_selected']}  "
                       f"mean_delta={dbg['mean_abs_delta']:.5f}  "
                       f"files={[f.replace('good_frame', 'f') for f in dbg['selected_files']]}")
+            # constrain enforces hard clamps and relational rules
             flat = constrain(flat, cfg.constraints)
+            # unflatten_params converts the flat params back into a dict of joint names to transforms and a dict of shape names to weights
             xforms, weights = unflatten_params(flat, joint_names)
+            # store the constrained transforms and weights for this frame
             constrained_transforms[frame] = xforms
+            # store the constrained weights for this frame
             constrained_bs[frame] = weights
-
+        # --- 5. BAKE TO SCENE (pose bones + shape keys + material color per frame) ---
         context.view_layer.objects.active = armature
         bpy.ops.object.mode_set(mode="POSE")
 
+        color_rng = _random.Random(cfg.runner.seed + 1 if cfg.runner.seed is not None else None)
         for frame in range(1, fc + 1):
             context.scene.frame_set(frame)
             reset_frame(chaos_joints, head_mesh, frame)
             _apply_transforms_to_bones(chaos_joints, constrained_transforms[frame], frame)
             _apply_weights_to_shape_keys(head_mesh, constrained_bs[frame], frame)
+            randomize_head_material_color(head_mesh, color_rng, frame)
 
         bpy.ops.object.mode_set(mode="OBJECT")
-        self.report({"INFO"}, f"Applied {fc} frames (reset + joints + blendshapes)")
-
+        self.report({"INFO"}, f"Applied {fc} frames (reset + joints + blendshapes + material color)")
+        # --- 6. POST-PROCESS & SAVE --
         add_smooth_corrective(head_mesh, cfg.modifiers)
 
         bpy.ops.wm.save_as_mainfile(filepath=cfg.runner.save_blend_path)

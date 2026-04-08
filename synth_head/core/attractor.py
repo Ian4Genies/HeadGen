@@ -30,7 +30,7 @@ from .constraints import flatten_params
 class AttractorConfig:
     enabled: bool = True
     debug: bool = False
-    good_heads_dir: str = "head-good"
+    attractive_heads_dir: str = "head-attractive"
     min_attractors: int = 2
     max_attractors: int = 5
     max_influence: float = 0.2
@@ -42,7 +42,7 @@ class AttractorConfig:
         return cls(
             enabled=data.get("enabled", True),
             debug=data.get("debug", False),
-            good_heads_dir=data.get("good_heads_dir", "head-good"),
+            attractive_heads_dir=data.get("attractive_heads_dir", "head-attractive"),
             min_attractors=data.get("min_attractors", 2),
             max_attractors=data.get("max_attractors", 5),
             max_influence=data.get("max_influence", 0.2),
@@ -51,11 +51,11 @@ class AttractorConfig:
         )
 
     def resolve(self, base: Path) -> AttractorConfig:
-        """Return a copy with the good_heads_dir resolved against *base*."""
+        """Return a copy with the attractive_heads_dir resolved against *base*."""
         return AttractorConfig(
             enabled=self.enabled,
             debug=self.debug,
-            good_heads_dir=str((base / self.good_heads_dir).resolve()) if self.good_heads_dir else "",
+            attractive_heads_dir=str((base / self.attractive_heads_dir).resolve()) if self.attractive_heads_dir else "",
             min_attractors=self.min_attractors,
             max_attractors=self.max_attractors,
             max_influence=self.max_influence,
@@ -72,7 +72,7 @@ def snapshot_to_flat(
     snapshot: dict,
     joint_names: list[str],
 ) -> dict[str, float]:
-    """Convert a good-head snapshot dict into the pipeline's flat param space.
+    """Convert an attractive-head snapshot dict into the pipeline's flat param space.
 
     Handles the quaternion → Euler-degree conversion that differs between
     snapshot format (rotation_quaternion, 4-float wxyz) and the pipeline's

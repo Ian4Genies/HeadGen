@@ -12,7 +12,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-SNAPSHOT_VERSION = 2
+SNAPSHOT_VERSION = 3
 
 
 def build_snapshot(
@@ -24,6 +24,8 @@ def build_snapshot(
     note: str = "",
     config_snapshot: dict | None = None,
     rules_raw: dict | None = None,
+    skin_color: list[float] | None = None,
+    texture_code: str = "A",
 ) -> dict:
     """Assemble a complete snapshot dict ready for serialization.
 
@@ -36,6 +38,8 @@ def build_snapshot(
         note: Optional freeform note describing the snapshot.
         config_snapshot: Full config directory contents (v2+).
         rules_raw: Legacy v1 rules_snapshot (kept for backward compat).
+        skin_color: ``[r, g, b, a]`` floats read from the head material color node (v3+).
+        texture_code: Identifier for the texture set applied to this head (v3+). Defaults to ``"A"``.
     """
     snap: dict = {
         "version": SNAPSHOT_VERSION,
@@ -43,6 +47,8 @@ def build_snapshot(
         "frame": frame,
         "label": label,
         "note": note,
+        "skin_color": skin_color if skin_color is not None else [0.0, 0.0, 0.0, 1.0],
+        "texture_code": texture_code,
         "chaos_joints": chaos_joints,
         "variation_shapes": variation_shapes,
         "expression_shapes": expression_shapes,

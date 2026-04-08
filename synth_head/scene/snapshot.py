@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import bpy
 
+from .materials import key_material_color
+
 
 def read_bone_transforms(
     armature: bpy.types.Object,
@@ -113,3 +115,21 @@ def apply_shape_key_values(
             continue
         sk.value = value
         sk.keyframe_insert(data_path="value", frame=frame)
+
+
+def apply_material_color(
+    mesh_obj: bpy.types.Object,
+    color: list[float],
+    frame: int,
+) -> None:
+    """Apply and keyframe a skin color from snapshot data on the first material slot.
+
+    *color* is a [r, g, b, a] list as stored in the snapshot.
+    Silently does nothing if the mesh has no material slot or color cannot be applied.
+    """
+    if not mesh_obj.material_slots:
+        return
+    mat = mesh_obj.material_slots[0].material
+    if mat is None:
+        return
+    key_material_color(mat, tuple(color), frame)

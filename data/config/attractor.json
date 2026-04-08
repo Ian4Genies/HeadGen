@@ -1,7 +1,7 @@
 {
   "enabled": true,
   "debug": true,
-  "good_heads_dir": "head-good",
+  "attractive_heads_dir": "head-attractive",
   "min_attractors": 2,
   "max_attractors": 5,
   "max_influence":0.2,

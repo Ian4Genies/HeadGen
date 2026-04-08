@@ -2,9 +2,10 @@
   "frame_count": 500,
   "seed": null,
   "paths": {
-    "fbx":        "genericGenie-0013-unified_rig.fbx",
-    "save_blend": "gen13_genie_chaos.blend",
-    "issues_dir": "head-issues",
-    "good_dir":   "head-good"
+    "fbx":            "genericGenie-0013-unified_rig.fbx",
+    "save_blend":     "gen13_genie_chaos.blend",
+    "issues_dir":     "head-issues",
+    "good_dir":       "head-good",
+    "attractive_dir": "head-attractive"
   }
 }

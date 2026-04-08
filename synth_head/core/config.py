@@ -62,6 +62,7 @@ class RunnerConfig:
     save_blend_path: str = ""
     issues_dir: str = ""
     good_dir: str = ""
+    attractive_dir: str = ""
 
     @classmethod
     def from_dict(cls, d: dict) -> RunnerConfig:
@@ -73,6 +74,7 @@ class RunnerConfig:
             save_blend_path=paths.get("save_blend", ""),
             issues_dir=paths.get("issues_dir", ""),
             good_dir=paths.get("good_dir", ""),
+            attractive_dir=paths.get("attractive_dir", ""),
         )
 
     def resolve(self, base: Path) -> RunnerConfig:
@@ -84,6 +86,7 @@ class RunnerConfig:
             save_blend_path=str((base / self.save_blend_path).resolve()) if self.save_blend_path else "",
             issues_dir=str((base / self.issues_dir).resolve()) if self.issues_dir else "",
             good_dir=str((base / self.good_dir).resolve()) if self.good_dir else "",
+            attractive_dir=str((base / self.attractive_dir).resolve()) if self.attractive_dir else "",
         )
 
 

@@ -15,7 +15,7 @@ All paths in `runner.json` are relative to the `data/` directory.
 | `blendshapes.json` | Variation and expression shape lists, weights, and per-shape overrides |
 | `constraints.json` | Hard clamps and relational rules applied after generation |
 | `modifiers.json` | Blender modifier settings (smooth corrective) |
-| `attractor.json` | Good-head attractor system (nudge toward curated references) |
+| `attractor.json` | Attractive-head attractor system (nudge toward curated references) |
 | `materials.json` | Skin material source file and node configuration |
 
 ---
@@ -29,10 +29,11 @@ Controls the top-level pipeline run.
   "frame_count": 400,
   "seed": null,
   "paths": {
-    "fbx":        "genericGenie-0013-unified_rig.fbx",
-    "save_blend": "gen13_genie_chaos.blend",
-    "issues_dir": "head-issues",
-    "good_dir":   "head-good"
+    "fbx":            "genericGenie-0013-unified_rig.fbx",
+    "save_blend":     "gen13_genie_chaos.blend",
+    "issues_dir":     "head-issues",
+    "good_dir":       "head-good",
+    "attractive_dir": "head-attractive"
   }
 }
 ```
@@ -44,7 +45,8 @@ Controls the top-level pipeline run.
 | `paths.fbx` | string | Source FBX file, relative to `data/` |
 | `paths.save_blend` | string | Output `.blend` file, relative to `data/` |
 | `paths.issues_dir` | string | Directory for issue snapshots, relative to `data/` |
-| `paths.good_dir` | string | Directory for good-head snapshots, relative to `data/` |
+| `paths.good_dir` | string | Directory for good-head qualitative/quantitative snapshots, relative to `data/` |
+| `paths.attractive_dir` | string | Directory for attractive-head snapshots used by the attractor system, relative to `data/` |
 
 ---
 
@@ -435,12 +437,12 @@ Settings for the Smooth Corrective modifier applied to the head mesh after gener
 
 ## attractor.json
 
-Controls the attractor system that nudges randomly generated heads toward a curated pool of "good head" reference snapshots. Runs after generation but before constraints, so the constraint engine acts as a safety net.
+Controls the attractor system that nudges randomly generated heads toward a curated pool of attractive-head reference snapshots. Runs after generation but before constraints, so the constraint engine acts as a safety net.
 
 ```json
 {
   "enabled": true,
-  "good_heads_dir": "head-good",
+  "attractive_heads_dir": "head-attractive",
   "min_attractors": 2,
   "max_attractors": 5,
   "max_influence": 0.2,
@@ -452,7 +454,7 @@ Controls the attractor system that nudges randomly generated heads toward a cura
 | Field | Type | Description |
 |---|---|---|
 | `enabled` | bool | Master on/off switch for the attractor system |
-| `good_heads_dir` | string | Directory containing good-head snapshot JSONs, relative to `data/` |
+| `attractive_heads_dir` | string | Directory containing attractive-head snapshot JSONs, relative to `data/` |
 | `min_attractors` | int | Minimum number of attractor heads to select per generated head |
 | `max_attractors` | int | Maximum number of attractor heads to select per generated head |
 | `max_influence` | float | Nudge strength (0.0–1.0). Fraction of the distance between current value and attractor target to move. `0.2` = move 20% of the way |
@@ -461,15 +463,15 @@ Controls the attractor system that nudges randomly generated heads toward a cura
 
 ### How it works
 
-1. The pool of good-head snapshots is loaded from `good_heads_dir` and flattened into the same parameter space used by constraints.
-2. For each generated head, `N` closest good heads are found using normalized Euclidean distance, where `N` is randomized between `min_attractors` and `max_attractors` (clamped to pool size).
+1. The pool of attractive-head snapshots is loaded from `attractive_heads_dir` and flattened into the same parameter space used by constraints.
+2. For each generated head, `N` closest attractive heads are found using normalized Euclidean distance, where `N` is randomized between `min_attractors` and `max_attractors` (clamped to pool size).
 3. Random weights are assigned to the selected heads (summing to 1.0) and a weighted-average target is computed.
 4. Each non-excluded parameter is moved toward the target: `new = current + max_influence * (target - current)`.
 5. Constraints run afterward to enforce all hard limits and relational rules.
 
 ### Pool cache
 
-The good-head pool is cached in memory for the duration of the Blender session. When a new good head is saved (via Save Good Head), a `_manifest.json` file in the pool directory is updated. On the next pipeline run, only new/removed files are processed incrementally.
+The attractive-head pool is cached in memory for the duration of the Blender session. When a new attractive head is saved (via Save Head Attractive), a `_manifest.json` file in the pool directory is updated. On the next pipeline run, only new/removed files are processed incrementally.
 
 ### Disabling the attractor
 

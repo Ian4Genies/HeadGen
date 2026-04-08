@@ -32,7 +32,7 @@ from .scene.chaos_anim import (
     _apply_transforms_to_bones,
 )
 from .scene.blend_append import append_material_from_blend
-from .scene.materials import assign_exclusive_material, randomize_head_material_color
+from .scene.materials import assign_exclusive_material, randomize_head_material_color, read_material_color
 from .scene.modifiers import add_smooth_corrective
 from .scene.reset import reset_frame
 from .scene.snapshot import (
@@ -40,6 +40,7 @@ from .scene.snapshot import (
     read_shape_key_values,
     apply_bone_transforms,
     apply_shape_key_values,
+    apply_material_color,
 )
 from .core.snapshot import build_snapshot, save_snapshot, load_snapshot
 from .core.config import load_config, PipelineConfig
@@ -79,6 +80,7 @@ def _debug_config(cfg: PipelineConfig) -> None:
     p(f"  save_blend_path: {cfg.runner.save_blend_path}")
     p(f"  issues_dir:      {cfg.runner.issues_dir}")
     p(f"  good_dir:        {cfg.runner.good_dir}")
+    p(f"  attractive_dir:  {cfg.runner.attractive_dir}")
 
     p(f"--- CHAOS JOINTS ({len(cfg.chaos_joint_names)}) ---")
     p(f"  names:          {sorted(cfg.chaos_joint_names)}")
@@ -117,10 +119,10 @@ def _debug_config(cfg: PipelineConfig) -> None:
     p(f"  rest_source:      {cfg.modifiers.rest_source}")
 
     p(f"--- ATTRACTOR ---")
-    p(f"  enabled:          {cfg.attractor.enabled}")
-    p(f"  debug:            {cfg.attractor.debug}")
-    p(f"  good_heads_dir:   {cfg.attractor.good_heads_dir}")
-    p(f"  min_attractors:   {cfg.attractor.min_attractors}")
+    p(f"  enabled:              {cfg.attractor.enabled}")
+    p(f"  debug:                {cfg.attractor.debug}")
+    p(f"  attractive_heads_dir: {cfg.attractor.attractive_heads_dir}")
+    p(f"  min_attractors:       {cfg.attractor.min_attractors}")
     p(f"  max_attractors:   {cfg.attractor.max_attractors}")
     p(f"  max_influence:    {cfg.attractor.max_influence}")
     p(f"  distance_weights: {cfg.attractor.distance_weights}")
@@ -236,9 +238,9 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         pool = get_pool_cache()
         # if attractor is enabled, sync the pool
         if cfg.attractor.enabled:
-            sync_report = pool.sync(cfg.attractor.good_heads_dir, joint_names)
+            sync_report = pool.sync(cfg.attractor.attractive_heads_dir, joint_names)
             if pool.pool_size > 0:
-                self.report({"INFO"}, f"Attractor pool: {pool.pool_size} good heads")
+                self.report({"INFO"}, f"Attractor pool: {pool.pool_size} attractive heads")
                 if cfg.attractor.debug and sync_report["changed"]:
                     print(f"[SynthHead][Attractor] Pool synced — "
                           f"added: {sync_report['added']}, "
@@ -326,7 +328,7 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
 
         pool = get_pool_cache()
         if cfg.attractor.enabled:
-            sync_report = pool.sync(cfg.attractor.good_heads_dir, joint_names)
+            sync_report = pool.sync(cfg.attractor.attractive_heads_dir, joint_names)
             if cfg.attractor.debug and sync_report["changed"]:
                 print(f"[SynthHead][Attractor] Pool synced — "
                       f"added: {sync_report['added']}, "
@@ -389,6 +391,7 @@ def _save_head_snapshot(operator, context, label: str, directory: Path) -> set[s
         cfg.blendshapes.variation_shapes,
         cfg.blendshapes.expression_shapes,
     )
+    skin_color = read_material_color(head_mesh)
 
     config_raw = _load_config_dir_raw(cfg)
 
@@ -400,6 +403,7 @@ def _save_head_snapshot(operator, context, label: str, directory: Path) -> set[s
         frame=context.scene.frame_current,
         label=label,
         note=operator.note,
+        skin_color=skin_color,
     )
 
     saved = save_snapshot(snapshot, directory)
@@ -458,6 +462,27 @@ class SYNTHHEAD_OT_SaveGoodHead(bpy.types.Operator):
         return _save_head_snapshot(self, context, "good", Path(cfg.runner.good_dir))
 
 
+class SYNTHHEAD_OT_SaveHeadAttractive(bpy.types.Operator):
+    """Save current head state as an attractive snapshot"""
+    bl_idname = "synth_head.save_head_attractive"
+    bl_label = "Synth Head: Save Head Attractive"
+    bl_description = "Snapshot all tracked head data to data/head-attractive/"
+    bl_options = {"REGISTER"}
+
+    note: bpy.props.StringProperty(
+        name="Note",
+        description="Optional description of the attractive",
+        default="",
+    )   
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self, width=400)
+    def draw(self, context):
+        self.layout.prop(self, "note", text="Note")
+    def execute(self, context):
+        cfg = _get_config()
+        return _save_head_snapshot(self, context, "attractive", Path(cfg.runner.attractive_dir))
+
+
 class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
     """Load a saved head snapshot and apply it on the current frame"""
 
@@ -505,6 +530,10 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
 
         bpy.ops.object.mode_set(mode="OBJECT")
 
+        skin_color = snapshot.get("skin_color")
+        if skin_color is not None:
+            apply_material_color(head_mesh, skin_color, frame)
+
         src = Path(self.filepath).name
         self.report({"INFO"}, f"Loaded snapshot '{src}' on frame {frame}")
         return {"FINISHED"}
@@ -524,6 +553,7 @@ class SYNTHHEAD_MT_main_menu(bpy.types.Menu):
         layout.separator()
         layout.operator(SYNTHHEAD_OT_SaveHeadIssue.bl_idname)
         layout.operator(SYNTHHEAD_OT_SaveGoodHead.bl_idname)
+        layout.operator(SYNTHHEAD_OT_SaveHeadAttractive.bl_idname)
         layout.operator(SYNTHHEAD_OT_LoadHeadData.bl_idname)
 
 
@@ -539,6 +569,7 @@ CLASSES = [
     SYNTHHEAD_OT_RandomizeFace,
     SYNTHHEAD_OT_SaveHeadIssue,
     SYNTHHEAD_OT_SaveGoodHead,
+    SYNTHHEAD_OT_SaveHeadAttractive,
     SYNTHHEAD_OT_LoadHeadData,
     SYNTHHEAD_MT_main_menu,
 ]

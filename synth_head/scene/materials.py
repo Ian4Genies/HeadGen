@@ -118,3 +118,35 @@ def randomize_head_material_color(
     mat = mesh_obj.material_slots[0].material
     color = (rng.random(), rng.random(), rng.random(), 1.0)
     key_material_color(mat, color, frame)
+
+
+def read_material_color(
+    mesh_obj: bpy.types.Object,
+) -> list[float] | None:
+    """Read the current skin color from the first material slot of mesh_obj.
+
+    Targets the RGB node labelled _HEAD_COLOR_NODE_LABEL first.
+    Falls back to the Base Color input of the first supported shader type.
+    Returns [r, g, b, a] as a plain list, or None if no color could be read.
+    """
+    if not mesh_obj.material_slots:
+        return None
+
+    mat = mesh_obj.material_slots[0].material
+    if mat is None or not mat.use_nodes:
+        return None
+
+    node = _find_node_by_label(mat.node_tree, _HEAD_COLOR_NODE_LABEL)
+    if node is not None:
+        output = node.outputs[0] if node.outputs else None
+        if output is not None and output.type == "RGBA":
+            return list(output.default_value)
+
+    # Fallback: read Base Color from the first supported shader node
+    for n in mat.node_tree.nodes:
+        if n.type == "BSDF_PRINCIPLED":
+            inp = n.inputs.get("Base Color")
+            if inp is not None and inp.type == "RGBA":
+                return list(inp.default_value)
+
+    return None

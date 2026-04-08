@@ -2,9 +2,9 @@ import bpy
 import random
 
 # ---------------------------------------------------------------------------
-# Per-shader-type color extraction helpers
-# Each entry: shader node.type → callable(node, node_tree, color) that sets
-# the color on that shader. Add new shader types here as needed.
+# Per-shader-type color keying helpers
+# Each entry: shader node.type → callable(node, node_tree, color, frame) → bool
+# Add new shader types here as needed.
 # ---------------------------------------------------------------------------
 
 def _key_color_bsdf_principled(
@@ -26,12 +26,52 @@ def _key_color_bsdf_principled(
 
 
 # Map node.type → handler. Extend this dict to support additional shaders.
-# Each handler signature: (node, node_tree, color, frame) -> bool
 _SHADER_COLOR_HANDLERS: dict[str, callable] = {
     "BSDF_PRINCIPLED": _key_color_bsdf_principled,
     # "BSDF_DIFFUSE":  _key_color_bsdf_diffuse,   # example placeholder
     # "EMISSION":      _key_color_emission,         # example placeholder
 }
+
+# Label used to locate the skin color RGB node inside head_mat.
+_HEAD_COLOR_NODE_LABEL = "head_color"
+
+
+def _find_node_by_label(
+    node_tree: bpy.types.NodeTree,
+    label: str,
+) -> bpy.types.Node | None:
+    """Return the first node whose label matches *label* (case-sensitive)."""
+    return next((n for n in node_tree.nodes if n.label == label), None)
+
+
+def _key_color_rgb_node(
+    node: bpy.types.Node,
+    color: tuple[float, float, float, float],
+    frame: int,
+) -> bool:
+    """Set and keyframe the color output of an RGB node. Returns True if applied."""
+    # RGB nodes expose their color via the 'Color' output socket's default value,
+    # but the editable property is node.color — for an RGB node it is node.outputs[0].default_value.
+    output = node.outputs[0] if node.outputs else None
+    if output is None or output.type != "RGBA":
+        return False
+    output.default_value = color
+    node.outputs[0].keyframe_insert("default_value", frame=frame)
+    return True
+
+
+# ---------------------------------------------------------------------------
+# Public material helpers
+# ---------------------------------------------------------------------------
+
+def assign_exclusive_material(
+    mesh_obj: bpy.types.Object,
+    mat: bpy.types.Material,
+) -> None:
+    """Clear all material slots on mesh_obj and assign mat as the sole material."""
+    mesh_obj.data.materials.clear()
+    mesh_obj.data.materials.append(mat)
+    mesh_obj.active_material_index = 0
 
 
 def key_material_color(
@@ -39,19 +79,25 @@ def key_material_color(
     color: tuple[float, float, float, float],
     frame: int,
 ) -> bool:
-    """Find the first supported shader node in mat, set its color, and insert a keyframe.
+    """Set and keyframe the skin color on mat.
 
-    Searches mat's node tree for any shader type listed in
-    _SHADER_COLOR_HANDLERS and delegates to the matching handler.
-    Returns True if a color was applied, False if no supported shader found.
+    Targets the RGB node labelled _HEAD_COLOR_NODE_LABEL first.
+    Falls back to the first supported shader type in _SHADER_COLOR_HANDLERS
+    if no labelled node is found.
+    Returns True if a color was applied.
     """
     if mat is None or not mat.use_nodes:
         return False
 
-    for node in mat.node_tree.nodes:
-        handler = _SHADER_COLOR_HANDLERS.get(node.type)
+    node = _find_node_by_label(mat.node_tree, _HEAD_COLOR_NODE_LABEL)
+    if node is not None:
+        return _key_color_rgb_node(node, color, frame)
+
+    # Fallback: dispatch by shader type
+    for n in mat.node_tree.nodes:
+        handler = _SHADER_COLOR_HANDLERS.get(n.type)
         if handler is not None:
-            return handler(node, mat.node_tree, color, frame)
+            return handler(n, mat.node_tree, color, frame)
 
     return False
 
@@ -65,7 +111,7 @@ def randomize_head_material_color(
     rng: random.Random,
     frame: int,
 ) -> None:
-    """Set and keyframe a random base color on the first material slot of mesh_obj."""
+    """Set and keyframe a random skin color on the first material slot of mesh_obj."""
     if not mesh_obj.material_slots:
         return
 

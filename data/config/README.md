@@ -16,6 +16,7 @@ All paths in `runner.json` are relative to the `data/` directory.
 | `constraints.json` | Hard clamps and relational rules applied after generation |
 | `modifiers.json` | Blender modifier settings (smooth corrective) |
 | `attractor.json` | Good-head attractor system (nudge toward curated references) |
+| `materials.json` | Skin material source file and node configuration |
 
 ---
 
@@ -473,6 +474,30 @@ The good-head pool is cached in memory for the duration of the Blender session. 
 ### Disabling the attractor
 
 Set `"enabled": false` to bypass the attractor entirely. The pipeline behaves exactly as it did before the attractor was added.
+
+---
+
+## materials.json
+
+Configures the skin material source and the target color node used during generation.
+
+```json
+{
+  "paths": {
+    "skin_material_blend": "skin_material.blend"
+  },
+  "skin_material_name": "head_mat"
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `paths.skin_material_blend` | string | Source `.blend` file containing the skin material, relative to `data/` |
+| `skin_material_name` | string | Name of the material to append from the source file |
+
+The material is appended once per Blender session and cached by reference. On re-runs, if a material with the same name already exists in the scene, the append step is skipped automatically.
+
+The pipeline targets a node labelled `"head_color"` inside the material's node tree to keyframe skin color variation. This must be an RGB node with that label set in the Blender node editor.
 
 ---
 

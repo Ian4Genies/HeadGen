@@ -32,6 +32,29 @@ def _load_json(path: Path) -> dict:
 
 
 @dataclass
+class MaterialsConfig:
+    skin_material_blend_path: str = ""
+    skin_material_name: str = "head_mat"
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "MaterialsConfig":
+        paths = d.get("paths", {})
+        return cls(
+            skin_material_blend_path=paths.get("skin_material_blend", ""),
+            skin_material_name=d.get("skin_material_name", "head_mat"),
+        )
+
+    def resolve(self, base: Path) -> "MaterialsConfig":
+        return MaterialsConfig(
+            skin_material_blend_path=(
+                str((base / self.skin_material_blend_path).resolve())
+                if self.skin_material_blend_path else ""
+            ),
+            skin_material_name=self.skin_material_name,
+        )
+
+
+@dataclass
 class RunnerConfig:
     frame_count: int = 400
     seed: int | None = None
@@ -72,6 +95,7 @@ class PipelineConfig:
     constraints: ConstraintRules = field(default_factory=ConstraintRules)
     modifiers: SmoothCorrectiveConfig = field(default_factory=SmoothCorrectiveConfig)
     attractor: AttractorConfig = field(default_factory=AttractorConfig)
+    materials: MaterialsConfig = field(default_factory=MaterialsConfig)
     chaos_joint_names: frozenset[str] = field(default_factory=lambda: frozenset(CHAOS_JOINT_NAMES))
     config_dir: Path = field(default_factory=lambda: Path("."))
 
@@ -139,6 +163,14 @@ def load_config(config_dir: str | Path) -> PipelineConfig:
     else:
         attractor = AttractorConfig()
 
+    # --- materials ---
+    mat_path = d / "materials.json"
+    if mat_path.exists():
+        materials = MaterialsConfig.from_dict(_load_json(mat_path))
+        materials = materials.resolve(project_root)
+    else:
+        materials = MaterialsConfig()
+
     return PipelineConfig(
         runner=runner,
         variation=variation,
@@ -146,6 +178,7 @@ def load_config(config_dir: str | Path) -> PipelineConfig:
         constraints=constraints,
         modifiers=modifiers,
         attractor=attractor,
+        materials=materials,
         chaos_joint_names=joint_names,
         config_dir=d,
     )

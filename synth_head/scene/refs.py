@@ -36,3 +36,25 @@ def get_ref(context: bpy.types.Context, key: str) -> bpy.types.Object | None:
     if not hasattr(refs, key):
         raise KeyError(f"Unknown pipeline ref key: {key!r}")
     return getattr(refs, key)
+
+
+def set_material_ref(context: bpy.types.Context, key: str, mat: bpy.types.Material) -> None:
+    """Store a Material *mat* under *key* in the pipeline reference group.
+
+    Raises KeyError if *key* does not match a declared PointerProperty.
+    """
+    refs = context.scene.synth_head
+    if not hasattr(refs, key):
+        raise KeyError(f"Unknown pipeline ref key: {key!r}")
+    setattr(refs, key, mat)
+
+
+def get_material_ref(context: bpy.types.Context, key: str) -> bpy.types.Material | None:
+    """Return the Material stored under *key*, or None if unset.
+
+    Raises KeyError if *key* does not match a declared PointerProperty.
+    """
+    refs = context.scene.synth_head
+    if not hasattr(refs, key):
+        raise KeyError(f"Unknown pipeline ref key: {key!r}")
+    return getattr(refs, key)

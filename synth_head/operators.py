@@ -7,13 +7,13 @@ Operators here delegate to scene/ and core/ — no business logic lives here.
 import bpy
 
 from .core.math import clamp
-from .core.ref_keys import MESH, ARMATURE
+from .core.ref_keys import MESH, ARMATURE, HEAD_MAT
 from .core.variation import (
     generate_chaos_transforms,
     generate_single_frame_transforms,
 )
 from .scene.fbx_import import import_fbx_and_classify
-from .scene.refs import get_ref, set_ref
+from .scene.refs import get_ref, set_ref, get_material_ref, set_material_ref
 from .core.blendshapes import (
     generate_blendshape_weights,
     generate_single_frame_blendshape_weights,
@@ -31,7 +31,8 @@ from .scene.chaos_anim import (
     apply_chaos_single_frame,
     _apply_transforms_to_bones,
 )
-from .scene.materials import randomize_head_material_color
+from .scene.blend_append import append_material_from_blend
+from .scene.materials import assign_exclusive_material, randomize_head_material_color
 from .scene.modifiers import add_smooth_corrective
 from .scene.reset import reset_frame
 from .scene.snapshot import (
@@ -143,6 +144,10 @@ class SYNTHHEAD_PG_PipelineRefs(bpy.types.PropertyGroup):
         type=bpy.types.Object,
         poll=lambda self, obj: obj.type == 'ARMATURE',
     )
+    head_mat: bpy.props.PointerProperty(
+        name="Head Material",
+        type=bpy.types.Material,
+    )
 
 
 class SYNTHHEAD_OT_hello(bpy.types.Operator):
@@ -194,9 +199,24 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
             self.report({"ERROR"}, "Armature not found in FBX — aborting")
             return {"CANCELLED"}
 
+
+        # set the head mesh and armature references
         set_ref(context, MESH, head_geo_obj)
         set_ref(context, ARMATURE, armature_obj)
         self.report({"INFO"}, f"head geo: '{head_geo_obj.name}'")
+        # --- 1b. APPEND & ASSIGN SKIN MATERIAL ---
+        head_mat = get_material_ref(context, HEAD_MAT)
+        if head_mat is None:
+            head_mat = append_material_from_blend(
+                cfg.materials.skin_material_blend_path,
+                cfg.materials.skin_material_name,
+            )
+            if head_mat is None:
+                self.report({"ERROR"}, f"Material '{cfg.materials.skin_material_name}' not found in '{cfg.materials.skin_material_blend_path}' — aborting")
+                return {"CANCELLED"}
+            set_material_ref(context, HEAD_MAT, head_mat)
+        assign_exclusive_material(head_geo_obj, head_mat)
+        self.report({"INFO"}, f"Skin material assigned: '{head_mat.name}'")
         # --- 2. GENERATE RAW PARAMETERS ---
         armature = get_ref(context, ARMATURE)
         chaos_joints = collect_chaos_joints(armature, cfg.chaos_joint_names)

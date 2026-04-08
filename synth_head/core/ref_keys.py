@@ -8,3 +8,4 @@ using bare strings so typos are caught at import time.
 
 MESH: str = "mesh"
 ARMATURE: str = "armature"
+HEAD_MAT: str = "head_mat"

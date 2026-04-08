@@ -127,16 +127,21 @@ def _build_exclude_set(
 # Pool cache with incremental manifest
 # ---------------------------------------------------------------------------
 
-class PoolCache:
-    """In-memory cache for the good-head pool.
+_DEFAULT_COLOR = np.array([0.0, 0.0, 0.0, 1.0], dtype=np.float64)
 
-    Holds a numpy matrix of flattened good-head parameters plus bookkeeping
-    for incremental sync.  Module-level singleton persists across operator
-    calls within a single Blender session.
+
+class PoolCache:
+    """In-memory cache for the attractive-head pool.
+
+    Holds a numpy matrix of flattened head parameters and a parallel color
+    matrix (N×4 RGBA) for attractive-color blending.  Both use the same row
+    ordering so indices from find_nearest directly index both matrices.
+    Module-level singleton persists across operator calls within a session.
     """
 
     def __init__(self) -> None:
         self.matrix: np.ndarray | None = None
+        self.color_matrix: np.ndarray | None = None  # shape (N, 4) RGBA float64
         self.filenames: list[str] = []
         self.param_keys: list[str] = []
         self._dir_path: str = ""
@@ -182,8 +187,10 @@ class PoolCache:
             self.filenames = [self.filenames[i] for i in keep_indices]
             if self.matrix is not None and keep_indices:
                 self.matrix = self.matrix[keep_indices]
+                self.color_matrix = self.color_matrix[keep_indices] if self.color_matrix is not None else None
             elif not keep_indices:
                 self.matrix = None
+                self.color_matrix = None
 
         for fname in added:
             path = d / fname
@@ -202,6 +209,18 @@ class PoolCache:
                 self.matrix = row.reshape(1, -1)
             else:
                 self.matrix = np.vstack([self.matrix, row])
+
+            raw_color = snap.get("skin_color")
+            color_row = (
+                np.array(raw_color[:4], dtype=np.float64)
+                if raw_color and len(raw_color) >= 4
+                else _DEFAULT_COLOR.copy()
+            )
+            if self.color_matrix is None:
+                self.color_matrix = color_row.reshape(1, -1)
+            else:
+                self.color_matrix = np.vstack([self.color_matrix, color_row])
+
             self.filenames.append(fname)
 
         self._dir_path = dir_str
@@ -356,11 +375,14 @@ def compute_attractor_target(
     pool_matrix: np.ndarray,
     indices: np.ndarray,
     rng: random.Random,
-) -> np.ndarray:
+) -> tuple[np.ndarray, np.ndarray]:
     """Compute a weighted-average target vector from selected pool heads.
 
     Random weights are generated summing to 1.0, so the target is a
-    convex combination of the selected good heads.
+    convex combination of the selected attractive heads.
+
+    Returns ``(target_vector, weights)`` so the caller can apply the same
+    weights to other per-head data (e.g. color_matrix).
     """
     n = len(indices)
     raw_weights = [rng.random() for _ in range(n)]
@@ -371,7 +393,7 @@ def compute_attractor_target(
         weights = np.array([w / total for w in raw_weights], dtype=np.float64)
 
     selected = pool_matrix[indices]
-    return weights @ selected
+    return weights @ selected, weights
 
 
 # ---------------------------------------------------------------------------
@@ -412,24 +434,30 @@ def attract(
     variation_config,
     blendshape_config,
     rng: random.Random,
-) -> tuple[dict[str, float], dict | None]:
-    """Apply the attractor nudge to *flat_params*.
+) -> tuple[dict[str, float], list[float] | None, dict | None]:
+    """Apply the attractor nudge to *flat_params* and compute an attractive color.
 
-    1. Pick N nearest good heads (N randomized per config).
-    2. Compute a weighted-average target from those heads.
+    1. Pick N nearest attractive heads (N randomized per config).
+    2. Compute a weighted-average target from those heads (same weights used for both
+       shape/joint params and color — color is not included in distance calculations).
     3. Nudge each parameter toward the target by max_influence.
+    4. Blend the same pool heads' colors with the same weights → attractive_color.
 
-    Returns ``(nudged_flat, debug_info)`` where ``debug_info`` is a dict
-    when ``config.debug`` is True, otherwise ``None``.
+    Returns ``(nudged_flat, attractive_color, debug_info)``.
+
+    ``attractive_color`` is a plain ``[r, g, b, a]`` list when the attractor is
+    active and the pool has color data, otherwise ``None``.
+
+    ``debug_info`` is a dict when ``config.debug`` is True, otherwise ``None``.
 
     debug_info keys:
       ``n_selected`` (int), ``selected_files`` (list[str]),
       ``mean_abs_delta`` (float) — average absolute change across all params.
     """
     if not config.enabled:
-        return flat_params, None
+        return flat_params, None, None
     if pool.matrix is None or pool.pool_size == 0:
-        return flat_params, None
+        return flat_params, None, None
 
     param_keys = pool.param_keys
     excluded = _build_exclude_set(config.exclude_params, param_keys)
@@ -453,11 +481,17 @@ def attract(
     n = rng.randint(config.min_attractors, config.max_attractors)
     n = min(n, pool.pool_size)
     if n < 1:
-        return flat_params, None
+        return flat_params, None, None
 
     indices = find_nearest(current_vec, pool.matrix, n, mins, maxs, dw)
-    target = compute_attractor_target(pool.matrix, indices, rng)
+    target, weights = compute_attractor_target(pool.matrix, indices, rng)
     nudged = nudge_params(flat_params, target, param_keys, config.max_influence, excluded)
+
+    # Blend the same pool heads' colors with the exact same weights.
+    attractive_color: list[float] | None = None
+    if pool.color_matrix is not None:
+        blended = weights @ pool.color_matrix[indices]
+        attractive_color = blended.tolist()
 
     debug_info: dict | None = None
     if config.debug:
@@ -470,4 +504,4 @@ def attract(
             "mean_abs_delta": mean_abs_delta,
         }
 
-    return nudged, debug_info
+    return nudged, attractive_color, debug_info

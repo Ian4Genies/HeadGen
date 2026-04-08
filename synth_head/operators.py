@@ -32,7 +32,7 @@ from .scene.chaos_anim import (
     _apply_transforms_to_bones,
 )
 from .scene.blend_append import append_material_from_blend
-from .scene.materials import assign_exclusive_material, randomize_head_material_color, read_material_color
+from .scene.materials import assign_exclusive_material, randomize_head_material_color, read_material_color, apply_attractive_color
 from .scene.modifiers import add_smooth_corrective
 from .scene.reset import reset_frame
 from .scene.snapshot import (
@@ -117,6 +117,11 @@ def _debug_config(cfg: PipelineConfig) -> None:
     p(f"  use_only_smooth:  {cfg.modifiers.use_only_smooth}")
     p(f"  use_pin_boundary: {cfg.modifiers.use_pin_boundary}")
     p(f"  rest_source:      {cfg.modifiers.rest_source}")
+
+    p(f"--- MATERIALS ---")
+    p(f"  skin_material_blend_path: {cfg.materials.skin_material_blend_path}")
+    p(f"  skin_material_name:       {cfg.materials.skin_material_name}")
+    p(f"  final_color_randomness:   {cfg.materials.final_color_randomness}")
 
     p(f"--- ATTRACTOR ---")
     p(f"  enabled:              {cfg.attractor.enabled}")
@@ -254,13 +259,15 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         # --- 4. CONSTRAIN EACH FRAME (attract → constrain → split) ---
         constrained_transforms: dict[int, dict] = {}
         constrained_bs: dict[int, dict[str, float]] = {}
+        attractive_colors: dict[int, list[float] | None] = {}
         fc = cfg.runner.frame_count
         for frame in range(1, fc + 1):
             # flat is a dict of param names to values
             flat = flatten_params(all_transforms[frame], all_bs_weights[frame])
-            # attract nudges the flat params toward the attractor pool
-            # dbg is a dict of debug info
-            flat, dbg = attract(flat, pool, cfg.attractor, cfg.variation, cfg.blendshapes, attractor_rng)
+            # attract nudges the flat params toward the attractor pool and returns
+            # an attractive color blended from the same pool heads and weights
+            flat, attractive_color, dbg = attract(flat, pool, cfg.attractor, cfg.variation, cfg.blendshapes, attractor_rng)
+            attractive_colors[frame] = attractive_color
             # print debug info if it exists
             if dbg is not None:
                 print(f"[SynthHead][Attractor] frame {frame:03d}: "
@@ -285,7 +292,11 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
             reset_frame(chaos_joints, head_mesh, frame)
             _apply_transforms_to_bones(chaos_joints, constrained_transforms[frame], frame)
             _apply_weights_to_shape_keys(head_mesh, constrained_bs[frame], frame)
-            randomize_head_material_color(head_mesh, color_rng, frame)
+            rng_color = (color_rng.random(), color_rng.random(), color_rng.random(), 1.0)
+            randomize_head_material_color(head_mesh, rng_color, frame)
+            attr_color = attractive_colors[frame]
+            if attr_color is not None:
+                apply_attractive_color(head_mesh, attr_color, rng_color, cfg.materials.final_color_randomness, frame)
 
         bpy.ops.object.mode_set(mode="OBJECT")
         self.report({"INFO"}, f"Applied {fc} frames (reset + joints + blendshapes + material color)")
@@ -339,7 +350,7 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         attractor_rng = _random.Random()
 
         flat = flatten_params(transforms, bs_weights)
-        flat, dbg = attract(flat, pool, cfg.attractor, cfg.variation, cfg.blendshapes, attractor_rng)
+        flat, attractive_color, dbg = attract(flat, pool, cfg.attractor, cfg.variation, cfg.blendshapes, attractor_rng)
         if dbg is not None:
             print(f"[SynthHead][Attractor] RandomizeFace: "
                   f"n={dbg['n_selected']}  "
@@ -357,6 +368,12 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         _apply_weights_to_shape_keys(head_mesh, bs_weights, frame)
 
         bpy.ops.object.mode_set(mode="OBJECT")
+
+        rng_color = (attractor_rng.random(), attractor_rng.random(), attractor_rng.random(), 1.0)
+        randomize_head_material_color(head_mesh, rng_color, frame)
+        if attractive_color is not None:
+            apply_attractive_color(head_mesh, attractive_color, rng_color, cfg.materials.final_color_randomness, frame)
+
         self.report({"INFO"}, f"Randomized {len(chaos_joints)} joints + blendshapes on frame {frame}")
         return {"FINISHED"}
 

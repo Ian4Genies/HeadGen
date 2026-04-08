@@ -488,7 +488,8 @@ Configures the skin material source and the target color node used during genera
   "paths": {
     "skin_material_blend": "skin_material.blend"
   },
-  "skin_material_name": "head_mat"
+  "skin_material_name": "head_mat",
+  "final_color_randomness": 0.1
 }
 ```
 
@@ -496,6 +497,7 @@ Configures the skin material source and the target color node used during genera
 |---|---|---|
 | `paths.skin_material_blend` | string | Source `.blend` file containing the skin material, relative to `data/` |
 | `skin_material_name` | string | Name of the material to append from the source file |
+| `final_color_randomness` | float | Blend fraction (0.0–1.0) between the attractive color and the RNG color. `0.0` = fully attractive, `1.0` = fully random. Only used when the attractor system is active. Default `0.1` |
 
 The material is appended once per Blender session and cached by reference. On re-runs, if a material with the same name already exists in the scene, the append step is skipped automatically.
 

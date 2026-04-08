@@ -35,6 +35,7 @@ def _load_json(path: Path) -> dict:
 class MaterialsConfig:
     skin_material_blend_path: str = ""
     skin_material_name: str = "head_mat"
+    final_color_randomness: float = 0.1
 
     @classmethod
     def from_dict(cls, d: dict) -> "MaterialsConfig":
@@ -42,6 +43,7 @@ class MaterialsConfig:
         return cls(
             skin_material_blend_path=paths.get("skin_material_blend", ""),
             skin_material_name=d.get("skin_material_name", "head_mat"),
+            final_color_randomness=float(d.get("final_color_randomness", 0.1)),
         )
 
     def resolve(self, base: Path) -> "MaterialsConfig":
@@ -51,6 +53,7 @@ class MaterialsConfig:
                 if self.skin_material_blend_path else ""
             ),
             skin_material_name=self.skin_material_name,
+            final_color_randomness=self.final_color_randomness,
         )
 
 

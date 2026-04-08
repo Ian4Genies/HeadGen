@@ -108,16 +108,44 @@ def key_material_color(
 
 def randomize_head_material_color(
     mesh_obj: bpy.types.Object,
-    rng: random.Random,
+    color: tuple[float, float, float, float],
     frame: int,
 ) -> None:
-    """Set and keyframe a random skin color on the first material slot of mesh_obj."""
+    """Set and keyframe *color* on the first material slot of mesh_obj."""
     if not mesh_obj.material_slots:
         return
-
     mat = mesh_obj.material_slots[0].material
-    color = (rng.random(), rng.random(), rng.random(), 1.0)
     key_material_color(mat, color, frame)
+
+
+def apply_attractive_color(
+    mesh_obj: bpy.types.Object,
+    attractive_color: list[float],
+    rng_color: tuple[float, float, float, float],
+    randomness: float,
+    frame: int,
+) -> None:
+    """Blend the attractive color with the RNG color and keyframe the result.
+
+    The final color is:
+        final = attractive_color + randomness * (rng_color - attractive_color)
+
+    At randomness=0.0 the result is purely the attractive color.
+    At randomness=1.0 the result is purely the RNG color.
+    The blended color overwrites whatever color is currently keyframed on the material.
+    """
+    if not mesh_obj.material_slots:
+        return
+    mat = mesh_obj.material_slots[0].material
+    if mat is None:
+        return
+
+    r = attractive_color[0] + randomness * (rng_color[0] - attractive_color[0])
+    g = attractive_color[1] + randomness * (rng_color[1] - attractive_color[1])
+    b = attractive_color[2] + randomness * (rng_color[2] - attractive_color[2])
+    a = attractive_color[3] + randomness * (rng_color[3] - attractive_color[3])
+
+    key_material_color(mat, (r, g, b, a), frame)
 
 
 def read_material_color(

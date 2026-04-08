@@ -3,5 +3,5 @@
     "skin_material_blend": "skin_material.blend"
   },
   "skin_material_name": "head_mat",
-  "final_color_randomness": 0.1
+  "final_color_randomness": 0.05
 }

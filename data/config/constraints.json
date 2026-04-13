@@ -137,6 +137,20 @@
       "if":   { "param": "MouthBind.scale.x", "above": 1.10 },
       "and":  { "param": "NoseBind.scale.x",  "below": 1 },
       "then_clamp": { "param": "MouthBind.scale.x", "max": 1.10 }
+    },
+    {
+        "title": "suppress mouth scale height when mouth is wide",
+        "type": "ratio_clamp",
+        "numerator": "MouthBind.scale.y",
+        "denominator": "MouthBind.scale.x",
+        "max_ratio": 1.7
+    },
+    {
+      "title": "Prevent mouth from being too wide when tall",
+      "type": "ratio_clamp",
+      "numerator": "MouthBind.scale.x",
+      "denominator": "MouthBind.scale.y",
+      "max_ratio": 1.7
     }
   ]
 }

@@ -11,7 +11,7 @@ import bpy
 def import_fbx_and_classify(
     context: bpy.types.Context,
     filepath: str,
-) -> tuple[bpy.types.Object | None, bpy.types.Object | None]:
+) -> tuple[bpy.types.Object | None, bpy.types.Object | None, bpy.types.Object | None, bpy.types.Object | None, bpy.types.Object | None, bpy.types.Object | None]:
     """Import an FBX file and return the head mesh and armature objects.
 
     Any objects that are neither the head geo nor the armature are deleted
@@ -29,16 +29,41 @@ def import_fbx_and_classify(
 
     new_objects = [bpy.data.objects[n] for n in new_names]
 
+    #Geometry to retain
     head_geo = next(
         (o for o in new_objects if o.type == "MESH" and o.name.startswith("headOnly_geo")),
         None,
     )
+    body_geo = next(
+        (o for o in new_objects if o.type == "MESH" and o.name.startswith("bodyOnly_geo")),
+        None,
+    )
+
     armature = next(
         (o for o in new_objects if o.type == "ARMATURE"),
         None,
     )
+    L_eye = next(
+        (o for o in new_objects if o.type == "MESH" and o.name.startswith("eye_L_geo")),
+        None,
+    )
+    R_eye = next(
+        (o for o in new_objects if o.type == "MESH" and o.name.startswith("eye_R_geo")),
+        None,
+    )
+    eyebrows = next(
+        (o for o in new_objects if o.type == "MESH" and o.name.startswith("eyebrows_geo")),
+        None,
+    )
+    eyelashes = next(
+        (o for o in new_objects if o.type == "MESH" and o.name.startswith("eyelashes_geo")),
+        None,
+    )
 
-    keep = {o.name for o in (head_geo, armature) if o}
+
+   
+
+    keep = {o.name for o in (head_geo, body_geo, armature, L_eye, R_eye, eyebrows, eyelashes) if o}
     to_delete = new_names - keep
 
     bpy.ops.object.select_all(action="DESELECT")
@@ -49,7 +74,7 @@ def import_fbx_and_classify(
 
     purge_orphan_meshes()
 
-    return head_geo, armature
+    return head_geo, body_geo, armature, L_eye, R_eye, eyebrows, eyelashes
 
 
 def purge_orphan_meshes() -> None:

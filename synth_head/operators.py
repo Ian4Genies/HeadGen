@@ -7,7 +7,7 @@ Operators here delegate to scene/ and core/ — no business logic lives here.
 import bpy
 
 from .core.math import clamp
-from .core.ref_keys import MESH, ARMATURE, HEAD_MAT
+from .core.ref_keys import MESH, BODY_GEO, ARMATURE, HEAD_MAT, L_EYE, R_EYE, EYEBROWS, EYELASHES
 from .core.variation import (
     generate_chaos_transforms,
     generate_single_frame_transforms,
@@ -140,17 +140,48 @@ class SYNTHHEAD_PG_PipelineRefs(bpy.types.PropertyGroup):
     To add a new reference: add a PointerProperty here and a matching
     constant in core/ref_keys.py.  scene/refs.py needs no changes.
     """
-
+    # Head geometry 
     mesh: bpy.props.PointerProperty(
         name="Head Mesh",
         type=bpy.types.Object,
         poll=lambda self, obj: obj.type == 'MESH',
     )
+    # Body geometry
+    body_geo: bpy.props.PointerProperty(
+        name="Body Mesh",
+        type=bpy.types.Object,
+        poll=lambda self, obj: obj.type == 'MESH',
+    )
+    # Armature
     armature: bpy.props.PointerProperty(
         name="Armature",
         type=bpy.types.Object,
         poll=lambda self, obj: obj.type == 'ARMATURE',
     )
+    # Eyes
+    L_eye: bpy.props.PointerProperty(
+        name="Left Eye",
+        type=bpy.types.Object,
+        poll=lambda self, obj: obj.type == 'MESH',
+    )
+    R_eye: bpy.props.PointerProperty(
+        name="Right Eye",
+        type=bpy.types.Object,
+        poll=lambda self, obj: obj.type == 'MESH',
+    )
+    # Eyebrows
+    eyebrows: bpy.props.PointerProperty(
+        name="Eyebrows",
+        type=bpy.types.Object,
+        poll=lambda self, obj: obj.type == 'MESH',
+    )
+    # Eyelashes
+    eyelashes: bpy.props.PointerProperty(
+        name="Eyelashes",
+        type=bpy.types.Object,
+        poll=lambda self, obj: obj.type == 'MESH',
+    )
+    # Head material
     head_mat: bpy.props.PointerProperty(
         name="Head Material",
         type=bpy.types.Material,
@@ -194,22 +225,41 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
     def execute(self, context):
         cfg = _get_config()
         # --- 1. IMPORT & VALIDATE ---
-        head_geo_obj, armature_obj = import_fbx_and_classify(
+        head_geo_obj, body_geo_obj, armature_obj, L_eye_obj, R_eye_obj, eyebrows_obj, eyelashes_obj = import_fbx_and_classify(
             context, cfg.runner.fbx_path,
         )
 
         if not head_geo_obj:
             self.report({"ERROR"}, "headOnly_geo mesh not found in FBX — aborting")
             return {"CANCELLED"}
-
+        if not body_geo_obj:
+            self.report({"ERROR"}, "bodyOnly_geo mesh not found in FBX — aborting")
+            return {"CANCELLED"}
         if not armature_obj:
             self.report({"ERROR"}, "Armature not found in FBX — aborting")
+            return {"CANCELLED"}
+        if not L_eye_obj:
+            self.report({"ERROR"}, "Left eye mesh not found in FBX — aborting")
+            return {"CANCELLED"}
+        if not R_eye_obj:
+            self.report({"ERROR"}, "Right eye mesh not found in FBX — aborting")
+            return {"CANCELLED"}
+        if not eyebrows_obj:
+            self.report({"ERROR"}, "Eyebrows mesh not found in FBX — aborting")
+            return {"CANCELLED"}
+        if not eyelashes_obj:
+            self.report({"ERROR"}, "Eyelashes mesh not found in FBX — aborting")
             return {"CANCELLED"}
 
 
         # set the head mesh and armature references
         set_ref(context, MESH, head_geo_obj)
+        set_ref(context, BODY_GEO, body_geo_obj)    
         set_ref(context, ARMATURE, armature_obj)
+        set_ref(context, L_EYE, L_eye_obj)
+        set_ref(context, R_EYE, R_eye_obj)
+        set_ref(context, EYEBROWS, eyebrows_obj)
+        set_ref(context, EYELASHES, eyelashes_obj)
         self.report({"INFO"}, f"head geo: '{head_geo_obj.name}'")
         # --- 1b. APPEND & ASSIGN SKIN MATERIAL ---
         head_mat = get_material_ref(context, HEAD_MAT)
@@ -223,6 +273,8 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
                 return {"CANCELLED"}
             set_material_ref(context, HEAD_MAT, head_mat)
         assign_exclusive_material(head_geo_obj, head_mat)
+        
+
         self.report({"INFO"}, f"Skin material assigned: '{head_mat.name}'")
         # --- 2. GENERATE RAW PARAMETERS ---
         armature = get_ref(context, ARMATURE)

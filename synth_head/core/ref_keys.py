@@ -7,5 +7,10 @@ using bare strings so typos are caught at import time.
 """
 
 MESH: str = "mesh"
+BODY_GEO: str = "body_geo"
 ARMATURE: str = "armature"
 HEAD_MAT: str = "head_mat"
+L_EYE: str = "L_eye"
+R_EYE: str = "R_eye"
+EYEBROWS: str = "eyebrows"
+EYELASHES: str = "eyelashes"

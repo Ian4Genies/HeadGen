@@ -265,6 +265,11 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         set_ref(context, R_EYE, R_eye_obj)
         set_ref(context, EYEBROWS, eyebrows_obj)
         set_ref(context, EYELASHES, eyelashes_obj)
+        #hide eyebrows and eyelashes
+        eyebrows_obj.hide_viewport = True
+        eyelashes_obj.hide_viewport = True
+
+        
         self.report({"INFO"}, f"head geo: '{head_geo_obj.name}'")
         # --- 1b. APPEND & ASSIGN SKIN MATERIAL ---
         head_mat = get_material_ref(context, HEAD_MAT)

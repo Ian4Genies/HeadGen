@@ -39,3 +39,30 @@ def append_material_from_blend(
     )
 
     return bpy.data.materials.get(material_name)
+
+
+def append_object_from_blend(
+    blend_path: str,
+    object_name: str,
+) -> bpy.types.Object | None:
+    """Append a mesh object by name from an external .blend file.
+
+    Appends the Object data-block (not the raw Mesh) so the result is
+    linked into the active collection and visible in the scene.
+
+    If an object with *mesh_name* already exists in bpy.data.objects
+    the append is skipped and the existing object is returned, avoiding
+    duplicate data-blocks across pipeline re-runs.
+    """
+    existing = bpy.data.objects.get(object_name)
+    if existing is not None:
+        return existing
+    directory = blend_path + "/Object/"
+    bpy.ops.wm.append(
+        filepath=blend_path + "/Object/" + object_name,
+        directory=directory,
+        filename=object_name,
+        link=False,
+        do_reuse_local_id=False,
+    )
+    return bpy.data.objects.get(object_name)

@@ -1,5 +1,6 @@
 """Public API for synth_head.scene — bpy-heavy scene operations."""
 
+from .armature import add_object_to_armature
 from .fbx_import import import_fbx_and_classify, purge_orphan_meshes
 from .chaos_anim import collect_chaos_joints, apply_chaos_keyframes, apply_chaos_single_frame
 from .modifiers import add_smooth_corrective
@@ -14,6 +15,7 @@ from .snapshot import (
 )
 
 __all__ = [
+    "add_object_to_armature",
     "import_fbx_and_classify",
     "purge_orphan_meshes",
     "collect_chaos_joints",

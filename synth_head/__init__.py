@@ -8,6 +8,7 @@ if "bpy" in locals():
     from .core import config as core_config
     from .core import snapshot as core_snapshot
     from . import scene
+    from .scene import armature as scene_armature
     from .scene import fbx_import, chaos_anim, modifiers as scene_modifiers, refs as scene_refs
     from .scene import blendshapes as scene_blendshapes
     from .scene import reset as scene_reset
@@ -25,6 +26,7 @@ if "bpy" in locals():
     importlib.reload(core_config)
     importlib.reload(core_snapshot)
     importlib.reload(core)
+    importlib.reload(scene_armature)
     importlib.reload(fbx_import)
     importlib.reload(chaos_anim)
     importlib.reload(scene_modifiers)

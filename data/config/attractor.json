@@ -1,6 +1,6 @@
 {
   "enabled": true,
-  "debug": true,
+  "debug": false,
   "attractive_heads_dir": "head-attractive",
   "min_attractors": 1,
   "max_attractors": 3,

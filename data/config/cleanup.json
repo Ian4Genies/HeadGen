@@ -1,0 +1,32 @@
+{
+    "paths": {
+      "assets_blend_path": "assets.blend"
+    },
+    "eye_wedge_R_name": "eye_wedge_R",
+    "eye_wedge_L_name": "eye_wedge_L",
+    "eye_wedge_R_indices": {
+        "0": 0,
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4,
+        "5": 5,
+        "6": 6,
+        "7": 7,
+        "8": 8,
+        "9": 9
+      },
+      "eye_wedge_L_indices": {
+        "0": 0,
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4,
+        "5": 5,
+        "6": 6,
+        "7": 7,
+        "8": 8,
+        "9": 9
+      }
+  }
+  

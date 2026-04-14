@@ -7,7 +7,7 @@ Operators here delegate to scene/ and core/ — no business logic lives here.
 import bpy
 
 from .core.math import clamp
-from .core.ref_keys import MESH, BODY_GEO, ARMATURE, HEAD_MAT, L_EYE, R_EYE, EYEBROWS, EYELASHES, EYE_MAT
+from .core.ref_keys import MESH, BODY_GEO, ARMATURE, HEAD_MAT, L_EYE, R_EYE, EYEBROWS, EYELASHES, EYE_MAT, EYE_WEDGE_R, EYE_WEDGE_L
 from .core.variation import (
     generate_chaos_transforms,
     generate_single_frame_transforms,
@@ -31,7 +31,8 @@ from .scene.chaos_anim import (
     apply_chaos_single_frame,
     _apply_transforms_to_bones,
 )
-from .scene.blend_append import append_material_from_blend
+from .scene.armature import add_object_to_armature
+from .scene.blend_append import append_material_from_blend, append_object_from_blend
 from .scene.materials import assign_exclusive_material, randomize_head_material_color, read_material_color, apply_attractive_color
 from .scene.modifiers import add_smooth_corrective
 from .scene.reset import reset_frame
@@ -133,6 +134,13 @@ def _debug_config(cfg: PipelineConfig) -> None:
     p(f"  distance_weights: {cfg.attractor.distance_weights}")
     p(f"  exclude_params:   {cfg.attractor.exclude_params}")
 
+    p(f"--- CLEANUP ---")
+    p(f"  assets_blend_path: {cfg.cleanup.assets_blend_path}")
+    p(f"  eye_wedge_R_name: {cfg.cleanup.eye_wedge_R_name}")
+    p(f"  eye_wedge_L_name: {cfg.cleanup.eye_wedge_L_name}")
+    p(f"  eye_wedge_R_indices: {cfg.cleanup.eye_wedge_R_indices}")
+    p(f"  eye_wedge_L_indices: {cfg.cleanup.eye_wedge_L_indices}")
+
 
 class SYNTHHEAD_PG_PipelineRefs(bpy.types.PropertyGroup):
     """Live object references managed by the variation pipeline.
@@ -191,7 +199,18 @@ class SYNTHHEAD_PG_PipelineRefs(bpy.types.PropertyGroup):
         name="Eye Material",
         type=bpy.types.Material,
     )
-
+    # Eye wedge R
+    eye_wedge_R: bpy.props.PointerProperty(
+        name="Eye Wedge R",
+        type=bpy.types.Object,
+        poll=lambda self, obj: obj.type == 'MESH',
+    )
+    # Eye wedge L
+    eye_wedge_L: bpy.props.PointerProperty(
+        name="Eye Wedge L",
+        type=bpy.types.Object,
+        poll=lambda self, obj: obj.type == 'MESH',
+    )
 
 class SYNTHHEAD_OT_hello(bpy.types.Operator):
     """Smoke-test operator to verify the addon loads"""
@@ -296,9 +315,22 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         assign_exclusive_material(L_eye_obj, eye_mat)
         assign_exclusive_material(R_eye_obj, eye_mat)
         
+        # --- 2. CLEANUP PREP---
+        
+        eye_wedge_R_obj = append_object_from_blend(
+            cfg.cleanup.assets_blend_path, 
+            cfg.cleanup.eye_wedge_R_name)
+        
+        eye_wedge_L_obj = append_object_from_blend(
+            cfg.cleanup.assets_blend_path, 
+            cfg.cleanup.eye_wedge_L_name)
+        set_ref(context, EYE_WEDGE_R, eye_wedge_R_obj)
+        set_ref(context, EYE_WEDGE_L, eye_wedge_L_obj)
+        add_object_to_armature(eye_wedge_R_obj, armature_obj)
+        add_object_to_armature(eye_wedge_L_obj, armature_obj)
 
         self.report({"INFO"}, f"Skin material assigned: '{head_mat.name}'")
-        # --- 2. GENERATE RAW PARAMETERS ---
+        # --- 3. GENERATE RAW PARAMETERS ---
         armature = get_ref(context, ARMATURE)
         chaos_joints = collect_chaos_joints(armature, cfg.chaos_joint_names)
         self.report({"INFO"}, f"Chaos joints found: {[b.name for b in chaos_joints]}")
@@ -310,7 +342,7 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         head_mesh = get_ref(context, MESH)
         all_bs_weights = generate_blendshape_weights(cfg.blendshapes)
 
-        # --- 3. SYNC ATTRACTOR POOL---
+        # --- 4. SYNC ATTRACTOR POOL---
         # get_pool_cache returns a PoolCache object
         # PoolCache is a dict of frame numbers to dicts of joint names to transforms
         # The dicts of joint names to transforms are the attractor pool
@@ -330,7 +362,7 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
 
         import random as _random
         attractor_rng = _random.Random(cfg.runner.seed)
-        # --- 4. CONSTRAIN EACH FRAME (attract → constrain → split) ---
+        # --- 5. CONSTRAIN EACH FRAME (attract → constrain → split) ---
         constrained_transforms: dict[int, dict] = {}
         constrained_bs: dict[int, dict[str, float]] = {}
         attractive_colors: dict[int, list[float] | None] = {}
@@ -356,7 +388,7 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
             constrained_transforms[frame] = xforms
             # store the constrained weights for this frame
             constrained_bs[frame] = weights
-        # --- 5. BAKE TO SCENE (pose bones + shape keys + material color per frame) ---
+        # --- 6. BAKE TO SCENE (pose bones + shape keys + material color per frame) ---
         context.view_layer.objects.active = armature
         bpy.ops.object.mode_set(mode="POSE")
 
@@ -366,6 +398,10 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
             reset_frame(chaos_joints, head_mesh, frame)
             _apply_transforms_to_bones(chaos_joints, constrained_transforms[frame], frame)
             _apply_weights_to_shape_keys(head_mesh, constrained_bs[frame], frame)
+            _apply_weights_to_shape_keys(eye_wedge_R_obj, constrained_bs[frame], frame)
+            _apply_weights_to_shape_keys(eye_wedge_L_obj, constrained_bs[frame], frame)
+            _apply_weights_to_shape_keys(eyebrows_obj, constrained_bs[frame], frame)
+            _apply_weights_to_shape_keys(eyelashes_obj, constrained_bs[frame], frame)
             rng_color = (color_rng.random(), color_rng.random(), color_rng.random(), 1.0)
             randomize_head_material_color(head_mesh, rng_color, frame)
             attr_color = attractive_colors[frame]
@@ -374,7 +410,7 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
 
         bpy.ops.object.mode_set(mode="OBJECT")
         self.report({"INFO"}, f"Applied {fc} frames (reset + joints + blendshapes + material color)")
-        # --- 6. POST-PROCESS & SAVE --
+        # --- 7. POST-PROCESS & SAVE --
         add_smooth_corrective(head_mesh, cfg.modifiers)
 
         bpy.ops.wm.save_as_mainfile(filepath=cfg.runner.save_blend_path)

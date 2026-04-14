@@ -59,6 +59,32 @@ class MaterialsConfig:
             final_color_randomness=self.final_color_randomness,
         )
 
+@dataclass
+class CleanupConfig:
+    assets_blend_path: str = "assets.blend"
+    eye_wedge_R_name: str = ""
+    eye_wedge_L_name: str = ""
+    eye_wedge_R_indices: dict[str, int] = field(default_factory=dict)
+    eye_wedge_L_indices: dict[str, int] = field(default_factory=dict)
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "CleanupConfig":
+        paths = d.get("paths", {})
+        return cls(
+            assets_blend_path=paths.get("assets_blend_path", "assets.blend"),
+            eye_wedge_R_name=d.get("eye_wedge_R_name", ""),
+            eye_wedge_L_name=d.get("eye_wedge_L_name", ""),
+            eye_wedge_R_indices=d.get("eye_wedge_R_indices", {}),
+            eye_wedge_L_indices=d.get("eye_wedge_L_indices", {}),
+        )
+    def resolve(self, base: Path) -> "CleanupConfig":
+        return CleanupConfig(
+            assets_blend_path=str((base / self.assets_blend_path).resolve()) if self.assets_blend_path else "",
+            eye_wedge_R_name=self.eye_wedge_R_name,
+            eye_wedge_L_name=self.eye_wedge_L_name,
+            eye_wedge_R_indices=self.eye_wedge_R_indices,
+            eye_wedge_L_indices=self.eye_wedge_L_indices,
+        )
 
 @dataclass
 class RunnerConfig:
@@ -99,6 +125,7 @@ class RunnerConfig:
 @dataclass
 class PipelineConfig:
     runner: RunnerConfig = field(default_factory=RunnerConfig)
+    cleanup: CleanupConfig = field(default_factory=CleanupConfig)
     variation: VariationConfig = field(default_factory=VariationConfig)
     blendshapes: BlendshapeConfig = field(default_factory=BlendshapeConfig)
     constraints: ConstraintRules = field(default_factory=ConstraintRules)
@@ -180,8 +207,17 @@ def load_config(config_dir: str | Path) -> PipelineConfig:
     else:
         materials = MaterialsConfig()
 
+    # --- cleanup ---
+    cleanup_path = d / "cleanup.json"
+    if cleanup_path.exists():
+        cleanup = CleanupConfig.from_dict(_load_json(cleanup_path))
+        cleanup = cleanup.resolve(project_root)
+    else:
+        cleanup = CleanupConfig()
+
     return PipelineConfig(
         runner=runner,
+        cleanup=cleanup,
         variation=variation,
         blendshapes=blendshapes,
         constraints=constraints,

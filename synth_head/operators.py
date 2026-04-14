@@ -289,8 +289,7 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         set_ref(context, EYEBROWS, eyebrows_obj)
         set_ref(context, EYELASHES, eyelashes_obj)
         #hide eyebrows and eyelashes
-        eyebrows_obj.hide_viewport = True
-        eyelashes_obj.hide_viewport = True
+
 
         
         self.report({"INFO"}, f"head geo: '{head_geo_obj.name}'")
@@ -316,7 +315,7 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
                 return {"CANCELLED"}
             set_material_ref(context, EYE_MAT, eye_mat)
         assign_exclusive_material(head_geo_obj, head_mat)
-        assign_exclusive_material(body_geo_obj, head_mat)
+        assign_exclusive_material(body_geo_obj, head_mat)  
         assign_exclusive_material(L_eye_obj, eye_mat)
         assign_exclusive_material(R_eye_obj, eye_mat)
         
@@ -400,7 +399,7 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         color_rng = _random.Random(cfg.runner.seed + 1 if cfg.runner.seed is not None else None)
         for frame in range(1, fc + 1):
             context.scene.frame_set(frame)
-            reset_frame(chaos_joints, head_mesh, frame)
+            reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eyebrows_obj, eyelashes_obj], frame)
             _apply_transforms_to_bones(chaos_joints, constrained_transforms[frame], frame)
             _apply_weights_to_shape_keys(head_mesh, constrained_bs[frame], frame)
             _apply_weights_to_shape_keys(eye_wedge_R_obj, constrained_bs[frame], frame)
@@ -417,6 +416,9 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         self.report({"INFO"}, f"Applied {fc} frames (reset + joints + blendshapes + material color)")
         # --- 7. POST-PROCESS & SAVE --
         add_smooth_corrective(head_mesh, cfg.modifiers)
+
+        eyebrows_obj.hide_viewport = True
+        eyelashes_obj.hide_viewport = True
 
         bpy.ops.wm.save_as_mainfile(filepath=cfg.runner.save_blend_path)
         return {"FINISHED"}
@@ -439,6 +441,27 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         head_mesh = get_ref(context, MESH)
         if not head_mesh:
             self.report({"ERROR"}, "No mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+
+        eye_wedge_R_obj = get_ref(context, EYE_WEDGE_R)
+        if not eye_wedge_R_obj:
+            self.report({"ERROR"}, "No eye wedge R mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+        eye_wedge_L_obj = get_ref(context, EYE_WEDGE_L)
+        if not eye_wedge_L_obj:
+            self.report({"ERROR"}, "No eye wedge L mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+        eyebrows_obj = get_ref(context, EYEBROWS)
+        if not eyebrows_obj:
+            self.report({"ERROR"}, "No eyebrows mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+        eyelashes_obj = get_ref(context, EYELASHES)
+        if not eyelashes_obj:
+            self.report({"ERROR"}, "No eyelashes mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+        body_geo_obj = get_ref(context, BODY_GEO)
+        if not body_geo_obj:
+            self.report({"ERROR"}, "No body mesh stored — run Variation Pipeline first")
             return {"CANCELLED"}
 
         cfg = _get_config()
@@ -478,9 +501,13 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         context.view_layer.objects.active = armature
         bpy.ops.object.mode_set(mode="POSE")
 
-        reset_frame(chaos_joints, head_mesh, frame)
+        reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eyebrows_obj, eyelashes_obj], frame)
         _apply_transforms_to_bones(chaos_joints, transforms, frame)
         _apply_weights_to_shape_keys(head_mesh, bs_weights, frame)
+        _apply_weights_to_shape_keys(eye_wedge_R_obj, bs_weights, frame)
+        _apply_weights_to_shape_keys(eye_wedge_L_obj, bs_weights, frame)
+        _apply_weights_to_shape_keys(eyebrows_obj, bs_weights, frame)
+        _apply_weights_to_shape_keys(eyelashes_obj, bs_weights, frame)
 
         bpy.ops.object.mode_set(mode="OBJECT")
 

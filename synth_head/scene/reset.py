@@ -45,9 +45,13 @@ def reset_shape_keys(
 
 def reset_frame(
     chaos_joints: list[bpy.types.PoseBone],
-    mesh_obj: bpy.types.Object,
+    mesh_objs: bpy.types.Object | list[bpy.types.Object],
     frame: int,
 ) -> None:
     """Full per-frame reset: bones + shape keys at neutral, keyed."""
     reset_bones(chaos_joints, frame)
-    reset_shape_keys(mesh_obj, frame)
+    if isinstance(mesh_objs, list):
+        for obj in mesh_objs:
+            reset_shape_keys(obj, frame)
+    else:
+        reset_shape_keys(mesh_objs, frame)

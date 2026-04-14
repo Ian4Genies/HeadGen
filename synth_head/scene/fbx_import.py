@@ -74,7 +74,7 @@ def import_fbx_and_classify(
 
     purge_orphan_meshes()
 
-    return head_geo, body_geo, armature, L_eye, R_eye, eyebrows, eyelashes
+    return head_geo, armature, L_eye, R_eye, eyebrows, eyelashes
 
 
 def purge_orphan_meshes() -> None:

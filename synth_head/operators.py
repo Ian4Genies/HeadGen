@@ -7,7 +7,7 @@ Operators here delegate to scene/ and core/ — no business logic lives here.
 import bpy
 
 from .core.math import clamp
-from .core.ref_keys import MESH, BODY_GEO, ARMATURE, HEAD_MAT, L_EYE, R_EYE, EYEBROWS, EYELASHES
+from .core.ref_keys import MESH, BODY_GEO, ARMATURE, HEAD_MAT, L_EYE, R_EYE, EYEBROWS, EYELASHES, EYE_MAT
 from .core.variation import (
     generate_chaos_transforms,
     generate_single_frame_transforms,
@@ -186,6 +186,11 @@ class SYNTHHEAD_PG_PipelineRefs(bpy.types.PropertyGroup):
         name="Head Material",
         type=bpy.types.Material,
     )
+    # Eye material
+    eye_mat: bpy.props.PointerProperty(
+        name="Eye Material",
+        type=bpy.types.Material,
+    )
 
 
 class SYNTHHEAD_OT_hello(bpy.types.Operator):
@@ -246,10 +251,10 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
             return {"CANCELLED"}
         if not eyebrows_obj:
             self.report({"ERROR"}, "Eyebrows mesh not found in FBX — aborting")
-            return {"CANCELLED"}
+            
         if not eyelashes_obj:
             self.report({"ERROR"}, "Eyelashes mesh not found in FBX — aborting")
-            return {"CANCELLED"}
+            
 
 
         # set the head mesh and armature references
@@ -263,6 +268,7 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         self.report({"INFO"}, f"head geo: '{head_geo_obj.name}'")
         # --- 1b. APPEND & ASSIGN SKIN MATERIAL ---
         head_mat = get_material_ref(context, HEAD_MAT)
+        eye_mat = get_material_ref(context, EYE_MAT)
         if head_mat is None:
             head_mat = append_material_from_blend(
                 cfg.materials.skin_material_blend_path,
@@ -272,7 +278,18 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
                 self.report({"ERROR"}, f"Material '{cfg.materials.skin_material_name}' not found in '{cfg.materials.skin_material_blend_path}' — aborting")
                 return {"CANCELLED"}
             set_material_ref(context, HEAD_MAT, head_mat)
+        if eye_mat is None:
+            eye_mat = append_material_from_blend(
+                cfg.materials.skin_material_blend_path,
+                cfg.materials.eye_material_name,
+            )
+            if eye_mat is None:
+                self.report({"ERROR"}, f"Material '{cfg.materials.eye_material_name}' not found in '{cfg.materials.skin_material_blend_path}' — aborting")
+                return {"CANCELLED"}
+            set_material_ref(context, EYE_MAT, eye_mat)
         assign_exclusive_material(head_geo_obj, head_mat)
+        assign_exclusive_material(L_eye_obj, eye_mat)
+        assign_exclusive_material(R_eye_obj, eye_mat)
         
 
         self.report({"INFO"}, f"Skin material assigned: '{head_mat.name}'")

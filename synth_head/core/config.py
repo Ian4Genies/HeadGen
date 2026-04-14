@@ -91,6 +91,7 @@ class RunnerConfig:
     frame_count: int = 400
     seed: int | None = None
     fbx_path: str = ""
+    gen13_blend_path: str = ""
     save_blend_path: str = ""
     issues_dir: str = ""
     good_dir: str = ""
@@ -103,6 +104,7 @@ class RunnerConfig:
             frame_count=d.get("frame_count", 400),
             seed=d.get("seed"),
             fbx_path=paths.get("fbx", ""),
+            gen13_blend_path=paths.get("gen13_blend", ""),
             save_blend_path=paths.get("save_blend", ""),
             issues_dir=paths.get("issues_dir", ""),
             good_dir=paths.get("good_dir", ""),
@@ -115,6 +117,7 @@ class RunnerConfig:
             frame_count=self.frame_count,
             seed=self.seed,
             fbx_path=str((base / self.fbx_path).resolve()) if self.fbx_path else "",
+            gen13_blend_path=str((base / self.gen13_blend_path).resolve()) if self.gen13_blend_path else "",
             save_blend_path=str((base / self.save_blend_path).resolve()) if self.save_blend_path else "",
             issues_dir=str((base / self.issues_dir).resolve()) if self.issues_dir else "",
             good_dir=str((base / self.good_dir).resolve()) if self.good_dir else "",

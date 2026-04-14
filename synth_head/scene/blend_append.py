@@ -6,6 +6,8 @@ interactively via Blender: Start rather than with pytest.
 """
 
 import bpy
+#import armeture methods
+from .armature import add_object_to_armature
 
 
 def append_material_from_blend(
@@ -66,3 +68,25 @@ def append_object_from_blend(
         do_reuse_local_id=False,
     )
     return bpy.data.objects.get(object_name)
+
+
+def append_gen13_and_classify(
+    blend_path: str,
+) -> None:
+    """Append the gen13.blend file and classify the objects."""
+    head_geo_obj = append_object_from_blend(blend_path, "headOnly_geo")
+    #find get the parent of head_geo_obj wich will be the armature
+    armature_obj = head_geo_obj.parent
+    body_geo_obj = append_object_from_blend(blend_path, "bodyOnly_geo")
+    add_object_to_armature(body_geo_obj, armature_obj)
+    L_eye_obj = append_object_from_blend(blend_path, "eye_L_geo")
+    add_object_to_armature(L_eye_obj, armature_obj)
+    R_eye_obj = append_object_from_blend(blend_path, "eye_R_geo")
+    add_object_to_armature(R_eye_obj, armature_obj)
+    eyebrows_obj = append_object_from_blend(blend_path, "eyebrows_geo")
+    add_object_to_armature(eyebrows_obj, armature_obj)
+    eyelashes_obj = append_object_from_blend(blend_path, "eyelashes_geo")
+    add_object_to_armature(eyelashes_obj, armature_obj)
+
+    return head_geo_obj, body_geo_obj, armature_obj, L_eye_obj, R_eye_obj, eyebrows_obj, eyelashes_obj 
+

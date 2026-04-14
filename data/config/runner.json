@@ -3,6 +3,7 @@
   "seed": null,
   "paths": {
     "fbx":            "genericGenie-0013-unified_rig.fbx",
+    "gen13_blend":    "gen13.blend",
     "save_blend":     "gen13_genie_chaos.blend",
     "issues_dir":     "head-issues",
     "good_dir":       "head-good",

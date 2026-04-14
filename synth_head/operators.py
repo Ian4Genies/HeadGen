@@ -32,7 +32,7 @@ from .scene.chaos_anim import (
     _apply_transforms_to_bones,
 )
 from .scene.armature import add_object_to_armature
-from .scene.blend_append import append_material_from_blend, append_object_from_blend
+from .scene.blend_append import append_material_from_blend, append_object_from_blend, append_gen13_and_classify
 from .scene.materials import assign_exclusive_material, randomize_head_material_color, read_material_color, apply_attractive_color
 from .scene.modifiers import add_smooth_corrective
 from .scene.reset import reset_frame
@@ -78,6 +78,7 @@ def _debug_config(cfg: PipelineConfig) -> None:
     p(f"  frame_count:     {cfg.runner.frame_count}")
     p(f"  seed:            {cfg.runner.seed}")
     p(f"  fbx_path:        {cfg.runner.fbx_path}")
+    p(f"  gen13_blend_path: {cfg.runner.gen13_blend_path}")
     p(f"  save_blend_path: {cfg.runner.save_blend_path}")
     p(f"  issues_dir:      {cfg.runner.issues_dir}")
     p(f"  good_dir:        {cfg.runner.good_dir}")
@@ -249,9 +250,12 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
     def execute(self, context):
         cfg = _get_config()
         # --- 1. IMPORT & VALIDATE ---
-        head_geo_obj, body_geo_obj, armature_obj, L_eye_obj, R_eye_obj, eyebrows_obj, eyelashes_obj = import_fbx_and_classify(
-            context, cfg.runner.fbx_path,
-        )
+        # head_geo_obj, body_geo_obj, armature_obj, L_eye_obj, R_eye_obj, eyebrows_obj, eyelashes_obj = import_fbx_and_classify(
+        #     context, cfg.runner.fbx_path,
+        # )
+
+        head_geo_obj, body_geo_obj, armature_obj, L_eye_obj, R_eye_obj, eyebrows_obj, eyelashes_obj  = append_gen13_and_classify(cfg.runner.gen13_blend_path)
+
 
         if not head_geo_obj:
             self.report({"ERROR"}, "headOnly_geo mesh not found in FBX — aborting")
@@ -312,6 +316,7 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
                 return {"CANCELLED"}
             set_material_ref(context, EYE_MAT, eye_mat)
         assign_exclusive_material(head_geo_obj, head_mat)
+        assign_exclusive_material(body_geo_obj, head_mat)
         assign_exclusive_material(L_eye_obj, eye_mat)
         assign_exclusive_material(R_eye_obj, eye_mat)
         

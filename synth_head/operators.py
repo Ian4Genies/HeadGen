@@ -414,8 +414,13 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
 
         bpy.ops.object.mode_set(mode="OBJECT")
         self.report({"INFO"}, f"Applied {fc} frames (reset + joints + blendshapes + material color)")
+        # --- 7. cleanup
+        
+        
         # --- 7. POST-PROCESS & SAVE --
-        add_smooth_corrective(head_mesh, cfg.modifiers)
+        #add_smooth_corrective(head_mesh, cfg.modifiers)
+
+
 
         eyebrows_obj.hide_viewport = True
         eyelashes_obj.hide_viewport = True

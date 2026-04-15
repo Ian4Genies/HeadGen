@@ -15,6 +15,7 @@ if "bpy" in locals():
     from .scene import snapshot as scene_snapshot
     from .scene import materials as scene_materials
     from .scene import blend_append as scene_blend_append
+    from .scene import mesh as scene_mesh
 
     importlib.reload(math)
     importlib.reload(core_modifiers)
@@ -36,6 +37,7 @@ if "bpy" in locals():
     importlib.reload(scene_snapshot)
     importlib.reload(scene_materials)
     importlib.reload(scene_blend_append)
+    importlib.reload(scene_mesh)
     importlib.reload(scene)
     importlib.reload(operators)
 

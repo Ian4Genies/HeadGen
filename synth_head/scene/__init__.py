@@ -13,6 +13,7 @@ from .snapshot import (
     apply_bone_transforms,
     apply_shape_key_values,
 )
+from .mesh import delete_vertex_group, sew_vertices
 
 __all__ = [
     "add_object_to_armature",
@@ -33,4 +34,6 @@ __all__ = [
     "read_shape_key_values",
     "apply_bone_transforms",
     "apply_shape_key_values",
+    "delete_vertex_group",
+    "sew_vertices",
 ]

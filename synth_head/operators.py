@@ -393,9 +393,6 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
             # store the constrained weights for this frame
             constrained_bs[frame] = weights
         # --- 6. BAKE TO SCENE (pose bones + shape keys + material color per frame) ---
-        context.view_layer.objects.active = armature
-        bpy.ops.object.mode_set(mode="POSE")
-
         color_rng = _random.Random(cfg.runner.seed + 1 if cfg.runner.seed is not None else None)
         for frame in range(1, fc + 1):
             context.scene.frame_set(frame)
@@ -411,11 +408,9 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
             attr_color = attractive_colors[frame]
             if attr_color is not None:
                 apply_attractive_color(head_mesh, attr_color, rng_color, cfg.materials.final_color_randomness, frame)
-
-        bpy.ops.object.mode_set(mode="OBJECT")
         self.report({"INFO"}, f"Applied {fc} frames (reset + joints + blendshapes + material color)")
         # --- 7. cleanup
-        
+
         
         # --- 7. POST-PROCESS & SAVE --
         #add_smooth_corrective(head_mesh, cfg.modifiers)
@@ -503,8 +498,6 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         transforms, bs_weights = unflatten_params(flat, joint_names)
 
         frame = context.scene.frame_current
-        context.view_layer.objects.active = armature
-        bpy.ops.object.mode_set(mode="POSE")
 
         reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eyebrows_obj, eyelashes_obj], frame)
         _apply_transforms_to_bones(chaos_joints, transforms, frame)
@@ -513,8 +506,6 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         _apply_weights_to_shape_keys(eye_wedge_L_obj, bs_weights, frame)
         _apply_weights_to_shape_keys(eyebrows_obj, bs_weights, frame)
         _apply_weights_to_shape_keys(eyelashes_obj, bs_weights, frame)
-
-        bpy.ops.object.mode_set(mode="OBJECT")
 
         rng_color = (attractor_rng.random(), attractor_rng.random(), attractor_rng.random(), 1.0)
         randomize_head_material_color(head_mesh, rng_color, frame)
@@ -681,9 +672,6 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
 
         chaos_joints = collect_chaos_joints(armature, cfg.chaos_joint_names)
 
-        context.view_layer.objects.active = armature
-        bpy.ops.object.mode_set(mode="POSE")
-
         reset_frame(chaos_joints, head_mesh, frame)
         apply_bone_transforms(armature, snapshot.get("chaos_joints", {}), frame)
 
@@ -691,8 +679,6 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
         all_shapes.update(snapshot.get("variation_shapes", {}))
         all_shapes.update(snapshot.get("expression_shapes", {}))
         apply_shape_key_values(head_mesh, all_shapes, frame)
-
-        bpy.ops.object.mode_set(mode="OBJECT")
 
         skin_color = snapshot.get("skin_color")
         if skin_color is not None:

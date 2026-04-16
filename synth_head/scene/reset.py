@@ -39,6 +39,8 @@ def reset_shape_keys(
     for sk in shape_keys.key_blocks:
         if sk.name == "Basis":
             continue
+        if sk.name == "eye_shape":
+            continue
         sk.value = 0.0
         sk.keyframe_insert(data_path="value", frame=frame)
 

@@ -36,6 +36,7 @@ from .scene.blend_append import append_material_from_blend, append_object_from_b
 from .scene.materials import assign_exclusive_material, randomize_head_material_color, read_material_color, apply_attractive_color
 from .scene.modifiers import add_smooth_corrective
 from .scene.reset import reset_frame
+from .scene.mesh import clean_head_mesh
 from .scene.snapshot import (
     read_bone_transforms,
     read_shape_key_values,
@@ -139,8 +140,10 @@ def _debug_config(cfg: PipelineConfig) -> None:
     p(f"  assets_blend_path: {cfg.cleanup.assets_blend_path}")
     p(f"  eye_wedge_R_name: {cfg.cleanup.eye_wedge_R_name}")
     p(f"  eye_wedge_L_name: {cfg.cleanup.eye_wedge_L_name}")
-    p(f"  eye_wedge_R_indices: {cfg.cleanup.eye_wedge_R_indices}")
-    p(f"  eye_wedge_L_indices: {cfg.cleanup.eye_wedge_L_indices}")
+    p(f"  mouth_bag_group: {cfg.cleanup.mouth_bag_group}")
+    p(f"  mouth_sew_indices: {cfg.cleanup.mouth_sew_indices}")
+    # p(f"  eye_wedge_R_indices: {cfg.cleanup.eye_wedge_R_indices}")
+    # p(f"  eye_wedge_L_indices: {cfg.cleanup.eye_wedge_L_indices}")
 
 
 class SYNTHHEAD_PG_PipelineRefs(bpy.types.PropertyGroup):
@@ -689,6 +692,51 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class SYNTHHEAD_OT_CleanMesh(bpy.types.Operator):
+    """Combine eye wedges and body into the head mesh, sew the lips, and remove the mouth bag"""
+
+    bl_idname = "synth_head.clean_mesh"
+    bl_label = "Synth Head: Clean Mesh"
+    bl_description = (
+        "Sew lip borders, delete mouth bag, ingest eye wedges and body geo "
+        "into the head mesh (preserving shape keys), then weld all seams"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        head_mesh = get_ref(context, MESH)
+        if not head_mesh:
+            self.report({"ERROR"}, "No mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+
+        wedge_R = get_ref(context, EYE_WEDGE_R)
+        if not wedge_R:
+            self.report({"ERROR"}, "No eye wedge R stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+
+        wedge_L = get_ref(context, EYE_WEDGE_L)
+        if not wedge_L:
+            self.report({"ERROR"}, "No eye wedge L stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+
+        body = get_ref(context, BODY_GEO)
+        if not body:
+            self.report({"ERROR"}, "No body geo stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+
+        cfg = _get_config()
+
+        clean_head_mesh(head_mesh, wedge_R, wedge_L, body, cfg.cleanup)
+
+        # Clear refs for the objects that were deleted by clean_head_mesh
+        set_ref(context, EYE_WEDGE_R, None)
+        set_ref(context, EYE_WEDGE_L, None)
+        set_ref(context, BODY_GEO, None)
+
+        self.report({"INFO"}, "Mesh cleaned: lips sewn, mouth bag removed, wedges and body merged")
+        return {"FINISHED"}
+
+
 class SYNTHHEAD_MT_main_menu(bpy.types.Menu):
     bl_idname = "SYNTHHEAD_MT_main_menu"
     bl_label = "Synth Head"
@@ -699,6 +747,7 @@ class SYNTHHEAD_MT_main_menu(bpy.types.Menu):
         layout.operator(SYNTHHEAD_OT_ping.bl_idname)
         layout.separator()
         layout.operator(SYNTHHEAD_OT_VariationPipeline.bl_idname)
+        layout.operator(SYNTHHEAD_OT_CleanMesh.bl_idname)
         layout.operator(SYNTHHEAD_OT_RandomizeFace.bl_idname)
         layout.separator()
         layout.operator(SYNTHHEAD_OT_SaveHeadIssue.bl_idname)
@@ -716,6 +765,7 @@ CLASSES = [
     SYNTHHEAD_OT_hello,
     SYNTHHEAD_OT_ping,
     SYNTHHEAD_OT_VariationPipeline,
+    SYNTHHEAD_OT_CleanMesh,
     SYNTHHEAD_OT_RandomizeFace,
     SYNTHHEAD_OT_SaveHeadIssue,
     SYNTHHEAD_OT_SaveGoodHead,

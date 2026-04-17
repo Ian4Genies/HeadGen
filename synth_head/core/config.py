@@ -64,8 +64,8 @@ class CleanupConfig:
     assets_blend_path: str = "assets.blend"
     eye_wedge_R_name: str = ""
     eye_wedge_L_name: str = ""
-    eye_wedge_R_indices: dict[str, int] = field(default_factory=dict)
-    eye_wedge_L_indices: dict[str, int] = field(default_factory=dict)
+    mouth_bag_group: str = ""
+    mouth_sew_indices: dict[str, int] = field(default_factory=dict)
 
     @classmethod
     def from_dict(cls, d: dict) -> "CleanupConfig":
@@ -74,16 +74,17 @@ class CleanupConfig:
             assets_blend_path=paths.get("assets_blend_path", "assets.blend"),
             eye_wedge_R_name=d.get("eye_wedge_R_name", ""),
             eye_wedge_L_name=d.get("eye_wedge_L_name", ""),
-            eye_wedge_R_indices=d.get("eye_wedge_R_indices", {}),
-            eye_wedge_L_indices=d.get("eye_wedge_L_indices", {}),
+            mouth_bag_group=d.get("mouth_bag_group", ""),
+            mouth_sew_indices=d.get("mouth_sew_indices", {}),
         )
+
     def resolve(self, base: Path) -> "CleanupConfig":
         return CleanupConfig(
             assets_blend_path=str((base / self.assets_blend_path).resolve()) if self.assets_blend_path else "",
             eye_wedge_R_name=self.eye_wedge_R_name,
             eye_wedge_L_name=self.eye_wedge_L_name,
-            eye_wedge_R_indices=self.eye_wedge_R_indices,
-            eye_wedge_L_indices=self.eye_wedge_L_indices,
+            mouth_bag_group=self.mouth_bag_group,
+            mouth_sew_indices=self.mouth_sew_indices,
         )
 
 @dataclass

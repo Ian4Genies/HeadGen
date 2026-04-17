@@ -17,6 +17,7 @@ All paths in `runner.json` are relative to the `data/` directory.
 | `modifiers.json` | Blender modifier settings (smooth corrective) |
 | `attractor.json` | Attractive-head attractor system (nudge toward curated references) |
 | `materials.json` | Skin material source file and node configuration |
+| `cleanup.json` | Mesh surgery settings: mouth bag group, lip sew indices, eye wedge and body object names |
 
 ---
 
@@ -517,3 +518,52 @@ All constraint rules and hard clamps reference parameters using a flat key forma
 | Blendshape weight | Shape key name | `JAW_DROP`, `CHEEK_PUFF_L` |
 
 Rotation values are in **degrees**. Location values are in **meters** (Blender scene units). Scale values are deviations from `1.0` during generation but stored as absolute values (e.g. `1.1` = 10% larger) in constraints.
+
+---
+
+## cleanup.json
+
+Controls the **Clean Mesh** operator, which performs all one-time mesh surgery after the Variation Pipeline runs. Operations happen in a single bmesh session so shape keys and animation data are preserved.
+
+```json
+{
+  "paths": {
+    "assets_blend_path": "assets.blend"
+  },
+  "eye_wedge_R_name": "eye_wedge_R",
+  "eye_wedge_L_name": "eye_wedge_L",
+  "mouth_bag_group": "MouthBag",
+  "mouth_sew_indices": {
+    "123": 456,
+    "124": 457
+  }
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `paths.assets_blend_path` | string | Source `.blend` file for appended assets, relative to `data/` |
+| `eye_wedge_R_name` | string | Scene name of the right eye wedge object to ingest into the head mesh |
+| `eye_wedge_L_name` | string | Scene name of the left eye wedge object to ingest into the head mesh |
+| `mouth_bag_group` | string | Vertex group name on the head mesh whose vertices are deleted (the interior mouth bag geometry) |
+| `mouth_sew_indices` | object | Pairs of head-mesh vertex indices to snap and merge, closing the lip border after the mouth bag is removed. Keys and values are both indices into the **original untransformed head mesh**. |
+
+### mouth_sew_indices format
+
+```json
+"mouth_sew_indices": {
+  "<idx_A>": <idx_B>
+}
+```
+
+Each entry merges vertex `idx_A` onto vertex `idx_B` (both are head-mesh vertex indices). These values must be recorded from the original FBX head mesh before any surgery is applied. Obtain them by entering Edit Mode in Blender, enabling Vertex Index overlay (Overlays → Statistics or the N-panel), and noting paired lip-border vertex indices.
+
+### Mesh surgery order
+
+1. Lip borders are snapped together using `mouth_sew_indices` and welded.
+2. The `mouth_bag_group` vertex group is deleted.
+3. Eye wedge R, eye wedge L, and the body mesh are ingested (geometry + shape keys transferred).
+4. A `remove_doubles` pass welds all overlapping seam borders (eye sockets, neck).
+5. The wedge and body objects are removed from the scene.
+
+Shape keys with shared names across meshes are merged by name — each vert carries the delta from its source mesh. On welded seam verts the head's delta takes priority.

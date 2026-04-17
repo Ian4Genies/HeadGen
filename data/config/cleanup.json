@@ -5,5 +5,13 @@
     "eye_wedge_R_name": "eye_wedge_R",
     "eye_wedge_L_name": "eye_wedge_L",
     "mouth_bag_group": "MouthBag",
-    "mouth_sew_indices": {}
+    "mouth_sew_indices": {
+      "1098": 1707,
+      "1183": 1074,
+      "1297": 1282,
+      "1075": 1073,
+      "1527": 1539,
+      "1076": 1072,
+      "196": 22
+    }
   }

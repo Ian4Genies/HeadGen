@@ -61,6 +61,15 @@ def _freeze_object(
     Uses ``bpy.data.meshes.new_from_object`` on the evaluated object — modifiers
     are applied and shape keys are collapsed into the basis positions.  The
     source object is not touched.
+
+    The source's ``matrix_world`` is then baked into the frozen mesh's vertex
+    coordinates so the staging object can sit at world identity.  This is the
+    Python equivalent of Blender's "Apply All Transforms" and is necessary
+    because the armature above these meshes carries a non-identity transform:
+    without this bake the exported GLB would place every part at the armature's
+    offset instead of at the pose we actually see in the viewport.  A negative
+    determinant means the transform inverts winding order (mirror / negative
+    scale), so we flip normals to keep shading correct in the GLB.
     """
     obj_eval = src_obj.evaluated_get(depsgraph)
     frozen_mesh = bpy.data.meshes.new_from_object(
@@ -69,6 +78,12 @@ def _freeze_object(
         depsgraph=depsgraph,
     )
     frozen_mesh.name = f"{label}_frozen"
+
+    world_matrix = src_obj.matrix_world.copy()
+    frozen_mesh.transform(world_matrix)
+    if world_matrix.determinant() < 0.0:
+        frozen_mesh.flip_normals()
+
     obj = bpy.data.objects.new(f"{label}_frozen", frozen_mesh)
     collection.objects.link(obj)
     return obj

@@ -1,0 +1,12 @@
+{
+  "head_bake_resolution":      2048,
+  "eye_wedge_bake_resolution": 512,
+  "bake_samples":              4,
+  "bake_margin":               8,
+  "glb_format":                "GLB",
+  "frame_range":               [1,4],
+
+  "include_eyes":  true,
+  "include_brows": false,
+  "include_lashes": false
+}

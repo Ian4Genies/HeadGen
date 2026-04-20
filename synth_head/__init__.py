@@ -7,6 +7,7 @@ if "bpy" in locals():
     from .core import attractor as core_attractor
     from .core import config as core_config
     from .core import snapshot as core_snapshot
+    from .core import export as core_export
     from . import scene
     from .scene import armature as scene_armature
     from .scene import fbx_import, chaos_anim, modifiers as scene_modifiers, refs as scene_refs
@@ -16,6 +17,8 @@ if "bpy" in locals():
     from .scene import materials as scene_materials
     from .scene import blend_append as scene_blend_append
     from .scene import mesh as scene_mesh
+    from .scene import export_bake as scene_export_bake
+    from .scene import export_glb as scene_export_glb
 
     importlib.reload(math)
     importlib.reload(core_modifiers)
@@ -26,6 +29,7 @@ if "bpy" in locals():
     importlib.reload(core_attractor)
     importlib.reload(core_config)
     importlib.reload(core_snapshot)
+    importlib.reload(core_export)
     importlib.reload(core)
     importlib.reload(scene_armature)
     importlib.reload(fbx_import)
@@ -38,6 +42,8 @@ if "bpy" in locals():
     importlib.reload(scene_materials)
     importlib.reload(scene_blend_append)
     importlib.reload(scene_mesh)
+    importlib.reload(scene_export_bake)
+    importlib.reload(scene_export_glb)
     importlib.reload(scene)
     importlib.reload(operators)
 

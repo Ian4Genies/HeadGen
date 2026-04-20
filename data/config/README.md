@@ -18,6 +18,7 @@ All paths in `runner.json` are relative to the `data/` directory.
 | `attractor.json` | Attractive-head attractor system (nudge toward curated references) |
 | `materials.json` | Skin material source file and node configuration |
 | `cleanup.json` | Mesh surgery settings: mouth bag group, lip sew indices, eye wedge and body object names |
+| `export.json` | Pipeline 03 (Export) settings: bake resolutions, GLB format, per-part include flags |
 
 ---
 
@@ -37,7 +38,8 @@ Controls the top-level pipeline run.
     "save_export_blend":      "Pipeline_03_Export.blend",
     "issues_dir":             "head-issues",
     "good_dir":               "head-good",
-    "attractive_dir":         "head-attractive"
+    "attractive_dir":         "head-attractive",
+    "final_output_dir":       "final-output"
   }
 }
 ```
@@ -54,6 +56,7 @@ Controls the top-level pipeline run.
 | `paths.issues_dir` | string | Directory for issue snapshots, relative to `data/` |
 | `paths.good_dir` | string | Directory for good-head qualitative/quantitative snapshots, relative to `data/` |
 | `paths.attractive_dir` | string | Directory for attractive-head snapshots used by the attractor system, relative to `data/` |
+| `paths.final_output_dir` | string | Output root for Pipeline 03 — per-frame `.glb`, snapshot JSONs, and `frame_NNNN/` texture sidecar folders, relative to `data/` |
 
 ---
 
@@ -573,3 +576,86 @@ Each entry merges vertex `idx_A` onto vertex `idx_B` (both are head-mesh vertex 
 5. The wedge and body objects are removed from the scene.
 
 Shape keys with shared names across meshes are merged by name — each vert carries the delta from its source mesh. On welded seam verts the head's delta takes priority.
+
+---
+
+## export.json
+
+Settings for the **Export Pipeline** operator (Pipeline 03), which runs after Clean Mesh. For each frame in the range it produces a static GLB with all deformation + shape keys collapsed into vertex positions, plus baked diffuse textures and a snapshot JSON sidecar.
+
+```json
+{
+  "head_bake_resolution":      2048,
+  "eye_wedge_bake_resolution": 512,
+  "bake_samples":              4,
+  "bake_margin":               8,
+  "glb_format":                "GLB",
+  "frame_range":               null,
+
+  "include_eyes":  true,
+  "include_brows": false,
+  "include_lashes": false
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `head_bake_resolution` | int | Bake resolution (px) for the `head_mat` slot on head_geo. Typical values: `1024`, `2048`, `4096`. |
+| `eye_wedge_bake_resolution` | int | Bake resolution (px) for the two eye-wedge material slots (`eye_mat.001` = R, `eye_mat.002` = L) on head_geo. The eye wedge polygons are sewn into head_geo during Clean Mesh; these bakes are independent of the standalone eye meshes controlled by `include_eyes`. |
+| `bake_samples` | int | Cycles samples per bake. `4` is usually enough for flat diffuse-color bakes. |
+| `bake_margin` | int | UV edge padding in pixels — prevents visible seams on the mesh. |
+| `glb_format` | string | `"GLB"` (self-contained binary, textures embedded) or `"GLTF_SEPARATE"` / `"GLTF_EMBEDDED"`. Default `"GLB"`. |
+| `frame_range` | `[int, int]` \| null | Frame window to export. `null` means `[1, runner.frame_count]`. Use a short range (e.g. `[1, 5]`) for smoke tests. |
+| `include_eyes` | bool | If `true`, the L and R eye meshes are frozen and exported as separate objects inside the GLB. No texture bake — their existing materials travel through unchanged. |
+| `include_brows` | bool | If `true`, the eyebrows mesh is frozen and exported as a separate object. |
+| `include_lashes` | bool | If `true`, the eyelashes mesh is frozen and exported as a separate object. |
+
+### Per-frame output layout
+
+All artifacts land under `runner.paths.final_output_dir`:
+
+```
+data/final-output/
+  frame_0001.glb                     # static GLB, textures embedded
+  final_frame0001_<ts>.json          # snapshot metadata
+  frame_0001/                        # sidecar texture directory
+    head_diffuse.png                 # baked from head_mat
+    R_eye_wedge_diffuse.png          # baked from eye_mat.001
+    L_eye_wedge_diffuse.png          # baked from eye_mat.002
+  frame_0002.glb
+  final_frame0002_<ts>.json
+  frame_0002/
+    ...
+```
+
+The per-frame `frame_NNNN/` folder is a sidecar — the textures inside are also embedded into the GLB binary, so the glb is fully self-contained. The sidecar exists for inspection, debugging, and future PBR expansion.
+
+### Bake targets on head_geo
+
+After Clean Mesh, `head_geo` carries three material slots, all baked in a single Cycles call per frame (each writes into its own image in parallel):
+
+| Slot material | Role | Baked to | Resolution key |
+|---|---|---|---|
+| `head_mat` | Skin (keyframed color + texture) | `head_diffuse.png` | `head_bake_resolution` |
+| `eye_mat.001` | Right eye wedge (sewn into head_geo during Clean Mesh) | `R_eye_wedge_diffuse.png` | `eye_wedge_bake_resolution` |
+| `eye_mat.002` | Left eye wedge (sewn into head_geo during Clean Mesh) | `L_eye_wedge_diffuse.png` | `eye_wedge_bake_resolution` |
+
+Any other material on head_geo not in this list is left untouched — its native shader is written into the GLB as-is by the glTF exporter.
+
+### Non-destructive contract
+
+The operator uses `bpy.data.meshes.new_from_object` on the evaluated depsgraph to produce static frozen meshes per frame. The source scene is byte-identical before and after the operator runs:
+
+- Source armature, meshes, and shape keys are never modified.
+- Bake-target Image Texture nodes added to head_geo's materials during the run are fully removed on exit (even on exception).
+- The previous render engine is restored on exit.
+
+### Performance notes
+
+- **Throughput**: at 2K head / 512 eye wedges / 4 Cycles samples / `DIFFUSE`-`COLOR` only, a single multi-material bake call is typically 1–5 seconds on a modern GPU. A full 500-frame run is usually 15–60 minutes.
+- **Disk**: ~500 × (1 MB GLB + 3 × 0.5–2 MB PNG + 30 KB JSON) ≈ 2–3 GB.
+- Use `frame_range: [1, 10]` to smoke-test before full runs.
+
+### `body_geo` is out of scope
+
+After Clean Mesh, `body_geo` no longer exists as a standalone object — it was sewn into `head_geo`. The Export Pipeline never references it.

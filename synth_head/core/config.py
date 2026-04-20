@@ -99,6 +99,7 @@ class RunnerConfig:
     issues_dir: str = ""
     good_dir: str = ""
     attractive_dir: str = ""
+    final_output_dir: str = ""
 
     @classmethod
     def from_dict(cls, d: dict) -> RunnerConfig:
@@ -114,6 +115,7 @@ class RunnerConfig:
             issues_dir=paths.get("issues_dir", ""),
             good_dir=paths.get("good_dir", ""),
             attractive_dir=paths.get("attractive_dir", ""),
+            final_output_dir=paths.get("final_output_dir", ""),
         )
 
     def resolve(self, base: Path) -> RunnerConfig:
@@ -129,6 +131,45 @@ class RunnerConfig:
             issues_dir=str((base / self.issues_dir).resolve()) if self.issues_dir else "",
             good_dir=str((base / self.good_dir).resolve()) if self.good_dir else "",
             attractive_dir=str((base / self.attractive_dir).resolve()) if self.attractive_dir else "",
+            final_output_dir=str((base / self.final_output_dir).resolve()) if self.final_output_dir else "",
+        )
+
+
+@dataclass
+class ExportConfig:
+    """Settings for Pipeline 03 — per-frame static GLB + baked diffuse textures."""
+
+    head_bake_resolution: int = 2048
+    eye_wedge_bake_resolution: int = 512
+    bake_samples: int = 4
+    bake_margin: int = 8
+    glb_format: str = "GLB"
+    frame_range: tuple[int, int] | None = None
+
+    include_eyes: bool = True
+    include_brows: bool = False
+    include_lashes: bool = False
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "ExportConfig":
+        raw_range = d.get("frame_range")
+        if raw_range is None:
+            frame_range = None
+        else:
+            # Accept [start, end] or (start, end) from JSON.
+            start, end = raw_range
+            frame_range = (int(start), int(end))
+
+        return cls(
+            head_bake_resolution=int(d.get("head_bake_resolution", 2048)),
+            eye_wedge_bake_resolution=int(d.get("eye_wedge_bake_resolution", 512)),
+            bake_samples=int(d.get("bake_samples", 4)),
+            bake_margin=int(d.get("bake_margin", 8)),
+            glb_format=str(d.get("glb_format", "GLB")),
+            frame_range=frame_range,
+            include_eyes=bool(d.get("include_eyes", True)),
+            include_brows=bool(d.get("include_brows", False)),
+            include_lashes=bool(d.get("include_lashes", False)),
         )
 
 
@@ -142,6 +183,7 @@ class PipelineConfig:
     modifiers: SmoothCorrectiveConfig = field(default_factory=SmoothCorrectiveConfig)
     attractor: AttractorConfig = field(default_factory=AttractorConfig)
     materials: MaterialsConfig = field(default_factory=MaterialsConfig)
+    export: ExportConfig = field(default_factory=ExportConfig)
     chaos_joint_names: frozenset[str] = field(default_factory=lambda: frozenset(CHAOS_JOINT_NAMES))
     config_dir: Path = field(default_factory=lambda: Path("."))
 
@@ -225,6 +267,13 @@ def load_config(config_dir: str | Path) -> PipelineConfig:
     else:
         cleanup = CleanupConfig()
 
+    # --- export ---
+    export_path = d / "export.json"
+    if export_path.exists():
+        export = ExportConfig.from_dict(_load_json(export_path))
+    else:
+        export = ExportConfig()
+
     return PipelineConfig(
         runner=runner,
         cleanup=cleanup,
@@ -234,6 +283,7 @@ def load_config(config_dir: str | Path) -> PipelineConfig:
         modifiers=modifiers,
         attractor=attractor,
         materials=materials,
+        export=export,
         chaos_joint_names=joint_names,
         config_dir=d,
     )

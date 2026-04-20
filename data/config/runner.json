@@ -9,6 +9,7 @@
     "save_export_blend":      "Pipeline_03_Export.blend",
     "issues_dir":             "head-issues",
     "good_dir":               "head-good",
-    "attractive_dir":         "head-attractive"
+    "attractive_dir":         "head-attractive",
+    "final_output_dir":       "final-output"
   }
 }

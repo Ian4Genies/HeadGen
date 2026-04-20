@@ -44,8 +44,13 @@ from .scene.snapshot import (
     apply_shape_key_values,
     apply_material_color,
 )
+from .scene.export_bake import scope_bake_environment, bake_head_materials
+from .scene.export_glb import staging_scene, rewrite_head_material_slots, export_glb
+from .core.export import frame_glb_name
 from .core.snapshot import build_snapshot, save_snapshot, load_snapshot
 from .core.config import load_config, PipelineConfig
+
+import types
 
 import json
 from pathlib import Path
@@ -86,6 +91,18 @@ def _debug_config(cfg: PipelineConfig) -> None:
     p(f"  issues_dir:      {cfg.runner.issues_dir}")
     p(f"  good_dir:        {cfg.runner.good_dir}")
     p(f"  attractive_dir:  {cfg.runner.attractive_dir}")
+    p(f"  final_output_dir: {cfg.runner.final_output_dir}")
+
+    p(f"--- EXPORT ---")
+    p(f"  head_bake_resolution:      {cfg.export.head_bake_resolution}")
+    p(f"  eye_wedge_bake_resolution: {cfg.export.eye_wedge_bake_resolution}")
+    p(f"  bake_samples:              {cfg.export.bake_samples}")
+    p(f"  bake_margin:               {cfg.export.bake_margin}")
+    p(f"  glb_format:                {cfg.export.glb_format}")
+    p(f"  frame_range:               {cfg.export.frame_range}")
+    p(f"  include_eyes:              {cfg.export.include_eyes}")
+    p(f"  include_brows:             {cfg.export.include_brows}")
+    p(f"  include_lashes:            {cfg.export.include_lashes}")
 
     p(f"--- CHAOS JOINTS ({len(cfg.chaos_joint_names)}) ---")
     p(f"  names:          {sorted(cfg.chaos_joint_names)}")
@@ -740,6 +757,128 @@ class SYNTHHEAD_OT_CleanMesh(bpy.types.Operator):
         return {"FINISHED"}
 
 
+def _gather_export_refs(context) -> types.SimpleNamespace:
+    """Collect all source-scene refs that the export pipeline needs.
+
+    Returns a namespace with: head_geo, L_eye, R_eye, eyebrows, eyelashes.
+    Missing refs come through as None — staging_scene handles them based on
+    the include_* flags in ExportConfig.  body_geo is deliberately omitted:
+    it was sewn into head_geo during Clean Mesh and no longer exists as a
+    standalone object.
+    """
+    return types.SimpleNamespace(
+        head_geo=get_ref(context, MESH),
+        L_eye=get_ref(context, L_EYE),
+        R_eye=get_ref(context, R_EYE),
+        eyebrows=get_ref(context, EYEBROWS),
+        eyelashes=get_ref(context, EYELASHES),
+    )
+
+
+def _write_export_snapshot(
+    context,
+    cfg: PipelineConfig,
+    out_dir: Path,
+    frame: int,
+    label: str = "final",
+) -> Path | None:
+    """Build + save a snapshot JSON for the current frame into *out_dir*.
+
+    Mirrors the data captured by ``_save_head_snapshot`` but skips the attractor
+    manifest update — the final-output folder is a handoff artifact, not a
+    pool the attractor consumes.
+    """
+    armature = get_ref(context, ARMATURE)
+    head_mesh = get_ref(context, MESH)
+    if armature is None or head_mesh is None:
+        return None
+
+    joint_data = read_bone_transforms(armature, cfg.chaos_joint_names)
+    var_shapes, expr_shapes = read_shape_key_values(
+        head_mesh,
+        cfg.blendshapes.variation_shapes,
+        cfg.blendshapes.expression_shapes,
+    )
+    skin_color = read_material_color(head_mesh)
+    config_raw = _load_config_dir_raw(cfg)
+
+    snapshot = build_snapshot(
+        chaos_joints=joint_data,
+        variation_shapes=var_shapes,
+        expression_shapes=expr_shapes,
+        config_snapshot=config_raw,
+        frame=frame,
+        label=label,
+        note="",
+        skin_color=skin_color,
+    )
+    return save_snapshot(snapshot, out_dir)
+
+
+class SYNTHHEAD_OT_ExportPipeline(bpy.types.Operator):
+    """Run Pipeline 03 (Export): per-frame static GLB + baked diffuse textures + snapshot."""
+
+    bl_idname = "synth_head.export_pipeline"
+    bl_label = "Synth Head: Export Pipeline"
+    bl_description = (
+        "For every frame in the range: bake head_geo diffuse textures, freeze "
+        "all enabled meshes, and export a self-contained static GLB into "
+        "data/final-output/ with a snapshot JSON sidecar."
+    )
+    bl_options = {"REGISTER"}
+
+    def execute(self, context):
+        cfg = _get_config()
+        refs = _gather_export_refs(context)
+
+        if refs.head_geo is None:
+            self.report({"ERROR"}, "No head mesh stored — run Variation Pipeline + Clean Mesh first")
+            return {"CANCELLED"}
+
+        if not cfg.runner.final_output_dir:
+            self.report({"ERROR"}, "runner.final_output_dir is not configured")
+            return {"CANCELLED"}
+
+        out_dir = Path(cfg.runner.final_output_dir)
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        fr = cfg.export.frame_range or (1, cfg.runner.frame_count)
+        start, end = int(fr[0]), int(fr[1])
+
+        self.report({"INFO"}, f"Export pipeline: frames {start}..{end} → {out_dir}")
+
+        with scope_bake_environment(refs.head_geo, cfg.export) as bake_ctx:
+            for frame in range(start, end + 1):
+                context.scene.frame_set(frame)
+
+                png_paths = bake_head_materials(
+                    refs.head_geo,
+                    bake_ctx,
+                    out_dir=out_dir,
+                    frame=frame,
+                    samples=cfg.export.bake_samples,
+                    margin=cfg.export.bake_margin,
+                )
+
+                with staging_scene(refs, cfg.export) as stage:
+                    rewrite_head_material_slots(stage.head_geo, png_paths)
+                    export_glb(
+                        stage.objects,
+                        out_dir / frame_glb_name(frame),
+                        format=cfg.export.glb_format,
+                    )
+
+                _write_export_snapshot(context, cfg, out_dir, frame, label="final")
+
+                print(f"[SynthHead][Export] frame {frame}/{end} done")
+
+        if cfg.runner.save_export_blend_path:
+            bpy.ops.wm.save_as_mainfile(filepath=cfg.runner.save_export_blend_path)
+
+        self.report({"INFO"}, f"Exported {end - start + 1} frames → {out_dir}")
+        return {"FINISHED"}
+
+
 class SYNTHHEAD_MT_main_menu(bpy.types.Menu):
     bl_idname = "SYNTHHEAD_MT_main_menu"
     bl_label = "Synth Head"
@@ -751,6 +890,7 @@ class SYNTHHEAD_MT_main_menu(bpy.types.Menu):
         layout.separator()
         layout.operator(SYNTHHEAD_OT_VariationPipeline.bl_idname)
         layout.operator(SYNTHHEAD_OT_CleanMesh.bl_idname)
+        layout.operator(SYNTHHEAD_OT_ExportPipeline.bl_idname)
         layout.operator(SYNTHHEAD_OT_RandomizeFace.bl_idname)
         layout.separator()
         layout.operator(SYNTHHEAD_OT_SaveHeadIssue.bl_idname)
@@ -769,6 +909,7 @@ CLASSES = [
     SYNTHHEAD_OT_ping,
     SYNTHHEAD_OT_VariationPipeline,
     SYNTHHEAD_OT_CleanMesh,
+    SYNTHHEAD_OT_ExportPipeline,
     SYNTHHEAD_OT_RandomizeFace,
     SYNTHHEAD_OT_SaveHeadIssue,
     SYNTHHEAD_OT_SaveGoodHead,

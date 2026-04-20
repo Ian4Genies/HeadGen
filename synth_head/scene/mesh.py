@@ -126,7 +126,152 @@ def _collect_vertex_group(
 # Public API
 # ---------------------------------------------------------------------------
 
+
+def cut_and_sew(
+    cut_group_name: str,
+    mesh_obj: bpy.types.Object,
+    sew_pairs,
+) -> None:
+    """Delete a vertex group and sew paired vertex indices in one bmesh session.
+
+    Generalized version of the lip-cut-and-sew step that works well on any
+    mesh with a vertex group to remove and paired boundary verts to weld.
+
+    Operations (all in one bmesh session on *mesh_obj*):
+      1. Stash shape key animation action so the bmesh round-trip can't orphan it.
+      2. Resolve BMVert references for every sew pair and every cut vert.
+      3. Drop any sew pair whose verts overlap the cut set.
+      4. Delete the cut verts.
+      5. Snap each surviving sew pair together and weld via remove_doubles.
+      6. Write the mesh back and restore the animation action if needed.
+
+    Args:
+        cut_group_name: Vertex group name on *mesh_obj* whose members will be
+                        deleted.  Pass an empty string to skip the cut.
+        mesh_obj:       The mesh Object to edit in place.
+        sew_pairs:      Index pairs to merge after the cut.  Accepts either
+                        a ``{"<idx_a>": idx_b, ...}`` dict (as read from
+                        cleanup.json) or an iterable of ``(idx_a, idx_b)``
+                        tuples.  Both indices reference the ORIGINAL mesh
+                        (pre-cut), since all refs are resolved before the
+                        cut runs.
+    """
+    mesh = mesh_obj.data
+
+    # --- 1. Stash animation action -------------------------------------------
+    stashed_action: Optional[bpy.types.Action] = None
+    sk = mesh.shape_keys
+    if sk and sk.animation_data and sk.animation_data.action:
+        stashed_action = sk.animation_data.action
+
+    # --- Normalize sew_pairs to list of (int, int) ---------------------------
+    pair_list: list[tuple[int, int]] = []
+    if isinstance(sew_pairs, dict):
+        for k, v in sew_pairs.items():
+            pair_list.append((int(k), int(v)))
+    else:
+        for a, b in sew_pairs:
+            pair_list.append((int(a), int(b)))
+
+    # --- 2. Open bmesh and resolve refs up front -----------------------------
+    bm = bmesh.new()
+    bm.from_mesh(mesh)
+    bm.verts.ensure_lookup_table()
+
+    initial_vert_count = len(bm.verts)
+
+    bm_pairs: list[tuple[bmesh.types.BMVert, bmesh.types.BMVert]] = []
+    for idx_a, idx_b in pair_list:
+        if idx_a >= initial_vert_count or idx_b >= initial_vert_count:
+            print(f"[SynthHead][cut_and_sew] WARNING: skipping pair "
+                  f"{idx_a}->{idx_b} (out of range for {initial_vert_count} verts)")
+            continue
+        bm_pairs.append((bm.verts[idx_a], bm.verts[idx_b]))
+
+    cut_verts: list[bmesh.types.BMVert] = []
+    if cut_group_name:
+        vg = mesh_obj.vertex_groups.get(cut_group_name)
+        if vg is None:
+            print(f"[SynthHead][cut_and_sew] WARNING: vertex group "
+                  f"'{cut_group_name}' not found on '{mesh_obj.name}'")
+        else:
+            vg_index = vg.index
+            deform_layer = bm.verts.layers.deform.verify()
+            cut_verts = [v for v in bm.verts if vg_index in v[deform_layer]]
+
+    # --- 3. Drop sew pairs that overlap the cut ------------------------------
+    cut_set = set(cut_verts)
+    surviving_pairs = [
+        (a, b) for a, b in bm_pairs
+        if a not in cut_set and b not in cut_set
+    ]
+    lost_pairs = len(bm_pairs) - len(surviving_pairs)
+
+    print(f"[SynthHead][cut_and_sew] mesh='{mesh_obj.name}' "
+          f"start={initial_vert_count}v, "
+          f"cut_group='{cut_group_name}' ({len(cut_verts)} verts), "
+          f"sew_pairs={len(surviving_pairs)}"
+          + (f" (dropped {lost_pairs} overlapping cut)" if lost_pairs else ""))
+
+    # --- 4. Delete cut verts --------------------------------------------------
+    if cut_verts:
+        bmesh.ops.delete(bm, geom=cut_verts, context="VERTS")
+        bm.verts.ensure_lookup_table()
+
+    # --- 5. Sew surviving pairs ----------------------------------------------
+    if surviving_pairs:
+        touched: list[bmesh.types.BMVert] = []
+        for mover, target in surviving_pairs:
+            mover.co = target.co.copy()
+            touched.extend((mover, target))
+        bmesh.ops.remove_doubles(bm, verts=touched, dist=1e-5)
+        bm.verts.ensure_lookup_table()
+
+    # --- 6. Write back + restore animation ------------------------------------
+    bm.to_mesh(mesh)
+    bm.free()
+    mesh.update()
+
+    if stashed_action is not None:
+        sk_after = mesh.shape_keys
+        if sk_after is not None:
+            if sk_after.animation_data is None:
+                sk_after.animation_data_create()
+            if sk_after.animation_data.action is None:
+                sk_after.animation_data.action = stashed_action
+
+    print(f"[SynthHead][cut_and_sew] '{mesh_obj.name}' final: "
+          f"{len(mesh.vertices)} verts, {len(mesh.polygons)} faces")
+
+
 def clean_head_mesh(
+    head_obj: bpy.types.Object,
+    wedge_R_obj: bpy.types.Object,
+    wedge_L_obj: bpy.types.Object,
+    body_obj: bpy.types.Object,
+    cfg,
+) -> None:
+    """Clean the head mesh: cut the mouth bag and sew the lips.
+
+    Stripped-down replacement for ``clean_head_mesh_old``.  Only the
+    lip-cut-and-sew step runs; eye wedges and body geo are left untouched
+    and must be combined by some other mechanism (see ``clean_head_mesh_old``
+    for the full bmesh-based merge if you need it).
+
+    Args:
+        head_obj:    The head mesh Object (edited in place).
+        wedge_R_obj: Unused (kept for signature compatibility).
+        wedge_L_obj: Unused (kept for signature compatibility).
+        body_obj:    Unused (kept for signature compatibility).
+        cfg:         CleanupConfig providing ``mouth_bag_group`` and
+                     ``mouth_sew_indices``.
+    """
+    cut_and_sew(cfg.mouth_bag_group, head_obj, cfg.mouth_sew_indices)
+    join_and_merge([wedge_R_obj, wedge_L_obj, body_obj], head_obj)
+
+    #3. Simple combine operation to combine the eye wedges and body into the head
+
+def clean_head_mesh_old(
     head_obj: bpy.types.Object,
     wedge_R_obj: bpy.types.Object,
     wedge_L_obj: bpy.types.Object,
@@ -246,3 +391,34 @@ def clean_head_mesh(
     # --- 8. Remove source objects from scene ---------------------------------
     for obj in (wedge_R_obj, wedge_L_obj, body_obj):
         bpy.data.objects.remove(obj, do_unlink=True)
+
+
+def join_and_merge(mesh_objects: list, target_object: bpy.types.Object, merge_distance: float = 0.01):
+    """
+    Joins a list of mesh objects into a target object, then merges vertices by distance.
+    
+    Args:
+        mesh_objects: List of mesh objects to join into the target
+        target_object: The object to join everything into
+        merge_distance: Distance threshold for merging vertices (default 0.0001)
+    """
+    
+    # Deselect all
+    bpy.ops.object.select_all(action='DESELECT')
+    
+    # Select all mesh objects to join
+    for obj in mesh_objects:
+        obj.select_set(True)
+    
+    # Select and set target as active
+    target_object.select_set(True)
+    bpy.context.view_layer.objects.active = target_object
+    
+    # Join all into target
+    bpy.ops.object.join()
+    
+    # Go into edit mode and merge by distance
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.remove_doubles(threshold=merge_distance)
+    bpy.ops.object.mode_set(mode='OBJECT')

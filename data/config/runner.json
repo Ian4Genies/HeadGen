@@ -2,11 +2,13 @@
   "frame_count": 500,
   "seed": null,
   "paths": {
-    "fbx":            "genericGenie-0013-unified_rig.fbx",
-    "gen13_blend":    "gen13.blend",
-    "save_blend":     "gen13_genie_chaos.blend",
-    "issues_dir":     "head-issues",
-    "good_dir":       "head-good",
-    "attractive_dir": "head-attractive"
+    "fbx":                    "genericGenie-0013-unified_rig.fbx",
+    "gen13_blend":            "gen13.blend",
+    "save_variation_blend":   "Pipeline_01_Variation.blend",
+    "save_water_tight_blend": "Pipeline_02_Watertight.blend",
+    "save_export_blend":      "Pipeline_03_Export.blend",
+    "issues_dir":             "head-issues",
+    "good_dir":               "head-good",
+    "attractive_dir":         "head-attractive"
   }
 }

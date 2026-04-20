@@ -30,11 +30,14 @@ Controls the top-level pipeline run.
   "frame_count": 400,
   "seed": null,
   "paths": {
-    "fbx":            "genericGenie-0013-unified_rig.fbx",
-    "save_blend":     "gen13_genie_chaos.blend",
-    "issues_dir":     "head-issues",
-    "good_dir":       "head-good",
-    "attractive_dir": "head-attractive"
+    "fbx":                    "genericGenie-0013-unified_rig.fbx",
+    "gen13_blend":            "gen13.blend",
+    "save_variation_blend":   "Pipeline_01_Variation.blend",
+    "save_water_tight_blend": "Pipeline_02_Watertight.blend",
+    "save_export_blend":      "Pipeline_03_Export.blend",
+    "issues_dir":             "head-issues",
+    "good_dir":               "head-good",
+    "attractive_dir":         "head-attractive"
   }
 }
 ```
@@ -44,7 +47,10 @@ Controls the top-level pipeline run.
 | `frame_count` | int | Number of animation frames to generate |
 | `seed` | int \| null | RNG seed for reproducibility. `null` = random each run |
 | `paths.fbx` | string | Source FBX file, relative to `data/` |
-| `paths.save_blend` | string | Output `.blend` file, relative to `data/` |
+| `paths.gen13_blend` | string | Base project `.blend` file, relative to `data/` |
+| `paths.save_variation_blend` | string | Output `.blend` for the Variation pipeline stage (Pipeline 01), relative to `data/` |
+| `paths.save_water_tight_blend` | string | Output `.blend` for the Watertight pipeline stage (Pipeline 02), relative to `data/` |
+| `paths.save_export_blend` | string | Output `.blend` for the Export pipeline stage (Pipeline 03), relative to `data/` |
 | `paths.issues_dir` | string | Directory for issue snapshots, relative to `data/` |
 | `paths.good_dir` | string | Directory for good-head qualitative/quantitative snapshots, relative to `data/` |
 | `paths.attractive_dir` | string | Directory for attractive-head snapshots used by the attractor system, relative to `data/` |

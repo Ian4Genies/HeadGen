@@ -80,7 +80,9 @@ def _debug_config(cfg: PipelineConfig) -> None:
     p(f"  seed:            {cfg.runner.seed}")
     p(f"  fbx_path:        {cfg.runner.fbx_path}")
     p(f"  gen13_blend_path: {cfg.runner.gen13_blend_path}")
-    p(f"  save_blend_path: {cfg.runner.save_blend_path}")
+    p(f"  save_variation_blend_path:   {cfg.runner.save_variation_blend_path}")
+    p(f"  save_water_tight_blend_path: {cfg.runner.save_water_tight_blend_path}")
+    p(f"  save_export_blend_path:      {cfg.runner.save_export_blend_path}")
     p(f"  issues_dir:      {cfg.runner.issues_dir}")
     p(f"  good_dir:        {cfg.runner.good_dir}")
     p(f"  attractive_dir:  {cfg.runner.attractive_dir}")
@@ -423,7 +425,7 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         eyebrows_obj.hide_viewport = True
         eyelashes_obj.hide_viewport = True
 
-        bpy.ops.wm.save_as_mainfile(filepath=cfg.runner.save_blend_path)
+        bpy.ops.wm.save_as_mainfile(filepath=cfg.runner.save_variation_blend_path)
         return {"FINISHED"}
 
 
@@ -734,6 +736,7 @@ class SYNTHHEAD_OT_CleanMesh(bpy.types.Operator):
         set_ref(context, BODY_GEO, None)
 
         self.report({"INFO"}, "Mesh cleaned: lips sewn, mouth bag removed, wedges and body merged")
+        bpy.ops.wm.save_as_mainfile(filepath=cfg.runner.save_water_tight_blend_path)
         return {"FINISHED"}
 
 

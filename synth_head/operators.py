@@ -45,7 +45,7 @@ from .scene.snapshot import (
     apply_material_color,
 )
 from .scene.export_bake import scope_bake_environment, bake_head_materials
-from .scene.export_glb import staging_scene, rewrite_head_material_slots, export_glb
+from .scene.export_glb import staging_scene, rewrite_head_material_slots, stamp_frame_names, export_glb
 from .core.export import frame_glb_name
 from .core.snapshot import build_snapshot, save_snapshot, load_snapshot
 from .core.config import load_config, PipelineConfig
@@ -862,6 +862,7 @@ class SYNTHHEAD_OT_ExportPipeline(bpy.types.Operator):
 
                 with staging_scene(refs, cfg.export) as stage:
                     rewrite_head_material_slots(stage.head_geo, png_paths)
+                    stamp_frame_names(stage.objects, frame)
                     export_glb(
                         stage.objects,
                         out_dir / frame_glb_name(frame),

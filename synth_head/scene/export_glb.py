@@ -114,16 +114,19 @@ def staging_scene(
     depsgraph = bpy.context.evaluated_depsgraph_get()
     collection = _ensure_staging_collection(scene)
 
-    # Track created datablocks by NAME so cleanup survives dangling references.
-    created_object_names: list[str] = []
-    created_mesh_names: list[str] = []
+    # Track direct datablock references (not names) so downstream steps are
+    # free to rename the staged objects/meshes (e.g. stamp_frame_names right
+    # before export) without breaking cleanup.  Python refs to Blender IDs
+    # stay valid across renames.
+    created_objects: list[bpy.types.Object] = []
+    created_meshes: list[bpy.types.Mesh] = []
 
     def _freeze(src_obj: bpy.types.Object | None, label: str) -> bpy.types.Object | None:
         if src_obj is None:
             return None
         obj = _freeze_object(src_obj, label, depsgraph, collection)
-        created_object_names.append(obj.name)
-        created_mesh_names.append(obj.data.name)
+        created_objects.append(obj)
+        created_meshes.append(obj.data)
         return obj
 
     try:
@@ -170,21 +173,17 @@ def staging_scene(
 
     finally:
         # Remove objects first; that drops the only user of each frozen mesh.
-        for name in created_object_names:
-            obj = bpy.data.objects.get(name)
-            if obj is not None:
-                try:
-                    bpy.data.objects.remove(obj, do_unlink=True)
-                except Exception:
-                    pass
+        for obj in created_objects:
+            try:
+                bpy.data.objects.remove(obj, do_unlink=True)
+            except Exception:
+                pass
 
-        for name in created_mesh_names:
-            mesh = bpy.data.meshes.get(name)
-            if mesh is not None:
-                try:
-                    bpy.data.meshes.remove(mesh, do_unlink=True)
-                except Exception:
-                    pass
+        for mesh in created_meshes:
+            try:
+                bpy.data.meshes.remove(mesh, do_unlink=True)
+            except Exception:
+                pass
 
         # Remove the staging collection if we left it empty.
         col = bpy.data.collections.get(_STAGING_COLLECTION_NAME)
@@ -265,6 +264,36 @@ def rewrite_head_material_slots(
                 export_mat = _build_export_material(suffix, png)
                 mesh.materials[slot_idx] = export_mat
                 break
+
+
+# ---------------------------------------------------------------------------
+# Final-name stamping (runs right before export_glb)
+# ---------------------------------------------------------------------------
+
+_FROZEN_SUFFIX = "_frozen"
+
+
+def stamp_frame_names(objects: list[bpy.types.Object], frame: int) -> None:
+    """Stamp a ``frame_{NNNN}_`` prefix onto every staged object + its mesh.
+
+    Called after material slot rewrite and immediately before ``export_glb``
+    so the glTF exporter writes these as the final node / mesh names inside
+    the GLB file.  The internal ``_frozen`` tag added during staging is
+    stripped as part of the rename — e.g. staging name ``head_geo_frozen``
+    becomes ``frame_0007_head_geo`` at frame 7.
+
+    Safe against cleanup: ``staging_scene`` tracks objects + meshes by direct
+    reference, not by name, so renaming here does not break teardown.
+    """
+    prefix = f"frame_{frame:04d}"
+    for obj in objects:
+        base = obj.name
+        if base.endswith(_FROZEN_SUFFIX):
+            base = base[: -len(_FROZEN_SUFFIX)]
+        new_name = f"{prefix}_{base}"
+        obj.name = new_name
+        if obj.data is not None:
+            obj.data.name = new_name
 
 
 # ---------------------------------------------------------------------------

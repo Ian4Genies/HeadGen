@@ -612,23 +612,26 @@ Settings for the **Export Pipeline** operator (Pipeline 03), which runs after Cl
 
 ### Per-frame output layout
 
-All artifacts land under `runner.paths.final_output_dir`:
+All artifacts for a given frame live in the same `frame_NNNN/` folder under `runner.paths.final_output_dir`:
 
 ```
 data/final-output/
-  frame_0001.glb                     # static GLB, textures embedded
-  final_frame0001_<ts>.json          # snapshot metadata
-  frame_0001/                        # sidecar texture directory
+  frame_0001/
+    frame_0001.glb                   # static GLB, textures embedded
+    final_frame0001_<ts>.json        # snapshot metadata
     head_diffuse.png                 # baked from head_mat
     R_eye_wedge_diffuse.png          # baked from eye_mat.001
     L_eye_wedge_diffuse.png          # baked from eye_mat.002
-  frame_0002.glb
-  final_frame0002_<ts>.json
   frame_0002/
-    ...
+    frame_0002.glb
+    final_frame0002_<ts>.json
+    head_diffuse.png
+    R_eye_wedge_diffuse.png
+    L_eye_wedge_diffuse.png
+  ...
 ```
 
-The per-frame `frame_NNNN/` folder is a sidecar — the textures inside are also embedded into the GLB binary, so the glb is fully self-contained. The sidecar exists for inspection, debugging, and future PBR expansion.
+The PNGs alongside the GLB are also embedded into the GLB binary — the glb is fully self-contained. The loose PNGs are kept next to it for inspection, debugging, and future PBR expansion.
 
 ### Bake targets on head_geo
 

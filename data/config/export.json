@@ -4,7 +4,7 @@
   "bake_samples":              4,
   "bake_margin":               8,
   "glb_format":                "GLB",
-  "frame_range":               [1,10],
+  "frame_range":               [5,10],
 
   "include_eyes":  true,
   "include_brows": false,

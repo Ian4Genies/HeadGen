@@ -33,7 +33,7 @@ from typing import Iterator
 
 import bpy
 
-from ..core.export import frame_png_name, frame_texture_dir_name
+from ..core.export import frame_png_name
 
 
 # ---------------------------------------------------------------------------
@@ -232,8 +232,7 @@ def scope_bake_environment(
 def bake_head_materials(
     head_geo: bpy.types.Object,
     bake_ctx: types.SimpleNamespace,
-    out_dir: Path,
-    frame: int,
+    frame_dir: Path,
     samples: int,
     margin: int,
 ) -> dict[str, Path]:
@@ -243,8 +242,9 @@ def bake_head_materials(
         head_geo: the source head object whose materials were wired up by
             ``scope_bake_environment``.
         bake_ctx: the namespace yielded by ``scope_bake_environment``.
-        out_dir: root export directory (``data/final-output/``).
-        frame: current frame number — picks the ``frame_NNNN/`` subfolder.
+        frame_dir: destination directory for this frame's artifacts — created
+            once per frame by the operator and shared by the bake, GLB, and
+            snapshot writes.
         samples: Cycles samples for the bake.
         margin: UV edge padding in pixels.
 
@@ -274,10 +274,7 @@ def bake_head_materials(
         margin=int(margin),
     )
 
-    # Write each bake image to disk under the per-frame sidecar folder.
-    frame_dir = Path(out_dir) / frame_texture_dir_name(frame)
-    frame_dir.mkdir(parents=True, exist_ok=True)
-
+    frame_dir = Path(frame_dir)
     png_paths: dict[str, Path] = {}
     for target in bake_ctx.targets:
         img = target["image"]

@@ -46,7 +46,7 @@ from .scene.snapshot import (
 )
 from .scene.export_bake import scope_bake_environment, bake_head_materials
 from .scene.export_glb import staging_scene, rewrite_head_material_slots, stamp_frame_names, export_glb
-from .core.export import frame_glb_name
+from .core.export import frame_glb_name, frame_dir_name
 from .core.snapshot import build_snapshot, save_snapshot, load_snapshot
 from .core.config import load_config, PipelineConfig
 
@@ -851,11 +851,15 @@ class SYNTHHEAD_OT_ExportPipeline(bpy.types.Operator):
             for frame in range(start, end + 1):
                 context.scene.frame_set(frame)
 
+                # Every artifact for this frame (GLB, snapshot, PNGs) lives
+                # in the same per-frame folder.
+                frame_dir = out_dir / frame_dir_name(frame)
+                frame_dir.mkdir(parents=True, exist_ok=True)
+
                 png_paths = bake_head_materials(
                     refs.head_geo,
                     bake_ctx,
-                    out_dir=out_dir,
-                    frame=frame,
+                    frame_dir=frame_dir,
                     samples=cfg.export.bake_samples,
                     margin=cfg.export.bake_margin,
                 )
@@ -865,11 +869,11 @@ class SYNTHHEAD_OT_ExportPipeline(bpy.types.Operator):
                     stamp_frame_names(stage.objects, frame)
                     export_glb(
                         stage.objects,
-                        out_dir / frame_glb_name(frame),
+                        frame_dir / frame_glb_name(frame),
                         format=cfg.export.glb_format,
                     )
 
-                _write_export_snapshot(context, cfg, out_dir, frame, label="final")
+                _write_export_snapshot(context, cfg, frame_dir, frame, label="final")
 
                 print(f"[SynthHead][Export] frame {frame}/{end} done")
 

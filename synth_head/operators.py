@@ -32,7 +32,7 @@ from .scene.chaos_anim import (
     _apply_transforms_to_bones,
 )
 from .scene.armature import add_object_to_armature
-from .scene.blend_append import append_material_from_blend, append_object_from_blend, append_gen13_and_classify
+from .scene.blend_append import append_material_from_blend, append_object_from_blend, append_gen13_and_classify, append_eye_wedge_bake
 from .scene.materials import assign_exclusive_material, randomize_head_material_color, read_material_color, apply_attractive_color
 from .scene.modifiers import add_smooth_corrective
 from .scene.reset import reset_frame
@@ -234,7 +234,42 @@ class SYNTHHEAD_PG_PipelineRefs(bpy.types.PropertyGroup):
         type=bpy.types.Object,
         poll=lambda self, obj: obj.type == 'MESH',
     )
-
+    # Eye wedge R bake
+    eye_wedge_R_bake: bpy.props.PointerProperty(
+        name="Eye Wedge R Bake",
+        type=bpy.types.Object,
+        poll=lambda self, obj: obj.type == 'MESH',
+    )
+    # Eye wedge L bake
+    eye_wedge_L_bake: bpy.props.PointerProperty(
+        name="Eye Wedge L Bake",
+        type=bpy.types.Object,
+        poll=lambda self, obj: obj.type == 'MESH',
+    )
+    # HD eye R
+    hd_eye_R: bpy.props.PointerProperty(
+        name="HD Eye R",
+        type=bpy.types.Object,
+        poll=lambda self, obj: obj.type == 'MESH',
+    )
+    # HD eye L
+    hd_eye_L: bpy.props.PointerProperty(
+        name="HD Eye L",
+        type=bpy.types.Object,
+        poll=lambda self, obj: obj.type == 'MESH',
+    )
+    # R projector
+    R_projector: bpy.props.PointerProperty(
+        name="R Projector",
+        type=bpy.types.Object,
+        poll=lambda self, obj: obj.type == 'MESH',
+    )
+    # L projector
+    L_projector: bpy.props.PointerProperty(
+        name="L Projector",
+        type=bpy.types.Object,
+        poll=lambda self, obj: obj.type == 'MESH',
+    )
 class SYNTHHEAD_OT_hello(bpy.types.Operator):
     """Smoke-test operator to verify the addon loads"""
 
@@ -347,13 +382,32 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
             cfg.cleanup.assets_blend_path, 
             cfg.cleanup.eye_wedge_R_name)
         
+        
         eye_wedge_L_obj = append_object_from_blend(
             cfg.cleanup.assets_blend_path, 
             cfg.cleanup.eye_wedge_L_name)
-        set_ref(context, EYE_WEDGE_R, eye_wedge_R_obj)
-        set_ref(context, EYE_WEDGE_L, eye_wedge_L_obj)
+
         add_object_to_armature(eye_wedge_R_obj, armature_obj)
         add_object_to_armature(eye_wedge_L_obj, armature_obj)
+       
+        set_ref(context, EYE_WEDGE_R, eye_wedge_R_obj)
+        set_ref(context, EYE_WEDGE_L, eye_wedge_L_obj)
+
+        eye_wedge_R_bake, eye_wedge_L_bake, hd_eye_R, hd_eye_L, R_projector, L_projector = append_eye_wedge_bake(
+            cfg.cleanup.assets_blend_path,
+            cfg.cleanup.eye_wedge_R_name,
+            cfg.cleanup.eye_wedge_L_name,
+            cfg.cleanup.hd_eye_R_name,
+            cfg.cleanup.hd_eye_L_name,
+            cfg.cleanup.R_projector_name,
+            cfg.cleanup.L_projector_name)
+        
+        set_ref(context, EYE_WEDGE_R_BAKE, eye_wedge_R_bake)
+        set_ref(context, EYE_WEDGE_L_BAKE, eye_wedge_L_bake)
+        set_ref(context, HD_EYE_R, hd_eye_R)
+        set_ref(context, HD_EYE_L, hd_eye_L)
+        set_ref(context, R_PROJECTOR, R_projector)
+        set_ref(context, L_PROJECTOR, L_projector)
 
         self.report({"INFO"}, f"Skin material assigned: '{head_mat.name}'")
         # --- 3. GENERATE RAW PARAMETERS ---

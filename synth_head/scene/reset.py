@@ -41,6 +41,8 @@ def reset_shape_keys(
             continue
         if sk.name == "eye_shape":
             continue
+        if sk.name == "Shrinkwrap":
+            continue
         sk.value = 0.0
         sk.keyframe_insert(data_path="value", frame=frame)
 

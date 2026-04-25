@@ -1,0 +1,11 @@
+{
+  "paths": {
+    "assets_blend_path": "gen13.blend"
+  },
+  "eye_wedge_R_bake_name": "eye_wedge_R_bake",
+  "eye_wedge_L_bake_name": "eye_wedge_L_bake",
+  "hd_eye_R_name": "eye_R_geo_hd_target",
+  "hd_eye_L_name": "eye_L_geo_hd_target",
+  "R_projector_name": "eye_wedge_R_projector",
+  "L_projector_name": "eye_wedge_L_projector"
+}

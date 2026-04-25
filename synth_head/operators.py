@@ -7,7 +7,7 @@ Operators here delegate to scene/ and core/ — no business logic lives here.
 import bpy
 
 from .core.math import clamp
-from .core.ref_keys import MESH, BODY_GEO, ARMATURE, HEAD_MAT, L_EYE, R_EYE, EYEBROWS, EYELASHES, EYE_MAT, EYE_WEDGE_R, EYE_WEDGE_L
+from .core.ref_keys import MESH, BODY_GEO, ARMATURE, HEAD_MAT, L_EYE, R_EYE, EYEBROWS, EYELASHES, EYE_MAT, EYE_WEDGE_R, EYE_WEDGE_L, EYE_WEDGE_R_BAKE, EYE_WEDGE_L_BAKE, HD_EYE_R, HD_EYE_L, R_PROJECTOR, L_PROJECTOR
 from .core.variation import (
     generate_chaos_transforms,
     generate_single_frame_transforms,
@@ -394,13 +394,13 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         set_ref(context, EYE_WEDGE_L, eye_wedge_L_obj)
 
         eye_wedge_R_bake, eye_wedge_L_bake, hd_eye_R, hd_eye_L, R_projector, L_projector = append_eye_wedge_bake(
-            cfg.cleanup.assets_blend_path,
-            cfg.cleanup.eye_wedge_R_name,
-            cfg.cleanup.eye_wedge_L_name,
-            cfg.cleanup.hd_eye_R_name,
-            cfg.cleanup.hd_eye_L_name,
-            cfg.cleanup.R_projector_name,
-            cfg.cleanup.L_projector_name)
+            cfg.projection.assets_blend_path,
+            cfg.projection.eye_wedge_R_bake_name,
+            cfg.projection.eye_wedge_L_bake_name,
+            cfg.projection.hd_eye_R_name,
+            cfg.projection.hd_eye_L_name,
+            cfg.projection.R_projector_name,
+            cfg.projection.L_projector_name)
         
         set_ref(context, EYE_WEDGE_R_BAKE, eye_wedge_R_bake)
         set_ref(context, EYE_WEDGE_L_BAKE, eye_wedge_L_bake)
@@ -409,6 +409,14 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         set_ref(context, R_PROJECTOR, R_projector)
         set_ref(context, L_PROJECTOR, L_projector)
 
+        add_object_to_armature(eye_wedge_R_bake, armature_obj)
+        add_object_to_armature(eye_wedge_L_bake, armature_obj)
+        add_object_to_armature(hd_eye_R, armature_obj)
+        add_object_to_armature(hd_eye_L, armature_obj)
+        add_object_to_armature(R_projector, armature_obj)
+        add_object_to_armature(L_projector, armature_obj)
+
+        return {"CANCELLED"}
         self.report({"INFO"}, f"Skin material assigned: '{head_mat.name}'")
         # --- 3. GENERATE RAW PARAMETERS ---
         armature = get_ref(context, ARMATURE)

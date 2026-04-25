@@ -88,6 +88,41 @@ class CleanupConfig:
         )
 
 @dataclass
+class ProjectionConfig:
+    assets_blend_path: str = ""
+    eye_wedge_R_bake_name: str = ""
+    eye_wedge_L_bake_name: str = ""
+    hd_eye_R_name: str = ""
+    hd_eye_L_name: str = ""
+    R_projector_name: str = ""
+    L_projector_name: str = ""
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "ProjectionConfig":
+        paths = d.get("paths", {})
+        return cls(
+            assets_blend_path=paths.get("assets_blend_path", ""),
+            eye_wedge_R_bake_name=d.get("eye_wedge_R_bake_name", ""),
+            eye_wedge_L_bake_name=d.get("eye_wedge_L_bake_name", ""),
+            hd_eye_R_name=d.get("hd_eye_R_name", ""),
+            hd_eye_L_name=d.get("hd_eye_L_name", ""),
+            R_projector_name=d.get("R_projector_name", ""),
+            L_projector_name=d.get("L_projector_name", ""),
+        )
+
+    def resolve(self, base: Path) -> "ProjectionConfig":
+        return ProjectionConfig(
+            assets_blend_path=str((base / self.assets_blend_path).resolve()) if self.assets_blend_path else "",
+            eye_wedge_R_bake_name=self.eye_wedge_R_bake_name,
+            eye_wedge_L_bake_name=self.eye_wedge_L_bake_name,
+            hd_eye_R_name=self.hd_eye_R_name,
+            hd_eye_L_name=self.hd_eye_L_name,
+            R_projector_name=self.R_projector_name,
+            L_projector_name=self.L_projector_name,
+        )
+
+
+@dataclass
 class RunnerConfig:
     frame_count: int = 400
     seed: int | None = None
@@ -183,6 +218,7 @@ class PipelineConfig:
     modifiers: SmoothCorrectiveConfig = field(default_factory=SmoothCorrectiveConfig)
     attractor: AttractorConfig = field(default_factory=AttractorConfig)
     materials: MaterialsConfig = field(default_factory=MaterialsConfig)
+    projection: ProjectionConfig = field(default_factory=ProjectionConfig)
     export: ExportConfig = field(default_factory=ExportConfig)
     chaos_joint_names: frozenset[str] = field(default_factory=lambda: frozenset(CHAOS_JOINT_NAMES))
     config_dir: Path = field(default_factory=lambda: Path("."))
@@ -259,6 +295,14 @@ def load_config(config_dir: str | Path) -> PipelineConfig:
     else:
         materials = MaterialsConfig()
 
+    # --- projection ---
+    proj_path = d / "projection.json"
+    if proj_path.exists():
+        projection = ProjectionConfig.from_dict(_load_json(proj_path))
+        projection = projection.resolve(project_root)
+    else:
+        projection = ProjectionConfig()
+
     # --- cleanup ---
     cleanup_path = d / "cleanup.json"
     if cleanup_path.exists():
@@ -283,6 +327,7 @@ def load_config(config_dir: str | Path) -> PipelineConfig:
         modifiers=modifiers,
         attractor=attractor,
         materials=materials,
+        projection=projection,
         export=export,
         chaos_joint_names=joint_names,
         config_dir=d,

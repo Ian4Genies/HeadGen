@@ -18,6 +18,7 @@ All paths in `runner.json` are relative to the `data/` directory.
 | `attractor.json` | Attractive-head attractor system (nudge toward curated references) |
 | `materials.json` | Skin material source file and node configuration |
 | `cleanup.json` | Mesh surgery settings: mouth bag group, lip sew indices, eye wedge and body object names |
+| `projection.json` | Eye projection bake objects: bake wedges, HD eyes, and projector empties |
 | `export.json` | Pipeline 03 (Export) settings: bake resolutions, GLB format, per-part include flags |
 
 ---
@@ -576,6 +577,38 @@ Each entry merges vertex `idx_A` onto vertex `idx_B` (both are head-mesh vertex 
 5. The wedge and body objects are removed from the scene.
 
 Shape keys with shared names across meshes are merged by name — each vert carries the delta from its source mesh. On welded seam verts the head's delta takes priority.
+
+---
+
+## projection.json
+
+Configures the eye projection bake system — the bake-variant eye wedges, HD eye meshes, and projector empties appended from an external `.blend` file for texture projection during export.
+
+```json
+{
+  "paths": {
+    "assets_blend_path": "gen13.blend"
+  },
+  "eye_wedge_R_bake_name": "eye_wedge_R_bake",
+  "eye_wedge_L_bake_name": "eye_wedge_L_bake",
+  "hd_eye_R_name": "hd_eye_R",
+  "hd_eye_L_name": "hd_eye_L",
+  "R_projector_name": "R_projector",
+  "L_projector_name": "L_projector"
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `paths.assets_blend_path` | string | Source `.blend` file containing projection assets, relative to `data/` |
+| `eye_wedge_R_bake_name` | string | Object name of the right eye wedge bake mesh to append |
+| `eye_wedge_L_bake_name` | string | Object name of the left eye wedge bake mesh to append |
+| `hd_eye_R_name` | string | Object name of the right HD eye (linked child, already in scene after bake wedge append) |
+| `hd_eye_L_name` | string | Object name of the left HD eye (linked child, already in scene after bake wedge append) |
+| `R_projector_name` | string | Object name of the right projector empty (linked child, already in scene after bake wedge append) |
+| `L_projector_name` | string | Object name of the left projector empty (linked child, already in scene after bake wedge append) |
+
+The bake wedge objects are appended via `wm.append`. The HD eyes and projectors are linked children that appear in the scene automatically when their parent bake wedge is appended — the config only needs their names so the pipeline can look them up with `bpy.data.objects.get()`.
 
 ---
 

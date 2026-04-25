@@ -27,8 +27,9 @@ def add_object_to_armature(
     """
     if armature.type != "ARMATURE":
         raise ValueError(f"'{armature.name}' is not an armature object (type={armature.type!r})")
-
-    _detach_from_armature(obj)
+    #check if the object is already parented to another armature
+    if obj.parent is not None:
+        _detach_from_armature(obj)
 
     obj.parent = armature
     obj.parent_type = "OBJECT"

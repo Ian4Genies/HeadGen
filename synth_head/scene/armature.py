@@ -38,19 +38,36 @@ def add_object_to_armature(
     mod = obj.modifiers.new(name="Armature", type="ARMATURE")
     mod.object = armature
     mod.use_vertex_groups = True
+    
 
 
 def _detach_from_armature(obj: bpy.types.Object) -> None:
-    """Remove any existing armature parent and Armature modifiers from *obj*."""
+    """Remove any existing armature parent and Armature modifiers from *obj*.
+
+    Does NOT delete the old armature — other objects may still be parented to
+    it (e.g. multiple objects brought in together by a single append).  Call
+    remove_orphan_armatures() once all objects have been reparented.
+    """
     if obj.parent is not None and obj.parent.type == "ARMATURE":
-        import mathutils  # available in Blender's bundled Python
         world_matrix = obj.matrix_world.copy()
-        parent = obj.parent
         obj.parent = None
-        #delete old parent
-        bpy.data.objects.remove(parent)
         obj.matrix_world = world_matrix
 
     mods_to_remove = [m for m in obj.modifiers if m.type == "ARMATURE"]
     for mod in mods_to_remove:
         obj.modifiers.remove(mod)
+
+
+def remove_orphan_armatures() -> None:
+    """Remove armature objects that have no children remaining.
+
+    Call this once after all objects from a batch append have been reparented
+    to the canonical armature.  The imported armatures that Blender forces in
+    as append artifacts will by then be childless and safe to delete.
+    """
+    orphans = [
+        obj for obj in bpy.data.objects
+        if obj.type == "ARMATURE" and not obj.children
+    ]
+    for orphan in orphans:
+        bpy.data.objects.remove(orphan)

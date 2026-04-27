@@ -31,7 +31,7 @@ from .scene.chaos_anim import (
     apply_chaos_single_frame,
     _apply_transforms_to_bones,
 )
-from .scene.armature import add_object_to_armature
+from .scene.armature import add_object_to_armature, remove_orphan_armatures
 from .scene.blend_append import append_material_from_blend, append_object_from_blend, append_gen13_and_classify, append_eye_wedge_bake
 from .scene.materials import assign_exclusive_material, randomize_head_material_color, read_material_color, apply_attractive_color
 from .scene.modifiers import add_smooth_corrective
@@ -415,8 +415,9 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         add_object_to_armature(hd_eye_L, armature_obj)
         add_object_to_armature(R_projector, armature_obj)
         add_object_to_armature(L_projector, armature_obj)
+        remove_orphan_armatures()
 
-        return {"CANCELLED"}
+        
         self.report({"INFO"}, f"Skin material assigned: '{head_mat.name}'")
         # --- 3. GENERATE RAW PARAMETERS ---
         armature = get_ref(context, ARMATURE)
@@ -481,12 +482,21 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         for frame in range(1, fc + 1):
             context.scene.frame_set(frame)
             reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eyebrows_obj, eyelashes_obj], frame)
+            #Core Head Parts
             _apply_transforms_to_bones(chaos_joints, constrained_transforms[frame], frame)
             _apply_weights_to_shape_keys(head_mesh, constrained_bs[frame], frame)
+            #Eye Wedge Parts
             _apply_weights_to_shape_keys(eye_wedge_R_obj, constrained_bs[frame], frame)
             _apply_weights_to_shape_keys(eye_wedge_L_obj, constrained_bs[frame], frame)
+            _apply_weights_to_shape_keys(eye_wedge_R_bake, constrained_bs[frame], frame)
+            _apply_weights_to_shape_keys(eye_wedge_L_bake, constrained_bs[frame], frame)
+            _apply_weights_to_shape_keys(R_projector, constrained_bs[frame], frame)
+            _apply_weights_to_shape_keys(L_projector, constrained_bs[frame], frame)
+
+            #Eyebrows and Eyelashes
             _apply_weights_to_shape_keys(eyebrows_obj, constrained_bs[frame], frame)
             _apply_weights_to_shape_keys(eyelashes_obj, constrained_bs[frame], frame)
+            #Material Color
             rng_color = (color_rng.random(), color_rng.random(), color_rng.random(), 1.0)
             randomize_head_material_color(head_mesh, rng_color, frame)
             attr_color = attractive_colors[frame]

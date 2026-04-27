@@ -5,6 +5,7 @@ Operators here delegate to scene/ and core/ — no business logic lives here.
 """
 
 import bpy
+from pathlib import Path
 
 from .core.math import clamp
 from .core.ref_keys import MESH, BODY_GEO, ARMATURE, HEAD_MAT, L_EYE, R_EYE, EYEBROWS, EYELASHES, EYE_MAT, EYE_WEDGE_R, EYE_WEDGE_L, EYE_WEDGE_R_BAKE, EYE_WEDGE_L_BAKE, HD_EYE_R, HD_EYE_L, R_PROJECTOR, L_PROJECTOR
@@ -514,6 +515,7 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         eyebrows_obj.hide_viewport = True
         eyelashes_obj.hide_viewport = True
 
+        Path(cfg.runner.save_variation_blend_path).parent.mkdir(parents=True, exist_ok=True)
         bpy.ops.wm.save_as_mainfile(filepath=cfg.runner.save_variation_blend_path)
         return {"FINISHED"}
 
@@ -825,6 +827,7 @@ class SYNTHHEAD_OT_CleanMesh(bpy.types.Operator):
         set_ref(context, BODY_GEO, None)
 
         self.report({"INFO"}, "Mesh cleaned: lips sewn, mouth bag removed, wedges and body merged")
+        Path(cfg.runner.save_water_tight_blend_path).parent.mkdir(parents=True, exist_ok=True)
         bpy.ops.wm.save_as_mainfile(filepath=cfg.runner.save_water_tight_blend_path)
         return {"FINISHED"}
 
@@ -950,6 +953,7 @@ class SYNTHHEAD_OT_ExportPipeline(bpy.types.Operator):
                 print(f"[SynthHead][Export] frame {frame}/{end} done")
 
         if cfg.runner.save_export_blend_path:
+            Path(cfg.runner.save_export_blend_path).parent.mkdir(parents=True, exist_ok=True)
             bpy.ops.wm.save_as_mainfile(filepath=cfg.runner.save_export_blend_path)
 
         self.report({"INFO"}, f"Exported {end - start + 1} frames → {out_dir}")

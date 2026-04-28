@@ -36,23 +36,34 @@ import bpy
 from ..core.export import frame_png_name
 
 
-# ---------------------------------------------------------------------------
-# Bake target table
-# ---------------------------------------------------------------------------
-#
-# Single source of truth for which material slots on head_geo get diffuse
-# bakes.  Keyed by material-name match against head_geo.data.materials[i].name.
-# Any material on head_geo NOT listed here gets a throwaway bake target and
-# its native shader travels through to the GLB unchanged.
-#
-# Extendable to JSON later, but kept in Python for now because the material set
-# is still evolving.
-# ---------------------------------------------------------------------------
-BAKE_TARGETS: list[dict] = [
-    {"material_name": "head_mat",    "suffix": "head",        "res_key": "head_bake_resolution"},
-    {"material_name": "eye_mat.001", "suffix": "R_eye_wedge", "res_key": "eye_wedge_bake_resolution"},
-    {"material_name": "eye_mat.002", "suffix": "L_eye_wedge", "res_key": "eye_wedge_bake_resolution"},
-]
+def _build_bake_targets(export_cfg) -> list[dict]:
+    """Build the bake-target list from config.
+
+    Material names and the wedge-inclusion flag all come from ``export_cfg``
+    so they can be changed in export.json without touching Python source.
+    ``bake_wedge_texture_direct=False`` omits the eye-wedge entries entirely.
+    """
+    targets = [
+        {
+            "material_name": export_cfg.head_bake_material_name,
+            "suffix": "head",
+            "resolution": export_cfg.head_bake_resolution,
+        },
+    ]
+    if export_cfg.bake_wedge_texture_direct:
+        targets += [
+            {
+                "material_name": export_cfg.eye_wedge_R_material_name,
+                "suffix": "R_eye_wedge",
+                "resolution": export_cfg.eye_wedge_bake_resolution,
+            },
+            {
+                "material_name": export_cfg.eye_wedge_L_material_name,
+                "suffix": "L_eye_wedge",
+                "resolution": export_cfg.eye_wedge_bake_resolution,
+            },
+        ]
+    return targets
 
 _DUMMY_IMAGE_NAME = "ExportBake_Dummy"
 _DUMMY_IMAGE_RES = 64
@@ -125,10 +136,10 @@ def scope_bake_environment(
 
     try:
         # 1. Build persistent bake images + nodes for each matched BAKE_TARGET.
-        for spec in BAKE_TARGETS:
+        for spec in _build_bake_targets(export_cfg):
             mat_name = spec["material_name"]
             suffix = spec["suffix"]
-            res = int(getattr(export_cfg, spec["res_key"]))
+            res = int(spec["resolution"])
 
             material = _find_material_on_object(head_geo, mat_name)
             if material is None:

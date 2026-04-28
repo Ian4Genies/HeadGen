@@ -134,12 +134,17 @@ class BakeSettings:
 @dataclass
 class ProjectionConfig:
     assets_blend_path: str = ""
+    baked_sequence_R_path: str = ""
+    baked_sequence_L_path: str = ""
     eye_wedge_R_bake_name: str = ""
     eye_wedge_L_bake_name: str = ""
     hd_eye_R_name: str = ""
     hd_eye_L_name: str = ""
     R_projector_name: str = ""
     L_projector_name: str = ""
+    eye_baked_sequence_name: str = "baked-sequence"
+    eye_bake_diffuse_name: str = "bake-diffuse"
+    eye_bake_switch_name: str = "bake-switch"
     eye_bake_settings: BakeSettings = field(default_factory=BakeSettings)
 
     @classmethod
@@ -147,24 +152,34 @@ class ProjectionConfig:
         paths = d.get("paths", {})
         return cls(
             assets_blend_path=paths.get("assets_blend_path", ""),
+            baked_sequence_R_path=paths.get("baked-sequence-R-path", ""),
+            baked_sequence_L_path=paths.get("baked-sequence-L-path", ""),
             eye_wedge_R_bake_name=d.get("eye_wedge_R_bake_name", ""),
             eye_wedge_L_bake_name=d.get("eye_wedge_L_bake_name", ""),
             hd_eye_R_name=d.get("hd_eye_R_name", ""),
             hd_eye_L_name=d.get("hd_eye_L_name", ""),
             R_projector_name=d.get("R_projector_name", ""),
             L_projector_name=d.get("L_projector_name", ""),
+            eye_baked_sequence_name=d.get("eye-baked-sequence-name", "baked-sequence"),
+            eye_bake_diffuse_name=d.get("eye-bake-diffuse-name", "bake-diffuse"),
+            eye_bake_switch_name=d.get("eye-bake-switch-name", "bake-switch"),
             eye_bake_settings=BakeSettings.from_dict(d.get("eye-bake-settings", {})),
         )
 
     def resolve(self, base: Path) -> "ProjectionConfig":
         return ProjectionConfig(
             assets_blend_path=str((base / self.assets_blend_path).resolve()) if self.assets_blend_path else "",
+            baked_sequence_R_path=str((base / self.baked_sequence_R_path).resolve()) if self.baked_sequence_R_path else "",
+            baked_sequence_L_path=str((base / self.baked_sequence_L_path).resolve()) if self.baked_sequence_L_path else "",
             eye_wedge_R_bake_name=self.eye_wedge_R_bake_name,
             eye_wedge_L_bake_name=self.eye_wedge_L_bake_name,
             hd_eye_R_name=self.hd_eye_R_name,
             hd_eye_L_name=self.hd_eye_L_name,
             R_projector_name=self.R_projector_name,
             L_projector_name=self.L_projector_name,
+            eye_baked_sequence_name=self.eye_baked_sequence_name,
+            eye_bake_diffuse_name=self.eye_bake_diffuse_name,
+            eye_bake_switch_name=self.eye_bake_switch_name,
             eye_bake_settings=self.eye_bake_settings,
         )
 
@@ -228,9 +243,17 @@ class ExportConfig:
     glb_format: str = "GLB"
     frame_range: tuple[int, int] | None = None
 
+    head_bake_material_name: str = "head_mat"
+    eye_wedge_R_material_name: str = "eye_mat.001"
+    eye_wedge_L_material_name: str = "eye_mat.002"
+
     include_eyes: bool = True
     include_brows: bool = False
     include_lashes: bool = False
+
+    bake_wedge_texture_direct: bool = True
+    bake_brow_texture_direct: bool = False
+    bake_lash_texture_direct: bool = False
 
     @classmethod
     def from_dict(cls, d: dict) -> "ExportConfig":
@@ -249,9 +272,15 @@ class ExportConfig:
             bake_margin=int(d.get("bake_margin", 8)),
             glb_format=str(d.get("glb_format", "GLB")),
             frame_range=frame_range,
+            head_bake_material_name=str(d.get("head_bake_material_name", "head_mat")),
+            eye_wedge_R_material_name=str(d.get("eye_wedge_R_material_name", "eye_mat.001")),
+            eye_wedge_L_material_name=str(d.get("eye_wedge_L_material_name", "eye_mat.002")),
             include_eyes=bool(d.get("include_eyes", True)),
             include_brows=bool(d.get("include_brows", False)),
             include_lashes=bool(d.get("include_lashes", False)),
+            bake_wedge_texture_direct=bool(d.get("bake_wedge_texture_direct", True)),
+            bake_brow_texture_direct=bool(d.get("bake_brow_texture_direct", False)),
+            bake_lash_texture_direct=bool(d.get("bake_lash_texture_direct", False)),
         )
 
 

@@ -10,8 +10,23 @@
   "hd_eye_L_name": "eye_L_geo_hd_target",
   "R_projector_name": "eye_wedge_R_projector",
   "L_projector_name": "eye_wedge_L_projector",
-  "baked-sequence-name": "baked-sequence",
-  "bake-diffuse-name": "bake-diffuse",
-  "bake-switch-name": "bake-switch"
-
+  "eye-baked-sequence-name": "baked-sequence",
+  "eye-bake-diffuse-name": "bake-diffuse",
+  "eye-bake-switch-name": "bake-switch",
+  "eye-bake-settings": {
+    "render_engine": "CYCLES",
+    "bake_type": "DIFFUSE",
+    "use_pass_direct": false,
+    "use_pass_indirect": false,
+    "use_pass_color": true,
+    "use_selected_to_active": true,
+    "use_cage": false,
+    "cage_extrusion": 0.05,
+    "max_ray_distance": 0.2,
+    "target": "IMAGE_TEXTURES",
+    "margin_type": "EXTEND",
+    "margin": 16,
+    "use_clear": true,
+    "save_mode": "EXTERNAL"
+  }
 }

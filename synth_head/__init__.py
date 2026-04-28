@@ -19,6 +19,7 @@ if "bpy" in locals():
     from .scene import mesh as scene_mesh
     from .scene import export_bake as scene_export_bake
     from .scene import export_glb as scene_export_glb
+    from .scene import projection as scene_projection
 
     importlib.reload(math)
     importlib.reload(core_modifiers)
@@ -44,6 +45,7 @@ if "bpy" in locals():
     importlib.reload(scene_mesh)
     importlib.reload(scene_export_bake)
     importlib.reload(scene_export_glb)
+    importlib.reload(scene_projection)
     importlib.reload(scene)
     importlib.reload(operators)
 

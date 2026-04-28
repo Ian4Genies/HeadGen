@@ -33,7 +33,7 @@ from .blendshapes import (
     generate_blendshape_weights,
     generate_single_frame_blendshape_weights,
 )
-from .config import RunnerConfig, PipelineConfig, load_config
+from .config import RunnerConfig, PipelineConfig, BakeSettings, load_config
 from .attractor import (
     AttractorConfig,
     PoolCache,
@@ -77,6 +77,7 @@ __all__ = [
     "load_snapshot",
     "RunnerConfig",
     "PipelineConfig",
+    "BakeSettings",
     "load_config",
     "AttractorConfig",
     "PoolCache",

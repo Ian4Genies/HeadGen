@@ -46,6 +46,7 @@ from .scene.snapshot import (
     apply_material_color,
 )
 from .scene.export_bake import scope_bake_environment, bake_head_materials
+from .scene.projection import apply_bake_settings
 from .scene.export_glb import staging_scene, rewrite_head_material_slots, stamp_frame_names, export_glb
 from .core.export import frame_glb_name, frame_dir_name
 from .core.snapshot import build_snapshot, save_snapshot, load_snapshot
@@ -960,6 +961,21 @@ class SYNTHHEAD_OT_ExportPipeline(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class SYNTHHEAD_OT_LoadEyeBakeSettings(bpy.types.Operator):
+    """Apply eye-bake-settings from projection.json to the current scene"""
+
+    bl_idname = "synth_head.load_eye_bake_settings"
+    bl_label = "Synth Head: Load Eye Bake Settings"
+    bl_description = "Read eye-bake-settings from projection.json and apply them to the current scene's bake properties"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        cfg = _get_config()
+        apply_bake_settings(context.scene, cfg.projection.eye_bake_settings)
+        self.report({"INFO"}, "Eye bake settings applied from projection.json")
+        return {"FINISHED"}
+
+
 class SYNTHHEAD_MT_main_menu(bpy.types.Menu):
     bl_idname = "SYNTHHEAD_MT_main_menu"
     bl_label = "Synth Head"
@@ -978,6 +994,8 @@ class SYNTHHEAD_MT_main_menu(bpy.types.Menu):
         layout.operator(SYNTHHEAD_OT_SaveGoodHead.bl_idname)
         layout.operator(SYNTHHEAD_OT_SaveHeadAttractive.bl_idname)
         layout.operator(SYNTHHEAD_OT_LoadHeadData.bl_idname)
+        layout.separator()
+        layout.operator(SYNTHHEAD_OT_LoadEyeBakeSettings.bl_idname)
 
 
 def _draw_menu(self, _context):
@@ -996,5 +1014,6 @@ CLASSES = [
     SYNTHHEAD_OT_SaveGoodHead,
     SYNTHHEAD_OT_SaveHeadAttractive,
     SYNTHHEAD_OT_LoadHeadData,
+    SYNTHHEAD_OT_LoadEyeBakeSettings,
     SYNTHHEAD_MT_main_menu,
 ]

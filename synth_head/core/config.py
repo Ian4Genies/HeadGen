@@ -88,6 +88,50 @@ class CleanupConfig:
         )
 
 @dataclass
+class BakeSettings:
+    """All Blender bake settings that can be applied to a scene.
+
+    Generalised so any named bake-settings struct in JSON (e.g. ``eye-bake-settings``,
+    a future ``head-bake-settings``, etc.) can be loaded via ``from_dict`` and applied
+    identically by ``scene.projection.apply_bake_settings``.
+    """
+
+    render_engine: str = "CYCLES"
+    bake_type: str = "DIFFUSE"
+    use_pass_direct: bool = False
+    use_pass_indirect: bool = False
+    use_pass_color: bool = True
+    use_selected_to_active: bool = True
+    use_cage: bool = False
+    cage_extrusion: float = 0.05
+    max_ray_distance: float = 0.2
+    target: str = "IMAGE_TEXTURES"
+    margin_type: str = "EXTEND"
+    margin: int = 16
+    use_clear: bool = True
+    save_mode: str = "INTERNAL"
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "BakeSettings":
+        return cls(
+            render_engine=str(d.get("render_engine", "CYCLES")),
+            bake_type=str(d.get("bake_type", "DIFFUSE")),
+            use_pass_direct=bool(d.get("use_pass_direct", False)),
+            use_pass_indirect=bool(d.get("use_pass_indirect", False)),
+            use_pass_color=bool(d.get("use_pass_color", True)),
+            use_selected_to_active=bool(d.get("use_selected_to_active", True)),
+            use_cage=bool(d.get("use_cage", False)),
+            cage_extrusion=float(d.get("cage_extrusion", 0.05)),
+            max_ray_distance=float(d.get("max_ray_distance", 0.2)),
+            target=str(d.get("target", "IMAGE_TEXTURES")),
+            margin_type=str(d.get("margin_type", "EXTEND")),
+            margin=int(d.get("margin", 16)),
+            use_clear=bool(d.get("use_clear", True)),
+            save_mode=str(d.get("save_mode", "INTERNAL")),
+        )
+
+
+@dataclass
 class ProjectionConfig:
     assets_blend_path: str = ""
     eye_wedge_R_bake_name: str = ""
@@ -96,6 +140,7 @@ class ProjectionConfig:
     hd_eye_L_name: str = ""
     R_projector_name: str = ""
     L_projector_name: str = ""
+    eye_bake_settings: BakeSettings = field(default_factory=BakeSettings)
 
     @classmethod
     def from_dict(cls, d: dict) -> "ProjectionConfig":
@@ -108,6 +153,7 @@ class ProjectionConfig:
             hd_eye_L_name=d.get("hd_eye_L_name", ""),
             R_projector_name=d.get("R_projector_name", ""),
             L_projector_name=d.get("L_projector_name", ""),
+            eye_bake_settings=BakeSettings.from_dict(d.get("eye-bake-settings", {})),
         )
 
     def resolve(self, base: Path) -> "ProjectionConfig":
@@ -119,6 +165,7 @@ class ProjectionConfig:
             hd_eye_L_name=self.hd_eye_L_name,
             R_projector_name=self.R_projector_name,
             L_projector_name=self.L_projector_name,
+            eye_bake_settings=self.eye_bake_settings,
         )
 
 

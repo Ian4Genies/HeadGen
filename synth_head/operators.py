@@ -975,6 +975,21 @@ class SYNTHHEAD_OT_LoadEyeBakeSettings(bpy.types.Operator):
         self.report({"INFO"}, "Eye bake settings applied from projection.json")
         return {"FINISHED"}
 
+class SYNTHHEAD_OT_BakeEyes(bpy.types.Operator):
+    """Apply eye-bake-settings from projection.json to the current scene"""
+
+    bl_idname = "synth_head.bake_eyes"
+    bl_label = "Synth Head: Bake Eyes"
+    bl_description = "Bake eyes using the current scene's bake properties"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        cfg = _get_config()
+        apply_bake_settings(context.scene, cfg.projection.eye_bake_settings)
+        
+        self.report({"INFO"}, "Eye bake settings applied from projection.json")
+        return {"FINISHED"}
+
 
 class SYNTHHEAD_MT_main_menu(bpy.types.Menu):
     bl_idname = "SYNTHHEAD_MT_main_menu"

@@ -46,7 +46,7 @@ from .scene.snapshot import (
     apply_material_color,
 )
 from .scene.export_bake import scope_bake_environment, bake_head_materials
-from .scene.projection import apply_bake_settings
+from .scene.projection import apply_bake_settings, bake_eye_side, point_image_sequence_node
 from .scene.export_glb import staging_scene, rewrite_head_material_slots, stamp_frame_names, export_glb
 from .core.export import frame_glb_name, frame_dir_name
 from .core.snapshot import build_snapshot, save_snapshot, load_snapshot
@@ -102,9 +102,15 @@ def _debug_config(cfg: PipelineConfig) -> None:
     p(f"  bake_margin:               {cfg.export.bake_margin}")
     p(f"  glb_format:                {cfg.export.glb_format}")
     p(f"  frame_range:               {cfg.export.frame_range}")
-    p(f"  include_eyes:              {cfg.export.include_eyes}")
-    p(f"  include_brows:             {cfg.export.include_brows}")
-    p(f"  include_lashes:            {cfg.export.include_lashes}")
+    p(f"  head_bake_material_name:        {cfg.export.head_bake_material_name}")
+    p(f"  eye_wedge_R_material_name:     {cfg.export.eye_wedge_R_material_name}")
+    p(f"  eye_wedge_L_material_name:     {cfg.export.eye_wedge_L_material_name}")
+    p(f"  include_eyes:                  {cfg.export.include_eyes}")
+    p(f"  include_brows:                 {cfg.export.include_brows}")
+    p(f"  include_lashes:                {cfg.export.include_lashes}")
+    p(f"  bake_wedge_texture_direct:     {cfg.export.bake_wedge_texture_direct}")
+    p(f"  bake_brow_texture_direct:      {cfg.export.bake_brow_texture_direct}")
+    p(f"  bake_lash_texture_direct:      {cfg.export.bake_lash_texture_direct}")
 
     p(f"--- CHAOS JOINTS ({len(cfg.chaos_joint_names)}) ---")
     p(f"  names:          {sorted(cfg.chaos_joint_names)}")
@@ -976,18 +982,78 @@ class SYNTHHEAD_OT_LoadEyeBakeSettings(bpy.types.Operator):
         return {"FINISHED"}
 
 class SYNTHHEAD_OT_BakeEyes(bpy.types.Operator):
-    """Apply eye-bake-settings from projection.json to the current scene"""
+    """Per-frame eye bake: bake both wedges across the frame range and wire image sequences."""
 
     bl_idname = "synth_head.bake_eyes"
     bl_label = "Synth Head: Bake Eyes"
-    bl_description = "Bake eyes using the current scene's bake properties"
-    bl_options = {"REGISTER", "UNDO"}
+    bl_description = (
+        "For every frame in the range: bake eye textures from the projection "
+        "source to both eye wedges, write PNGs to disk, then wire the baked "
+        "image sequences back into each wedge's material."
+    )
+    bl_options = {"REGISTER"}
 
     def execute(self, context):
         cfg = _get_config()
+
+        wedge_R = get_ref(context, EYE_WEDGE_R)
+        wedge_L = get_ref(context, EYE_WEDGE_L)
+        bake_R = get_ref(context, EYE_WEDGE_R_BAKE)
+        bake_L = get_ref(context, EYE_WEDGE_L_BAKE)
+
+        missing = []
+        if wedge_R is None:  missing.append("EYE_WEDGE_R")
+        if wedge_L is None:  missing.append("EYE_WEDGE_L")
+        if bake_R is None:   missing.append("EYE_WEDGE_R_BAKE")
+        if bake_L is None:   missing.append("EYE_WEDGE_L_BAKE")
+        if missing:
+            self.report({"ERROR"}, f"Missing scene refs: {', '.join(missing)}")
+            return {"CANCELLED"}
+
         apply_bake_settings(context.scene, cfg.projection.eye_bake_settings)
-        
-        self.report({"INFO"}, "Eye bake settings applied from projection.json")
+
+        out_dir_R = Path(cfg.projection.baked_sequence_R_path)
+        out_dir_L = Path(cfg.projection.baked_sequence_L_path)
+        out_dir_R.mkdir(parents=True, exist_ok=True)
+        out_dir_L.mkdir(parents=True, exist_ok=True)
+
+        fr = cfg.export.frame_range or (1, cfg.runner.frame_count)
+        start, end = int(fr[0]), int(fr[1])
+        resolution = cfg.export.eye_wedge_bake_resolution
+        diffuse_node = cfg.projection.eye_bake_diffuse_name
+
+        self.report({"INFO"}, f"Eye bake: frames {start}..{end} → R: {out_dir_R}, L: {out_dir_L}")
+
+        def _eye_bake_png(frame: int, side: str) -> Path:
+            return Path(f"frame_{frame:04d}_{side}_eye_wedge_diffuse.png")
+
+        for frame in range(start, end + 1):
+            context.scene.frame_set(frame)
+
+            bake_eye_side(
+                context, bake_R, wedge_R, diffuse_node,
+                out_dir_R / _eye_bake_png(frame, "R"), resolution,
+                cfg.projection.eye_bake_settings,
+            )
+            bake_eye_side(
+                context, bake_L, wedge_L, diffuse_node,
+                out_dir_L / _eye_bake_png(frame, "L"), resolution,
+                cfg.projection.eye_bake_settings,
+            )
+
+            print(f"[SynthHead][BakeEyes] frame {frame}/{end} done")
+
+        frame_count = end - start + 1
+        point_image_sequence_node(
+            wedge_R, cfg.projection.eye_baked_sequence_name,
+            out_dir_R / _eye_bake_png(start, "R"), start, frame_count,
+        )
+        point_image_sequence_node(
+            wedge_L, cfg.projection.eye_baked_sequence_name,
+            out_dir_L / _eye_bake_png(start, "L"), start, frame_count,
+        )
+
+        self.report({"INFO"}, f"Eye bake complete: {frame_count} frames per side")
         return {"FINISHED"}
 
 
@@ -1011,6 +1077,7 @@ class SYNTHHEAD_MT_main_menu(bpy.types.Menu):
         layout.operator(SYNTHHEAD_OT_LoadHeadData.bl_idname)
         layout.separator()
         layout.operator(SYNTHHEAD_OT_LoadEyeBakeSettings.bl_idname)
+        layout.operator(SYNTHHEAD_OT_BakeEyes.bl_idname)
 
 
 def _draw_menu(self, _context):
@@ -1030,5 +1097,6 @@ CLASSES = [
     SYNTHHEAD_OT_SaveHeadAttractive,
     SYNTHHEAD_OT_LoadHeadData,
     SYNTHHEAD_OT_LoadEyeBakeSettings,
+    SYNTHHEAD_OT_BakeEyes,
     SYNTHHEAD_MT_main_menu,
 ]

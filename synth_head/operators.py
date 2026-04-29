@@ -32,7 +32,7 @@ from .scene.chaos_anim import (
     apply_chaos_single_frame,
     _apply_transforms_to_bones,
 )
-from .scene.armature import add_object_to_armature, remove_orphan_armatures
+from .scene.armature import add_object_to_armature, remove_orphan_armatures, attach_constrained_object_to_armature
 from .scene.blend_append import append_material_from_blend, append_object_from_blend, append_gen13_and_classify, append_eye_wedge_bake
 from .scene.materials import assign_exclusive_material, randomize_head_material_color, read_material_color, apply_attractive_color
 from .scene.modifiers import add_smooth_corrective
@@ -46,7 +46,7 @@ from .scene.snapshot import (
     apply_material_color,
 )
 from .scene.export_bake import scope_bake_environment, bake_head_materials
-from .scene.projection import apply_bake_settings, bake_eye_side, point_image_sequence_node
+from .scene.projection import apply_bake_settings, bake_eye_side, bake_wedge_side, point_image_sequence_node
 from .scene.export_glb import staging_scene, rewrite_head_material_slots, stamp_frame_names, export_glb
 from .core.export import frame_glb_name, frame_dir_name
 from .core.snapshot import build_snapshot, save_snapshot, load_snapshot
@@ -421,6 +421,8 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         add_object_to_armature(eye_wedge_L_bake, armature_obj)
         add_object_to_armature(hd_eye_R, armature_obj)
         add_object_to_armature(hd_eye_L, armature_obj)
+        attach_constrained_object_to_armature(hd_eye_R, armature_obj)
+        attach_constrained_object_to_armature(hd_eye_L, armature_obj)
         add_object_to_armature(R_projector, armature_obj)
         add_object_to_armature(L_projector, armature_obj)
         remove_orphan_armatures()
@@ -947,7 +949,7 @@ class SYNTHHEAD_OT_ExportPipeline(bpy.types.Operator):
                 )
 
                 with staging_scene(refs, cfg.export) as stage:
-                    rewrite_head_material_slots(stage.head_geo, png_paths)
+                    rewrite_head_material_slots(stage.head_geo, png_paths, cfg.export)
                     stamp_frame_names(stage.objects, frame)
                     export_glb(
                         stage.objects,
@@ -996,16 +998,16 @@ class SYNTHHEAD_OT_BakeEyes(bpy.types.Operator):
     def execute(self, context):
         cfg = _get_config()
 
-        wedge_R = get_ref(context, EYE_WEDGE_R)
-        wedge_L = get_ref(context, EYE_WEDGE_L)
         bake_R = get_ref(context, EYE_WEDGE_R_BAKE)
         bake_L = get_ref(context, EYE_WEDGE_L_BAKE)
+        wedge_R = get_ref(context, EYE_WEDGE_R)
+        wedge_L = get_ref(context, EYE_WEDGE_L)
 
         missing = []
-        if wedge_R is None:  missing.append("EYE_WEDGE_R")
-        if wedge_L is None:  missing.append("EYE_WEDGE_L")
-        if bake_R is None:   missing.append("EYE_WEDGE_R_BAKE")
-        if bake_L is None:   missing.append("EYE_WEDGE_L_BAKE")
+        if bake_R is None:  missing.append("EYE_WEDGE_R_BAKE")
+        if bake_L is None:  missing.append("EYE_WEDGE_L_BAKE")
+        if wedge_R is None: missing.append("EYE_WEDGE_R")
+        if wedge_L is None: missing.append("EYE_WEDGE_L")
         if missing:
             self.report({"ERROR"}, f"Missing scene refs: {', '.join(missing)}")
             return {"CANCELLED"}
@@ -1030,13 +1032,13 @@ class SYNTHHEAD_OT_BakeEyes(bpy.types.Operator):
         for frame in range(start, end + 1):
             context.scene.frame_set(frame)
 
-            bake_eye_side(
-                context, bake_R, wedge_R, diffuse_node,
+            bake_wedge_side(
+                context, bake_R, diffuse_node,
                 out_dir_R / _eye_bake_png(frame, "R"), resolution,
                 cfg.projection.eye_bake_settings,
             )
-            bake_eye_side(
-                context, bake_L, wedge_L, diffuse_node,
+            bake_wedge_side(
+                context, bake_L, diffuse_node,
                 out_dir_L / _eye_bake_png(frame, "L"), resolution,
                 cfg.projection.eye_bake_settings,
             )

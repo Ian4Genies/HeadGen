@@ -19,7 +19,7 @@
     "use_pass_direct": false,
     "use_pass_indirect": false,
     "use_pass_color": true,
-    "use_selected_to_active": true,
+    "use_selected_to_active": false,
     "use_cage": false,
     "cage_extrusion": 0.05,
     "max_ray_distance": 0.2,

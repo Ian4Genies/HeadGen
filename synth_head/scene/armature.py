@@ -58,6 +58,41 @@ def _detach_from_armature(obj: bpy.types.Object) -> None:
         obj.modifiers.remove(mod)
 
 
+def attach_constrained_object_to_armature(
+    obj: bpy.types.Object,
+    armature: bpy.types.Object,
+) -> None:
+    """Re-parent a constraint-driven object to *armature* without adding an
+    Armature modifier, then redirect any armature-targeting constraints.
+
+    Use this for objects like HD eye targets that follow the rig entirely via
+    object constraints (e.g. COPY_TRANSFORMS to a bone).  Adding an Armature
+    modifier to them would drive vertex deformation on top of the constraint,
+    producing incorrect transforms.
+
+    The constraint retarget is done here, before the caller removes orphan
+    armatures, while the old armature object is still alive for the type-check.
+
+    Args:
+        obj:      The constraint-driven object to attach.
+        armature: The canonical armature to become the new parent and
+                  constraint target.
+    """
+    # if armature.type != "ARMATURE":
+    #     raise ValueError(f"'{armature.name}' is not an armature object (type={armature.type!r})")
+
+    # if obj.parent is not None:
+    #     _detach_from_armature(obj)
+    # obj.matrix_parent_inverse = armature.matrix_world.inverted()
+    # obj.parent = armature
+    # obj.parent_type = "OBJECT"
+    # obj.matrix_parent_inverse = armature.matrix_world.inverted()
+
+    for con in obj.constraints:
+        if hasattr(con, "target") and con.target is not None and con.target.type == "ARMATURE":
+            con.target = armature
+
+
 def remove_orphan_armatures() -> None:
     """Remove armature objects that have no children remaining.
 

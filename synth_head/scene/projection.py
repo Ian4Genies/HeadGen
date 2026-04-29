@@ -130,6 +130,84 @@ def bake_eye_side(
         bpy.data.images.remove(image, do_unlink=True)
 
 
+def bake_wedge_side(
+    context: bpy.types.Context,
+    projector_obj: bpy.types.Object,
+    diffuse_node_name: str,
+    out_path: Path,
+    resolution: int,
+    settings: BakeSettings,
+) -> None:
+    """Bake-to-self on a projector wedge and write the result to *out_path*.
+
+    The projector's shader (including geometry-node UV reflow) is evaluated
+    at every texel of the output image using the mesh's own UVs — no second
+    object is involved.
+
+    Args:
+        projector_obj: The projector wedge — both selected and active.
+        diffuse_node_name: Name of the Image Texture node on *projector_obj*'s
+            material that receives the bake (e.g. ``"bake-diffuse"``).
+        out_path: Fully resolved PNG path for this frame.
+        resolution: Bake image width/height in pixels.
+        settings: BakeSettings controlling engine, passes, margins, etc.
+    """
+    view_layer = context.view_layer
+
+    material = projector_obj.active_material
+    if material is None or material.node_tree is None:
+        raise RuntimeError(
+            f"No active material with a node tree on {projector_obj.name!r}"
+        )
+
+    node = material.node_tree.nodes.get(diffuse_node_name)
+    if node is None:
+        raise RuntimeError(
+            f"Node {diffuse_node_name!r} not found on material "
+            f"{material.name!r} of {projector_obj.name!r}"
+        )
+
+    prev_image = node.image
+    prev_active = material.node_tree.nodes.active
+
+    out_path = Path(out_path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    image = bpy.data.images.new(
+        name="_WedgeBakeTemp",
+        width=resolution,
+        height=resolution,
+        alpha=False,
+        float_buffer=False,
+    )
+    image.file_format = "PNG"
+    image.filepath_raw = str(out_path)
+
+    try:
+        node.image = image
+        for n in material.node_tree.nodes:
+            n.select = False
+        node.select = True
+        material.node_tree.nodes.active = node
+
+        bpy.ops.object.select_all(action="DESELECT")
+        projector_obj.select_set(True)
+        view_layer.objects.active = projector_obj
+
+        bpy.ops.object.bake(
+            type=settings.bake_type,
+            pass_filter=_build_pass_filter(settings),
+            use_selected_to_active=False,
+        )
+
+        image.save_render(filepath=str(out_path))
+
+    finally:
+        node.image = prev_image
+        material.node_tree.nodes.active = prev_active
+        bpy.data.images.remove(image, do_unlink=True)
+
+
 def point_image_sequence_node(
     target_obj: bpy.types.Object,
     sequence_node_name: str,

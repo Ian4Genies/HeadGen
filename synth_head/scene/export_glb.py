@@ -29,7 +29,7 @@ from typing import Iterator
 
 import bpy
 
-from .export_bake import BAKE_TARGETS
+from .export_bake import _build_bake_targets
 
 _STAGING_COLLECTION_NAME = "ExportStaging"
 
@@ -240,19 +240,21 @@ def _build_export_material(suffix: str, png_path: Path) -> bpy.types.Material:
 def rewrite_head_material_slots(
     frozen_head_geo: bpy.types.Object,
     png_paths: dict[str, Path],
+    export_cfg,
 ) -> None:
     """Replace each baked material slot on *frozen_head_geo* with an Export material.
 
-    For every entry in ``BAKE_TARGETS`` whose source material name matches a slot
-    on *frozen_head_geo* (and whose PNG was successfully written), swap that slot
-    for an ``Export_{suffix}`` Principled-BSDF material referencing the PNG.
+    For every entry in the bake-target list (built from *export_cfg*) whose
+    source material name matches a slot on *frozen_head_geo* (and whose PNG was
+    successfully written), swap that slot for an ``Export_{suffix}``
+    Principled-BSDF material referencing the PNG.
 
     Slot indices and per-face ``material_index`` values are preserved — the
     left / right eye wedge polys continue pointing at the correct slot after
     the swap.
     """
     mesh = frozen_head_geo.data
-    for spec in BAKE_TARGETS:
+    for spec in _build_bake_targets(export_cfg):
         src_name = spec["material_name"]
         suffix = spec["suffix"]
         png = png_paths.get(suffix)

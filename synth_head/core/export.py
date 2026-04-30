@@ -34,3 +34,11 @@ def frame_dir_name(frame: int) -> str:
 def frame_png_name(suffix: str) -> str:
     """Return ``"<suffix>_diffuse.png"`` — e.g. ``"head_diffuse.png"``."""
     return f"{suffix}_diffuse.png"
+
+
+def eye_bake_seq_png_name(frame: int, side: str) -> str:
+    """Return the filename written by SYNTHHEAD_OT_BakeEyes into the sequence dir.
+
+    E.g. ``eye_bake_seq_png_name(1, "R")`` → ``"frame_0001_R_eye_wedge_diffuse.png"``.
+    """
+    return f"frame_{frame:0{FRAME_PAD}d}_{side}_eye_wedge_diffuse.png"

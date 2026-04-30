@@ -65,6 +65,34 @@ def _build_bake_targets(export_cfg) -> list[dict]:
         ]
     return targets
 
+
+def _build_rewrite_targets(export_cfg) -> list[dict]:
+    """Targets for material slot rewrite — superset of bake targets.
+
+    Includes eye wedge entries when ``bake_wedge_texture_direct=True``
+    (direct Cycles bake) OR ``copy_eye_projection=True`` (copy from sequence).
+    ``_build_bake_targets`` is unchanged and still used only for Cycles node setup.
+    """
+    targets = [
+        {
+            "material_name": export_cfg.head_bake_material_name,
+            "suffix": "head",
+        },
+    ]
+    if export_cfg.bake_wedge_texture_direct or export_cfg.copy_eye_projection:
+        targets += [
+            {
+                "material_name": export_cfg.eye_wedge_R_material_name,
+                "suffix": "R_eye_wedge",
+            },
+            {
+                "material_name": export_cfg.eye_wedge_L_material_name,
+                "suffix": "L_eye_wedge",
+            },
+        ]
+    return targets
+
+
 _DUMMY_IMAGE_NAME = "ExportBake_Dummy"
 _DUMMY_IMAGE_RES = 64
 

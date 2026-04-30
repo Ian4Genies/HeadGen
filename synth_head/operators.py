@@ -1020,6 +1020,11 @@ class SYNTHHEAD_OT_LoadEyeBakeSettings(bpy.types.Operator):
         self.report({"INFO"}, "Eye bake settings applied from projection.json")
         return {"FINISHED"}
 
+def _eye_bake_png(frame: int, side: str) -> Path:
+    """Return the filename (not full path) for one frame's eye-bake PNG."""
+    return Path(f"frame_{frame:04d}_{side}_eye_wedge_diffuse.png")
+
+
 class SYNTHHEAD_OT_BakeEyes(bpy.types.Operator):
     """Per-frame eye bake: bake both wedges across the frame range and wire image sequences."""
 
@@ -1063,9 +1068,6 @@ class SYNTHHEAD_OT_BakeEyes(bpy.types.Operator):
 
         self.report({"INFO"}, f"Eye bake: frames {start}..{end} → R: {out_dir_R}, L: {out_dir_L}")
 
-        def _eye_bake_png(frame: int, side: str) -> Path:
-            return Path(f"frame_{frame:04d}_{side}_eye_wedge_diffuse.png")
-
         for frame in range(start, end + 1):
             context.scene.frame_set(frame)
 
@@ -1096,6 +1098,56 @@ class SYNTHHEAD_OT_BakeEyes(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class SYNTHHEAD_OT_RebakeEyeFrame(bpy.types.Operator):
+    """Re-bake eye wedge textures for the current frame only"""
+
+    bl_idname = "synth_head.rebake_eye_frame"
+    bl_label = "Synth Head: Rebake Eye Frame"
+    bl_description = (
+        "Bake eye textures from the projection source to both wedges "
+        "on the current frame only, writing the PNGs to disk."
+    )
+    bl_options = {"REGISTER"}
+
+    def execute(self, context):
+        cfg = _get_config()
+
+        bake_R = get_ref(context, EYE_WEDGE_R_BAKE)
+        bake_L = get_ref(context, EYE_WEDGE_L_BAKE)
+
+        missing = []
+        if bake_R is None: missing.append("EYE_WEDGE_R_BAKE")
+        if bake_L is None: missing.append("EYE_WEDGE_L_BAKE")
+        if missing:
+            self.report({"ERROR"}, f"Missing scene refs: {', '.join(missing)}")
+            return {"CANCELLED"}
+
+        apply_bake_settings(context.scene, cfg.projection.eye_bake_settings)
+
+        out_dir_R = Path(cfg.projection.baked_sequence_R_path)
+        out_dir_L = Path(cfg.projection.baked_sequence_L_path)
+        out_dir_R.mkdir(parents=True, exist_ok=True)
+        out_dir_L.mkdir(parents=True, exist_ok=True)
+
+        resolution = cfg.export.eye_wedge_bake_resolution
+        diffuse_node = cfg.projection.eye_bake_diffuse_name
+        frame = context.scene.frame_current
+
+        bake_wedge_side(
+            context, bake_R, diffuse_node,
+            out_dir_R / _eye_bake_png(frame, "R"), resolution,
+            cfg.projection.eye_bake_settings,
+        )
+        bake_wedge_side(
+            context, bake_L, diffuse_node,
+            out_dir_L / _eye_bake_png(frame, "L"), resolution,
+            cfg.projection.eye_bake_settings,
+        )
+
+        self.report({"INFO"}, f"Eye rebake complete for frame {frame}")
+        return {"FINISHED"}
+
+
 class SYNTHHEAD_MT_main_menu(bpy.types.Menu):
     bl_idname = "SYNTHHEAD_MT_main_menu"
     bl_label = "Synth Head"
@@ -1117,6 +1169,7 @@ class SYNTHHEAD_MT_main_menu(bpy.types.Menu):
         layout.separator()
         layout.operator(SYNTHHEAD_OT_LoadEyeBakeSettings.bl_idname)
         layout.operator(SYNTHHEAD_OT_BakeEyes.bl_idname)
+        layout.operator(SYNTHHEAD_OT_RebakeEyeFrame.bl_idname)
 
 
 def _draw_menu(self, _context):
@@ -1137,5 +1190,6 @@ CLASSES = [
     SYNTHHEAD_OT_LoadHeadData,
     SYNTHHEAD_OT_LoadEyeBakeSettings,
     SYNTHHEAD_OT_BakeEyes,
+    SYNTHHEAD_OT_RebakeEyeFrame,
     SYNTHHEAD_MT_main_menu,
 ]

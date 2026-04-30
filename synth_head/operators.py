@@ -558,6 +558,22 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         if not eye_wedge_L_obj:
             self.report({"ERROR"}, "No eye wedge L mesh stored — run Variation Pipeline first")
             return {"CANCELLED"}
+        eye_wedge_R_bake = get_ref(context, EYE_WEDGE_R_BAKE)
+        if not eye_wedge_R_bake:
+            self.report({"ERROR"}, "No eye wedge R bake mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+        eye_wedge_L_bake = get_ref(context, EYE_WEDGE_L_BAKE)
+        if not eye_wedge_L_bake:
+            self.report({"ERROR"}, "No eye wedge L bake mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+        R_projector = get_ref(context, R_PROJECTOR)
+        if not R_projector:
+            self.report({"ERROR"}, "No R projector mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+        L_projector = get_ref(context, L_PROJECTOR)
+        if not L_projector:
+            self.report({"ERROR"}, "No L projector mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
         eyebrows_obj = get_ref(context, EYEBROWS)
         if not eyebrows_obj:
             self.report({"ERROR"}, "No eyebrows mesh stored — run Variation Pipeline first")
@@ -611,6 +627,10 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         _apply_weights_to_shape_keys(head_mesh, bs_weights, frame)
         _apply_weights_to_shape_keys(eye_wedge_R_obj, bs_weights, frame)
         _apply_weights_to_shape_keys(eye_wedge_L_obj, bs_weights, frame)
+        _apply_weights_to_shape_keys(eye_wedge_R_bake, bs_weights, frame)
+        _apply_weights_to_shape_keys(eye_wedge_L_bake, bs_weights, frame)
+        _apply_weights_to_shape_keys(R_projector, bs_weights, frame)
+        _apply_weights_to_shape_keys(L_projector, bs_weights, frame)
         _apply_weights_to_shape_keys(eyebrows_obj, bs_weights, frame)
         _apply_weights_to_shape_keys(eyelashes_obj, bs_weights, frame)
 

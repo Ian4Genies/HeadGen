@@ -1,0 +1,52 @@
+---
+description: Keeps SYNTHHEAD_OT_RebakeEyeFrame in sync with the per-frame bake core inside SYNTHHEAD_OT_BakeEyes
+globs: synth_head/operators.py
+alwaysApply: false
+---
+
+# RebakeEyeFrame ↔ BakeEyes Per-Frame Parity
+
+`SYNTHHEAD_OT_RebakeEyeFrame` is the single-frame equivalent of the inner loop
+in `SYNTHHEAD_OT_BakeEyes`.  Any change to the per-frame bake logic in the
+pipeline loop **must be mirrored** in `RebakeEyeFrame`.
+
+## What Must Stay in Sync
+
+These steps are the "per-frame eye bake core" that both operators share:
+
+1. **Ref lookups** – `EYE_WEDGE_R_BAKE`, `EYE_WEDGE_L_BAKE` with matching error guards
+2. **Bake settings** – `apply_bake_settings(context.scene, cfg.projection.eye_bake_settings)`
+3. **Output dirs** – `out_dir_R` and `out_dir_L` resolved from `cfg.projection`, `.mkdir(parents=True, exist_ok=True)`
+4. **Resolution** – `cfg.export.eye_wedge_bake_resolution`
+5. **Diffuse node name** – `cfg.projection.eye_bake_diffuse_name`
+6. **PNG filename** – `_eye_bake_png(frame, side)` module-level helper
+7. **Bake R** – `bake_wedge_side(context, bake_R, diffuse_node, out_dir_R / _eye_bake_png(frame, "R"), resolution, cfg.projection.eye_bake_settings)`
+8. **Bake L** – `bake_wedge_side(context, bake_L, diffuse_node, out_dir_L / _eye_bake_png(frame, "L"), resolution, cfg.projection.eye_bake_settings)`
+
+## ❌ Pipeline-only features — do NOT add to RebakeEyeFrame
+
+| Feature | Why it's pipeline-only |
+|---|---|
+| `for frame in range(start, end + 1)` loop | Pipeline iterates all frames; RebakeEyeFrame uses `frame_current` |
+| `context.scene.frame_set(frame)` | Pipeline seeks to each frame; RebakeEyeFrame operates on the frame already active |
+| `get_ref(EYE_WEDGE_R)` / `get_ref(EYE_WEDGE_L)` | Only needed to wire the image sequence node after all frames are baked |
+| `point_image_sequence_node(wedge_R/L, ...)` | Post-loop sequence wiring — not part of the per-frame bake; the existing sequence node auto-tracks the updated PNG on disk |
+| `cfg.export.frame_range` / `cfg.runner.frame_count` | Frame range is pipeline-only; RebakeEyeFrame operates on `frame_current` |
+
+## Checklist When Editing the Per-Frame Bake Loop
+
+- [ ] Changed `bake_wedge_side` call signature or arguments? → Mirror in `RebakeEyeFrame`.
+- [ ] Changed which config values drive resolution, dirs, or diffuse node? → Update both operators.
+- [ ] Added a third eye side / additional wedge bake call? → Add ref lookup + error guard + bake call to `RebakeEyeFrame`.
+- [ ] Renamed or moved `_eye_bake_png`? → Both operators reference this module-level helper — update both call sites.
+
+## User Notification Requirement
+
+Whenever `SYNTHHEAD_OT_RebakeEyeFrame` is modified as a consequence of syncing
+with `BakeEyes` — even if the user only asked about the pipeline — you **MUST**
+call this out explicitly in your response with a bold header, for example:
+
+> **⚠️ RebakeEyeFrame was also updated to stay in sync with BakeEyes.**
+
+The user may not be expecting a change to `RebakeEyeFrame` and must always be
+made aware when it has been touched.

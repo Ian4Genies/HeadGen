@@ -48,10 +48,11 @@ from .scene.snapshot import (
 from .scene.export_bake import scope_bake_environment, bake_head_materials
 from .scene.projection import apply_bake_settings, bake_eye_side, bake_wedge_side, point_image_sequence_node
 from .scene.export_glb import staging_scene, rewrite_head_material_slots, stamp_frame_names, export_glb
-from .core.export import frame_glb_name, frame_dir_name
+from .core.export import frame_glb_name, frame_dir_name, frame_png_name, eye_bake_seq_png_name
 from .core.snapshot import build_snapshot, save_snapshot, load_snapshot
 from .core.config import load_config, PipelineConfig
 
+import shutil
 import types
 
 import json
@@ -109,6 +110,7 @@ def _debug_config(cfg: PipelineConfig) -> None:
     p(f"  include_brows:                 {cfg.export.include_brows}")
     p(f"  include_lashes:                {cfg.export.include_lashes}")
     p(f"  bake_wedge_texture_direct:     {cfg.export.bake_wedge_texture_direct}")
+    p(f"  copy_eye_projection:           {cfg.export.copy_eye_projection}")
     p(f"  bake_brow_texture_direct:      {cfg.export.bake_brow_texture_direct}")
     p(f"  bake_lash_texture_direct:      {cfg.export.bake_lash_texture_direct}")
 
@@ -947,6 +949,21 @@ class SYNTHHEAD_OT_ExportPipeline(bpy.types.Operator):
                     samples=cfg.export.bake_samples,
                     margin=cfg.export.bake_margin,
                 )
+
+                if cfg.export.copy_eye_projection:
+                    seq_R = Path(cfg.projection.baked_sequence_R_path)
+                    seq_L = Path(cfg.projection.baked_sequence_L_path)
+                    for side, seq_dir, suffix in (
+                        ("R", seq_R, "R_eye_wedge"),
+                        ("L", seq_L, "L_eye_wedge"),
+                    ):
+                        src = seq_dir / eye_bake_seq_png_name(frame, side)
+                        dst = frame_dir / frame_png_name(suffix)
+                        if src.exists():
+                            shutil.copy2(src, dst)
+                            png_paths[suffix] = dst
+                        else:
+                            print(f"[SynthHead][Export] WARNING: eye bake not found: {src}")
 
                 with staging_scene(refs, cfg.export) as stage:
                     rewrite_head_material_slots(stage.head_geo, png_paths, cfg.export)

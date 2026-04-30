@@ -29,7 +29,7 @@ from typing import Iterator
 
 import bpy
 
-from .export_bake import _build_bake_targets
+from .export_bake import _build_bake_targets, _build_rewrite_targets
 
 _STAGING_COLLECTION_NAME = "ExportStaging"
 
@@ -254,7 +254,7 @@ def rewrite_head_material_slots(
     the swap.
     """
     mesh = frozen_head_geo.data
-    for spec in _build_bake_targets(export_cfg):
+    for spec in _build_rewrite_targets(export_cfg):
         src_name = spec["material_name"]
         suffix = spec["suffix"]
         png = png_paths.get(suffix)

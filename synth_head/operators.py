@@ -554,14 +554,6 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
             self.report({"ERROR"}, "No mesh stored — run Variation Pipeline first")
             return {"CANCELLED"}
 
-        L_eye_obj = get_ref(context, L_EYE)
-        if not L_eye_obj:
-            self.report({"ERROR"}, "No L eye mesh stored — run Variation Pipeline first")
-            return {"CANCELLED"}
-        R_eye_obj = get_ref(context, R_EYE)
-        if not R_eye_obj:
-            self.report({"ERROR"}, "No R eye mesh stored — run Variation Pipeline first")
-            return {"CANCELLED"}
         eye_wedge_R_obj = get_ref(context, EYE_WEDGE_R)
         if not eye_wedge_R_obj:
             self.report({"ERROR"}, "No eye wedge R mesh stored — run Variation Pipeline first")
@@ -585,6 +577,14 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         L_projector = get_ref(context, L_PROJECTOR)
         if not L_projector:
             self.report({"ERROR"}, "No L projector mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+        hd_eye_R = get_ref(context, HD_EYE_R)
+        if not hd_eye_R:
+            self.report({"ERROR"}, "No HD eye R stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+        hd_eye_L = get_ref(context, HD_EYE_L)
+        if not hd_eye_L:
+            self.report({"ERROR"}, "No HD eye L stored — run Variation Pipeline first")
             return {"CANCELLED"}
         eyebrows_obj = get_ref(context, EYEBROWS)
         if not eyebrows_obj:
@@ -643,13 +643,15 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         _apply_weights_to_shape_keys(eye_wedge_L_bake, bs_weights, frame)
         _apply_weights_to_shape_keys(R_projector, bs_weights, frame)
         _apply_weights_to_shape_keys(L_projector, bs_weights, frame)
+        _apply_weights_to_shape_keys(hd_eye_R, bs_weights, frame)
+        _apply_weights_to_shape_keys(hd_eye_L, bs_weights, frame)
         _apply_weights_to_shape_keys(eyebrows_obj, bs_weights, frame)
         _apply_weights_to_shape_keys(eyelashes_obj, bs_weights, frame)
 
         rng_color = (attractor_rng.random(), attractor_rng.random(), attractor_rng.random(), 1.0)
         randomize_head_material_color(head_mesh, rng_color, frame)
-        assign_eye_color(L_eye_obj, cfg.materials.eye_material_name, cfg.projection.eye_color_name, rng_color, frame)
-        assign_eye_color(R_eye_obj, cfg.materials.eye_material_name, cfg.projection.eye_color_name, rng_color, frame)
+        assign_eye_color(eye_wedge_R_bake, cfg.projection.eye_wedge_R_bake_name, cfg.projection.eye_color_name, rng_color, frame)
+        assign_eye_color(eye_wedge_L_bake, cfg.projection.eye_wedge_L_bake_name, cfg.projection.eye_color_name, rng_color, frame)
         if attractive_color is not None:
             apply_attractive_color(head_mesh, attractive_color, rng_color, cfg.materials.final_color_randomness, frame)
 
@@ -807,23 +809,76 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
             self.report({"ERROR"}, "No mesh stored — run Variation Pipeline first")
             return {"CANCELLED"}
 
+        eye_wedge_R_obj = get_ref(context, EYE_WEDGE_R)
+        if not eye_wedge_R_obj:
+            self.report({"ERROR"}, "No eye wedge R mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+        eye_wedge_L_obj = get_ref(context, EYE_WEDGE_L)
+        if not eye_wedge_L_obj:
+            self.report({"ERROR"}, "No eye wedge L mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+        eye_wedge_R_bake = get_ref(context, EYE_WEDGE_R_BAKE)
+        if not eye_wedge_R_bake:
+            self.report({"ERROR"}, "No eye wedge R bake mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+        eye_wedge_L_bake = get_ref(context, EYE_WEDGE_L_BAKE)
+        if not eye_wedge_L_bake:
+            self.report({"ERROR"}, "No eye wedge L bake mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+        R_projector = get_ref(context, R_PROJECTOR)
+        if not R_projector:
+            self.report({"ERROR"}, "No R projector mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+        L_projector = get_ref(context, L_PROJECTOR)
+        if not L_projector:
+            self.report({"ERROR"}, "No L projector mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+        hd_eye_R = get_ref(context, HD_EYE_R)
+        if not hd_eye_R:
+            self.report({"ERROR"}, "No HD eye R stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+        hd_eye_L = get_ref(context, HD_EYE_L)
+        if not hd_eye_L:
+            self.report({"ERROR"}, "No HD eye L stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+        eyebrows_obj = get_ref(context, EYEBROWS)
+        if not eyebrows_obj:
+            self.report({"ERROR"}, "No eyebrows mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+        eyelashes_obj = get_ref(context, EYELASHES)
+        if not eyelashes_obj:
+            self.report({"ERROR"}, "No eyelashes mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+
         cfg = _get_config()
         snapshot = load_snapshot(self.filepath)
         frame = context.scene.frame_current
 
         chaos_joints = collect_chaos_joints(armature, cfg.chaos_joint_names)
 
-        reset_frame(chaos_joints, head_mesh, frame)
+        reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eye_wedge_R_bake, eye_wedge_L_bake, R_projector, L_projector, hd_eye_R, hd_eye_L, eyebrows_obj, eyelashes_obj], frame)
         apply_bone_transforms(armature, snapshot.get("chaos_joints", {}), frame)
 
         all_shapes: dict[str, float] = {}
         all_shapes.update(snapshot.get("variation_shapes", {}))
         all_shapes.update(snapshot.get("expression_shapes", {}))
         apply_shape_key_values(head_mesh, all_shapes, frame)
+        apply_shape_key_values(eye_wedge_R_obj, all_shapes, frame)
+        apply_shape_key_values(eye_wedge_L_obj, all_shapes, frame)
+        apply_shape_key_values(eye_wedge_R_bake, all_shapes, frame)
+        apply_shape_key_values(eye_wedge_L_bake, all_shapes, frame)
+        apply_shape_key_values(R_projector, all_shapes, frame)
+        apply_shape_key_values(L_projector, all_shapes, frame)
+        apply_shape_key_values(hd_eye_R, all_shapes, frame)
+        apply_shape_key_values(hd_eye_L, all_shapes, frame)
+        apply_shape_key_values(eyebrows_obj, all_shapes, frame)
+        apply_shape_key_values(eyelashes_obj, all_shapes, frame)
 
         skin_color = snapshot.get("skin_color")
         if skin_color is not None:
             apply_material_color(head_mesh, skin_color, frame)
+            assign_eye_color(eye_wedge_R_bake, cfg.projection.eye_wedge_R_bake_name, cfg.projection.eye_color_name, skin_color, frame)
+            assign_eye_color(eye_wedge_L_bake, cfg.projection.eye_wedge_L_bake_name, cfg.projection.eye_color_name, skin_color, frame)
 
         src = Path(self.filepath).name
         self.report({"INFO"}, f"Loaded snapshot '{src}' on frame {frame}")

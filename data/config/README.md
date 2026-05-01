@@ -18,6 +18,7 @@ All paths in `runner.json` are relative to the `data/` directory.
 | `attractor.json` | Attractive-head attractor system (nudge toward curated references) |
 | `materials.json` | Skin material source file and node configuration |
 | `cleanup.json` | Mesh surgery settings: mouth bag group, lip sew indices, eye wedge and body object names |
+| `projection.json` | Eye projection bake objects: bake wedges, HD eyes, and projector empties |
 | `export.json` | Pipeline 03 (Export) settings: bake resolutions, GLB format, per-part include flags |
 
 ---
@@ -579,6 +580,38 @@ Shape keys with shared names across meshes are merged by name — each vert carr
 
 ---
 
+## projection.json
+
+Configures the eye projection bake system — the bake-variant eye wedges, HD eye meshes, and projector empties appended from an external `.blend` file for texture projection during export.
+
+```json
+{
+  "paths": {
+    "assets_blend_path": "gen13.blend"
+  },
+  "eye_wedge_R_bake_name": "eye_wedge_R_bake",
+  "eye_wedge_L_bake_name": "eye_wedge_L_bake",
+  "hd_eye_R_name": "hd_eye_R",
+  "hd_eye_L_name": "hd_eye_L",
+  "R_projector_name": "R_projector",
+  "L_projector_name": "L_projector"
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `paths.assets_blend_path` | string | Source `.blend` file containing projection assets, relative to `data/` |
+| `eye_wedge_R_bake_name` | string | Object name of the right eye wedge bake mesh to append |
+| `eye_wedge_L_bake_name` | string | Object name of the left eye wedge bake mesh to append |
+| `hd_eye_R_name` | string | Object name of the right HD eye (linked child, already in scene after bake wedge append) |
+| `hd_eye_L_name` | string | Object name of the left HD eye (linked child, already in scene after bake wedge append) |
+| `R_projector_name` | string | Object name of the right projector empty (linked child, already in scene after bake wedge append) |
+| `L_projector_name` | string | Object name of the left projector empty (linked child, already in scene after bake wedge append) |
+
+The bake wedge objects are appended via `wm.append`. The HD eyes and projectors are linked children that appear in the scene automatically when their parent bake wedge is appended — the config only needs their names so the pipeline can look them up with `bpy.data.objects.get()`.
+
+---
+
 ## export.json
 
 Settings for the **Export Pipeline** operator (Pipeline 03), which runs after Clean Mesh. For each frame in the range it produces a static GLB with all deformation + shape keys collapsed into vertex positions, plus baked diffuse textures and a snapshot JSON sidecar.
@@ -612,23 +645,26 @@ Settings for the **Export Pipeline** operator (Pipeline 03), which runs after Cl
 
 ### Per-frame output layout
 
-All artifacts land under `runner.paths.final_output_dir`:
+All artifacts for a given frame live in the same `frame_NNNN/` folder under `runner.paths.final_output_dir`:
 
 ```
 data/final-output/
-  frame_0001.glb                     # static GLB, textures embedded
-  final_frame0001_<ts>.json          # snapshot metadata
-  frame_0001/                        # sidecar texture directory
+  frame_0001/
+    frame_0001.glb                   # static GLB, textures embedded
+    final_frame0001_<ts>.json        # snapshot metadata
     head_diffuse.png                 # baked from head_mat
     R_eye_wedge_diffuse.png          # baked from eye_mat.001
     L_eye_wedge_diffuse.png          # baked from eye_mat.002
-  frame_0002.glb
-  final_frame0002_<ts>.json
   frame_0002/
-    ...
+    frame_0002.glb
+    final_frame0002_<ts>.json
+    head_diffuse.png
+    R_eye_wedge_diffuse.png
+    L_eye_wedge_diffuse.png
+  ...
 ```
 
-The per-frame `frame_NNNN/` folder is a sidecar — the textures inside are also embedded into the GLB binary, so the glb is fully self-contained. The sidecar exists for inspection, debugging, and future PBR expansion.
+The PNGs alongside the GLB are also embedded into the GLB binary — the glb is fully self-contained. The loose PNGs are kept next to it for inspection, debugging, and future PBR expansion.
 
 ### Bake targets on head_geo
 

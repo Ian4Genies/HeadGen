@@ -88,6 +88,106 @@ class CleanupConfig:
         )
 
 @dataclass
+class BakeSettings:
+    """All Blender bake settings that can be applied to a scene.
+
+    Generalised so any named bake-settings struct in JSON (e.g. ``eye-bake-settings``,
+    a future ``head-bake-settings``, etc.) can be loaded via ``from_dict`` and applied
+    identically by ``scene.projection.apply_bake_settings``.
+    """
+
+    render_engine: str = "CYCLES"
+    bake_type: str = "DIFFUSE"
+    use_pass_direct: bool = False
+    use_pass_indirect: bool = False
+    use_pass_color: bool = True
+    use_selected_to_active: bool = True
+    use_cage: bool = False
+    cage_extrusion: float = 0.05
+    max_ray_distance: float = 0.2
+    target: str = "IMAGE_TEXTURES"
+    margin_type: str = "EXTEND"
+    margin: int = 16
+    use_clear: bool = True
+    save_mode: str = "INTERNAL"
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "BakeSettings":
+        return cls(
+            render_engine=str(d.get("render_engine", "CYCLES")),
+            bake_type=str(d.get("bake_type", "DIFFUSE")),
+            use_pass_direct=bool(d.get("use_pass_direct", False)),
+            use_pass_indirect=bool(d.get("use_pass_indirect", False)),
+            use_pass_color=bool(d.get("use_pass_color", True)),
+            use_selected_to_active=bool(d.get("use_selected_to_active", True)),
+            use_cage=bool(d.get("use_cage", False)),
+            cage_extrusion=float(d.get("cage_extrusion", 0.05)),
+            max_ray_distance=float(d.get("max_ray_distance", 0.2)),
+            target=str(d.get("target", "IMAGE_TEXTURES")),
+            margin_type=str(d.get("margin_type", "EXTEND")),
+            margin=int(d.get("margin", 16)),
+            use_clear=bool(d.get("use_clear", True)),
+            save_mode=str(d.get("save_mode", "INTERNAL")),
+        )
+
+
+@dataclass
+class ProjectionConfig:
+    assets_blend_path: str = ""
+    baked_sequence_R_path: str = ""
+    baked_sequence_L_path: str = ""
+    eye_wedge_R_bake_name: str = ""
+    eye_wedge_L_bake_name: str = ""
+    hd_eye_R_name: str = ""
+    hd_eye_L_name: str = ""
+    R_projector_name: str = ""
+    L_projector_name: str = ""
+    eye_baked_sequence_name: str = "baked-sequence"
+    eye_bake_diffuse_name: str = "bake-diffuse"
+    eye_bake_switch_name: str = "bake-switch"
+    eye_color_name: str = "eye-color"
+    eye_bake_settings: BakeSettings = field(default_factory=BakeSettings)
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "ProjectionConfig":
+        paths = d.get("paths", {})
+        return cls(
+            assets_blend_path=paths.get("assets_blend_path", ""),
+            baked_sequence_R_path=paths.get("baked-sequence-R-path", ""),
+            baked_sequence_L_path=paths.get("baked-sequence-L-path", ""),
+            eye_wedge_R_bake_name=d.get("eye_wedge_R_bake_name", ""),
+            eye_wedge_L_bake_name=d.get("eye_wedge_L_bake_name", ""),
+            hd_eye_R_name=d.get("hd_eye_R_name", ""),
+            hd_eye_L_name=d.get("hd_eye_L_name", ""),
+            R_projector_name=d.get("R_projector_name", ""),
+            L_projector_name=d.get("L_projector_name", ""),
+            eye_baked_sequence_name=d.get("eye-baked-sequence-name", "baked-sequence"),
+            eye_bake_diffuse_name=d.get("eye-bake-diffuse-name", "bake-diffuse"),
+            eye_bake_switch_name=d.get("eye-bake-switch-name", "bake-switch"),
+            eye_color_name=d.get("eye-color-name", "eye-color"),
+            eye_bake_settings=BakeSettings.from_dict(d.get("eye-bake-settings", {})),
+        )
+
+    def resolve(self, base: Path) -> "ProjectionConfig":
+        return ProjectionConfig(
+            assets_blend_path=str((base / self.assets_blend_path).resolve()) if self.assets_blend_path else "",
+            baked_sequence_R_path=str((base / self.baked_sequence_R_path).resolve()) if self.baked_sequence_R_path else "",
+            baked_sequence_L_path=str((base / self.baked_sequence_L_path).resolve()) if self.baked_sequence_L_path else "",
+            eye_wedge_R_bake_name=self.eye_wedge_R_bake_name,
+            eye_wedge_L_bake_name=self.eye_wedge_L_bake_name,
+            hd_eye_R_name=self.hd_eye_R_name,
+            hd_eye_L_name=self.hd_eye_L_name,
+            R_projector_name=self.R_projector_name,
+            L_projector_name=self.L_projector_name,
+            eye_baked_sequence_name=self.eye_baked_sequence_name,
+            eye_bake_diffuse_name=self.eye_bake_diffuse_name,
+            eye_bake_switch_name=self.eye_bake_switch_name,
+            eye_color_name=self.eye_color_name,
+            eye_bake_settings=self.eye_bake_settings,
+        )
+
+
+@dataclass
 class RunnerConfig:
     frame_count: int = 400
     seed: int | None = None
@@ -146,9 +246,18 @@ class ExportConfig:
     glb_format: str = "GLB"
     frame_range: tuple[int, int] | None = None
 
+    head_bake_material_name: str = "head_mat"
+    eye_wedge_R_material_name: str = "eye_mat.001"
+    eye_wedge_L_material_name: str = "eye_mat.002"
+
     include_eyes: bool = True
     include_brows: bool = False
     include_lashes: bool = False
+
+    bake_wedge_texture_direct: bool = False
+    copy_eye_projection: bool = True
+    bake_brow_texture_direct: bool = False
+    bake_lash_texture_direct: bool = False
 
     @classmethod
     def from_dict(cls, d: dict) -> "ExportConfig":
@@ -167,9 +276,16 @@ class ExportConfig:
             bake_margin=int(d.get("bake_margin", 8)),
             glb_format=str(d.get("glb_format", "GLB")),
             frame_range=frame_range,
+            head_bake_material_name=str(d.get("head_bake_material_name", "head_mat")),
+            eye_wedge_R_material_name=str(d.get("eye_wedge_R_material_name", "eye_mat.001")),
+            eye_wedge_L_material_name=str(d.get("eye_wedge_L_material_name", "eye_mat.002")),
             include_eyes=bool(d.get("include_eyes", True)),
             include_brows=bool(d.get("include_brows", False)),
             include_lashes=bool(d.get("include_lashes", False)),
+            bake_wedge_texture_direct=bool(d.get("bake_wedge_texture_direct", True)),
+            copy_eye_projection=bool(d.get("copy_eye_projection", False)),
+            bake_brow_texture_direct=bool(d.get("bake_brow_texture_direct", False)),
+            bake_lash_texture_direct=bool(d.get("bake_lash_texture_direct", False)),
         )
 
 
@@ -183,6 +299,7 @@ class PipelineConfig:
     modifiers: SmoothCorrectiveConfig = field(default_factory=SmoothCorrectiveConfig)
     attractor: AttractorConfig = field(default_factory=AttractorConfig)
     materials: MaterialsConfig = field(default_factory=MaterialsConfig)
+    projection: ProjectionConfig = field(default_factory=ProjectionConfig)
     export: ExportConfig = field(default_factory=ExportConfig)
     chaos_joint_names: frozenset[str] = field(default_factory=lambda: frozenset(CHAOS_JOINT_NAMES))
     config_dir: Path = field(default_factory=lambda: Path("."))
@@ -259,6 +376,14 @@ def load_config(config_dir: str | Path) -> PipelineConfig:
     else:
         materials = MaterialsConfig()
 
+    # --- projection ---
+    proj_path = d / "projection.json"
+    if proj_path.exists():
+        projection = ProjectionConfig.from_dict(_load_json(proj_path))
+        projection = projection.resolve(project_root)
+    else:
+        projection = ProjectionConfig()
+
     # --- cleanup ---
     cleanup_path = d / "cleanup.json"
     if cleanup_path.exists():
@@ -283,6 +408,7 @@ def load_config(config_dir: str | Path) -> PipelineConfig:
         modifiers=modifiers,
         attractor=attractor,
         materials=materials,
+        projection=projection,
         export=export,
         chaos_joint_names=joint_names,
         config_dir=d,

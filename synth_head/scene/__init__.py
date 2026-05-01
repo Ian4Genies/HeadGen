@@ -14,6 +14,7 @@ from .snapshot import (
     apply_shape_key_values,
 )
 from .mesh import clean_head_mesh
+from .projection import apply_bake_settings, bake_eye_side, bake_wedge_side, point_image_sequence_node
 
 __all__ = [
     "add_object_to_armature",
@@ -35,4 +36,8 @@ __all__ = [
     "apply_bone_transforms",
     "apply_shape_key_values",
     "clean_head_mesh",
+    "apply_bake_settings",
+    "bake_eye_side",
+    "bake_wedge_side",
+    "point_image_sequence_node",
 ]

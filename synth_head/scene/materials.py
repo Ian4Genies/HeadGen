@@ -117,6 +117,22 @@ def randomize_head_material_color(
     mat = mesh_obj.material_slots[0].material
     key_material_color(mat, color, frame)
 
+def assign_eye_color(
+    eye_obj: bpy.types.Object,
+    eye_mat_name: str,
+    node_label: str,
+    color: tuple[float, float, float, float],
+    frame: int,
+) -> None:
+    """Set and keyframe *color* on the RGB node labelled *node_label* inside the
+    material named *eye_mat_name* on *eye_obj*."""
+    mat = eye_obj.data.materials.get(eye_mat_name)
+    if mat is None or not mat.use_nodes:
+        return
+    node = _find_node_by_label(mat.node_tree, node_label)
+    if node is None:
+        return
+    _key_color_rgb_node(node, color, frame)
 
 def apply_attractive_color(
     mesh_obj: bpy.types.Object,

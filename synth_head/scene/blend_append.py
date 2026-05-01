@@ -90,3 +90,22 @@ def append_gen13_and_classify(
 
     return head_geo_obj, body_geo_obj, armature_obj, L_eye_obj, R_eye_obj, eyebrows_obj, eyelashes_obj 
 
+
+def append_eye_wedge_bake(
+    blend_path: str,
+    R_bake_name: str,
+    L_bake_name: str,
+    hd_eye_R_name: str,
+    hd_eye_L_name: str,
+    R_projector_name: str,
+    L_projector_name: str,
+) -> bpy.types.Object | None:
+    R_bake = append_object_from_blend(blend_path, R_bake_name)
+    L_bake = append_object_from_blend(blend_path, L_bake_name)
+    #Projector and hd eye are already in the scene, because the are linked to bake objects
+    #we need to find them by name
+    R_projector = bpy.data.objects.get(R_projector_name)
+    L_projector = bpy.data.objects.get(L_projector_name)
+    hd_eye_R = bpy.data.objects.get(hd_eye_R_name)
+    hd_eye_L = bpy.data.objects.get(hd_eye_L_name)
+    return R_bake, L_bake, hd_eye_R, hd_eye_L, R_projector, L_projector

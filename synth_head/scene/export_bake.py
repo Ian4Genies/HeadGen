@@ -33,26 +33,65 @@ from typing import Iterator
 
 import bpy
 
-from ..core.export import frame_png_name, frame_texture_dir_name
+from ..core.export import frame_png_name
 
 
-# ---------------------------------------------------------------------------
-# Bake target table
-# ---------------------------------------------------------------------------
-#
-# Single source of truth for which material slots on head_geo get diffuse
-# bakes.  Keyed by material-name match against head_geo.data.materials[i].name.
-# Any material on head_geo NOT listed here gets a throwaway bake target and
-# its native shader travels through to the GLB unchanged.
-#
-# Extendable to JSON later, but kept in Python for now because the material set
-# is still evolving.
-# ---------------------------------------------------------------------------
-BAKE_TARGETS: list[dict] = [
-    {"material_name": "head_mat",    "suffix": "head",        "res_key": "head_bake_resolution"},
-    {"material_name": "eye_mat.001", "suffix": "R_eye_wedge", "res_key": "eye_wedge_bake_resolution"},
-    {"material_name": "eye_mat.002", "suffix": "L_eye_wedge", "res_key": "eye_wedge_bake_resolution"},
-]
+def _build_bake_targets(export_cfg) -> list[dict]:
+    """Build the bake-target list from config.
+
+    Material names and the wedge-inclusion flag all come from ``export_cfg``
+    so they can be changed in export.json without touching Python source.
+    ``bake_wedge_texture_direct=False`` omits the eye-wedge entries entirely.
+    """
+    targets = [
+        {
+            "material_name": export_cfg.head_bake_material_name,
+            "suffix": "head",
+            "resolution": export_cfg.head_bake_resolution,
+        },
+    ]
+    if export_cfg.bake_wedge_texture_direct:
+        targets += [
+            {
+                "material_name": export_cfg.eye_wedge_R_material_name,
+                "suffix": "R_eye_wedge",
+                "resolution": export_cfg.eye_wedge_bake_resolution,
+            },
+            {
+                "material_name": export_cfg.eye_wedge_L_material_name,
+                "suffix": "L_eye_wedge",
+                "resolution": export_cfg.eye_wedge_bake_resolution,
+            },
+        ]
+    return targets
+
+
+def _build_rewrite_targets(export_cfg) -> list[dict]:
+    """Targets for material slot rewrite — superset of bake targets.
+
+    Includes eye wedge entries when ``bake_wedge_texture_direct=True``
+    (direct Cycles bake) OR ``copy_eye_projection=True`` (copy from sequence).
+    ``_build_bake_targets`` is unchanged and still used only for Cycles node setup.
+    """
+    targets = [
+        {
+            "material_name": export_cfg.head_bake_material_name,
+            "suffix": "head",
+        },
+    ]
+    if export_cfg.bake_wedge_texture_direct or export_cfg.copy_eye_projection:
+        targets += [
+            {
+                "material_name": export_cfg.eye_wedge_R_material_name,
+                "suffix": "R_eye_wedge",
+            },
+            {
+                "material_name": export_cfg.eye_wedge_L_material_name,
+                "suffix": "L_eye_wedge",
+            },
+        ]
+    return targets
+
 
 _DUMMY_IMAGE_NAME = "ExportBake_Dummy"
 _DUMMY_IMAGE_RES = 64
@@ -125,10 +164,10 @@ def scope_bake_environment(
 
     try:
         # 1. Build persistent bake images + nodes for each matched BAKE_TARGET.
-        for spec in BAKE_TARGETS:
+        for spec in _build_bake_targets(export_cfg):
             mat_name = spec["material_name"]
             suffix = spec["suffix"]
-            res = int(getattr(export_cfg, spec["res_key"]))
+            res = int(spec["resolution"])
 
             material = _find_material_on_object(head_geo, mat_name)
             if material is None:
@@ -232,8 +271,7 @@ def scope_bake_environment(
 def bake_head_materials(
     head_geo: bpy.types.Object,
     bake_ctx: types.SimpleNamespace,
-    out_dir: Path,
-    frame: int,
+    frame_dir: Path,
     samples: int,
     margin: int,
 ) -> dict[str, Path]:
@@ -243,8 +281,9 @@ def bake_head_materials(
         head_geo: the source head object whose materials were wired up by
             ``scope_bake_environment``.
         bake_ctx: the namespace yielded by ``scope_bake_environment``.
-        out_dir: root export directory (``data/final-output/``).
-        frame: current frame number — picks the ``frame_NNNN/`` subfolder.
+        frame_dir: destination directory for this frame's artifacts — created
+            once per frame by the operator and shared by the bake, GLB, and
+            snapshot writes.
         samples: Cycles samples for the bake.
         margin: UV edge padding in pixels.
 
@@ -274,10 +313,7 @@ def bake_head_materials(
         margin=int(margin),
     )
 
-    # Write each bake image to disk under the per-frame sidecar folder.
-    frame_dir = Path(out_dir) / frame_texture_dir_name(frame)
-    frame_dir.mkdir(parents=True, exist_ok=True)
-
+    frame_dir = Path(frame_dir)
     png_paths: dict[str, Path] = {}
     for target in bake_ctx.targets:
         img = target["image"]

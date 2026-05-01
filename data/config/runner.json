@@ -4,12 +4,12 @@
   "paths": {
     "fbx":                    "genericGenie-0013-unified_rig.fbx",
     "gen13_blend":            "gen13.blend",
-    "save_variation_blend":   "Pipeline_01_Variation.blend",
-    "save_water_tight_blend": "Pipeline_02_Watertight.blend",
-    "save_export_blend":      "Pipeline_03_Export.blend",
+    "save_variation_blend":   "output-pipeline/Pipeline_01_Variation.blend",
+    "save_water_tight_blend": "output-pipeline/Pipeline_02_Watertight.blend",
+    "save_export_blend":      "output-pipeline/Pipeline_03_Export.blend",
     "issues_dir":             "head-issues",
     "good_dir":               "head-good",
     "attractive_dir":         "head-attractive",
-    "final_output_dir":       "final-output"
+    "final_output_dir":       "output-data-set"
   }
 }

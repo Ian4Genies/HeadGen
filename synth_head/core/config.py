@@ -145,6 +145,7 @@ class ProjectionConfig:
     eye_baked_sequence_name: str = "baked-sequence"
     eye_bake_diffuse_name: str = "bake-diffuse"
     eye_bake_switch_name: str = "bake-switch"
+    eye_color_name: str = "eye-color"
     eye_bake_settings: BakeSettings = field(default_factory=BakeSettings)
 
     @classmethod
@@ -163,6 +164,7 @@ class ProjectionConfig:
             eye_baked_sequence_name=d.get("eye-baked-sequence-name", "baked-sequence"),
             eye_bake_diffuse_name=d.get("eye-bake-diffuse-name", "bake-diffuse"),
             eye_bake_switch_name=d.get("eye-bake-switch-name", "bake-switch"),
+            eye_color_name=d.get("eye-color-name", "eye-color"),
             eye_bake_settings=BakeSettings.from_dict(d.get("eye-bake-settings", {})),
         )
 
@@ -180,6 +182,7 @@ class ProjectionConfig:
             eye_baked_sequence_name=self.eye_baked_sequence_name,
             eye_bake_diffuse_name=self.eye_bake_diffuse_name,
             eye_bake_switch_name=self.eye_bake_switch_name,
+            eye_color_name=self.eye_color_name,
             eye_bake_settings=self.eye_bake_settings,
         )
 
@@ -251,8 +254,8 @@ class ExportConfig:
     include_brows: bool = False
     include_lashes: bool = False
 
-    bake_wedge_texture_direct: bool = True
-    copy_eye_projection: bool = False
+    bake_wedge_texture_direct: bool = False
+    copy_eye_projection: bool = True
     bake_brow_texture_direct: bool = False
     bake_lash_texture_direct: bool = False
 

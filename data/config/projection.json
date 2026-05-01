@@ -13,6 +13,7 @@
   "eye-baked-sequence-name": "baked-sequence",
   "eye-bake-diffuse-name": "bake-diffuse",
   "eye-bake-switch-name": "bake-switch",
+  "eye-color-name":"eye-color",
   "eye-bake-settings": {
     "render_engine": "CYCLES",
     "bake_type": "DIFFUSE",

@@ -286,6 +286,7 @@ def build_range_vectors(
     expr_ov = blendshape_config.expression_overrides or {}
     var_set = set(blendshape_config.variation_shapes)
     expr_set = set(blendshape_config.expression_shapes)
+    indep = blendshape_config.independent_shapes or {}
 
     mins = np.zeros(len(param_keys), dtype=np.float64)
     maxs = np.ones(len(param_keys), dtype=np.float64)
@@ -315,6 +316,10 @@ def build_range_vectors(
                 cap = expr_ov.get(key, blendshape_config.expression_max)
                 mins[i] = 0.0
                 maxs[i] = max(float(cap), 0.001)
+            elif key in indep:
+                spec = indep[key]
+                mins[i] = float(spec.get("min", 0.0))
+                maxs[i] = float(spec.get("max", 1.0))
             else:
                 mins[i] = 0.0
                 maxs[i] = 1.0

@@ -34,7 +34,7 @@ from .scene.chaos_anim import (
 )
 from .scene.armature import add_object_to_armature, remove_orphan_armatures, attach_constrained_object_to_armature
 from .scene.blend_append import append_material_from_blend, append_object_from_blend, append_gen13_and_classify, append_eye_wedge_bake
-from .scene.materials import assign_exclusive_material, randomize_head_material_color, read_material_color, apply_attractive_color
+from .scene.materials import assign_exclusive_material, randomize_head_material_color, read_material_color, apply_attractive_color, assign_eye_color
 from .scene.modifiers import add_smooth_corrective
 from .scene.reset import reset_frame
 from .scene.mesh import clean_head_mesh
@@ -504,13 +504,17 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
             _apply_weights_to_shape_keys(eye_wedge_L_bake, constrained_bs[frame], frame)
             _apply_weights_to_shape_keys(R_projector, constrained_bs[frame], frame)
             _apply_weights_to_shape_keys(L_projector, constrained_bs[frame], frame)
-
+            _apply_weights_to_shape_keys(hd_eye_R, constrained_bs[frame], frame)
+            _apply_weights_to_shape_keys(hd_eye_L, constrained_bs[frame], frame)
             #Eyebrows and Eyelashes
             _apply_weights_to_shape_keys(eyebrows_obj, constrained_bs[frame], frame)
             _apply_weights_to_shape_keys(eyelashes_obj, constrained_bs[frame], frame)
             #Material Color
             rng_color = (color_rng.random(), color_rng.random(), color_rng.random(), 1.0)
             randomize_head_material_color(head_mesh, rng_color, frame)
+            #add color to eye wedge bake meshes
+            assign_eye_color(eye_wedge_R_bake, cfg.projection.eye_wedge_R_bake_name, cfg.projection.eye_color_name, rng_color, frame)
+            assign_eye_color(eye_wedge_L_bake, cfg.projection.eye_wedge_L_bake_name, cfg.projection.eye_color_name, rng_color, frame)
             attr_color = attractive_colors[frame]
             if attr_color is not None:
                 apply_attractive_color(head_mesh, attr_color, rng_color, cfg.materials.final_color_randomness, frame)
@@ -550,6 +554,14 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
             self.report({"ERROR"}, "No mesh stored — run Variation Pipeline first")
             return {"CANCELLED"}
 
+        L_eye_obj = get_ref(context, L_EYE)
+        if not L_eye_obj:
+            self.report({"ERROR"}, "No L eye mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
+        R_eye_obj = get_ref(context, R_EYE)
+        if not R_eye_obj:
+            self.report({"ERROR"}, "No R eye mesh stored — run Variation Pipeline first")
+            return {"CANCELLED"}
         eye_wedge_R_obj = get_ref(context, EYE_WEDGE_R)
         if not eye_wedge_R_obj:
             self.report({"ERROR"}, "No eye wedge R mesh stored — run Variation Pipeline first")
@@ -636,6 +648,8 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
 
         rng_color = (attractor_rng.random(), attractor_rng.random(), attractor_rng.random(), 1.0)
         randomize_head_material_color(head_mesh, rng_color, frame)
+        assign_eye_color(L_eye_obj, cfg.materials.eye_material_name, cfg.projection.eye_color_name, rng_color, frame)
+        assign_eye_color(R_eye_obj, cfg.materials.eye_material_name, cfg.projection.eye_color_name, rng_color, frame)
         if attractive_color is not None:
             apply_attractive_color(head_mesh, attractive_color, rng_color, cfg.materials.final_color_randomness, frame)
 

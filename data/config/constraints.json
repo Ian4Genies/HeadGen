@@ -151,6 +151,11 @@
       "numerator": "MouthBind.scale.x",
       "denominator": "MouthBind.scale.y",
       "max_ratio": 1.7
+    },
+    {
+      "title":  "Iris grow and shrink are mutually exclusive — largest wins",
+      "type":   "winner_take_all",
+      "params": ["var_iris_grow", "var_iris_shrink"]
     }
   ]
 }

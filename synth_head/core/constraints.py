@@ -385,6 +385,32 @@ def _apply_sandwich_clamp(flat: dict[str, float], rule: dict) -> None:
     flat[target_key] = effective / target_sign
 
 
+def _apply_winner_take_all(flat: dict[str, float], rule: dict) -> None:
+    """Zero out all but the largest-magnitude param in a group.
+
+    Among the listed params, the one with the highest absolute value keeps its
+    value unchanged; every other param in the group is set to zero.  Ties are
+    broken by list order — the first param wins.  Params missing from ``flat``
+    are silently skipped and never declared the winner.
+
+    JSON schema::
+
+        {
+          "type":   "winner_take_all",
+          "params": ["var_iris_grow", "var_iris_shrink"]
+        }
+    """
+    params: list[str] = rule.get("params", [])
+    present = [p for p in params if p in flat]
+    if len(present) < 2:
+        return
+
+    winner = max(present, key=lambda p: abs(flat[p]))
+    for p in present:
+        if p != winner:
+            flat[p] = 0.0
+
+
 def _apply_conditional_bias(flat: dict[str, float], rule: dict) -> None:
     """Drive a target up or down based on one or more param signals.
 
@@ -485,6 +511,7 @@ _RULE_HANDLERS = {
     "cross_proportion_clamp": _apply_cross_proportion_clamp,
     "sandwich_clamp": _apply_sandwich_clamp,
     "conditional_bias": _apply_conditional_bias,
+    "winner_take_all": _apply_winner_take_all,
 }
 
 

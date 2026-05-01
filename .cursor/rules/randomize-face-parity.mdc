@@ -1,65 +1,84 @@
 ---
-description: Keeps SYNTHHEAD_OT_RandomizeFace in sync with the per-frame variation logic inside SYNTHHEAD_OT_VariationPipeline
+description: Keeps RandomizeFace and LoadHeadData in sync with the per-frame variation logic inside VariationPipeline
 globs: synth_head/operators.py
 alwaysApply: false
 ---
 
-# RandomizeFace ↔ VariationPipeline Per-Frame Parity
+# Per-Frame Apply Parity: VariationPipeline ↔ RandomizeFace ↔ LoadHeadData
 
-`SYNTHHEAD_OT_RandomizeFace` is the single-frame equivalent of the inner loop
-in `SYNTHHEAD_OT_VariationPipeline`.  Any change to the per-frame variation
-logic in the pipeline loop **must be mirrored** in `RandomizeFace`.
+Three operators share the same "apply to scene" responsibility. Any change to
+what the pipeline applies per frame **must be evaluated** against both
+`RandomizeFace` and `LoadHeadData`.
 
-## What Must Stay in Sync
+```
+VariationPipeline  ──── inner loop body ────▶  RandomizeFace   (live random)
+                                          ▶  LoadHeadData    (from snapshot)
+```
 
-These steps are the "per-frame variation core" that both operators share:
+## Per-Frame Apply Core (all three must stay in sync)
 
-1. **Param generation** – `generate_single_frame_transforms` / `generate_single_frame_blendshape_weights`
-2. **Attractor sync** – `pool.sync(...)` when `cfg.attractor.enabled`
-3. **Flatten** – `flatten_params(transforms, bs_weights)`
-4. **Attract** – `attract(flat, pool, cfg.attractor, cfg.variation, cfg.blendshapes, rng)`
-5. **Constrain** – `constrain(flat, cfg.constraints)`
-6. **Unflatten** – `unflatten_params(flat, joint_names)`
-7. **Reset frame** – `reset_frame(chaos_joints, [<all tracked meshes>], frame)`
-8. **Apply bones** – `_apply_transforms_to_bones(chaos_joints, transforms, frame)`
-9. **Apply blendshapes** – `_apply_weights_to_shape_keys(obj, bs_weights, frame)` for every object in this list:
-   - `head_mesh`
-   - `eye_wedge_R_obj`
-   - `eye_wedge_L_obj`
-   - `eye_wedge_R_bake`
-   - `eye_wedge_L_bake`
-   - `R_projector`
-   - `L_projector`
-   - `eyebrows_obj`
-   - `eyelashes_obj`
-10. **Material color** – `randomize_head_material_color` + `apply_attractive_color` if `attractive_color is not None`
+### Bones
+- `_apply_transforms_to_bones(chaos_joints, transforms, frame)` — RandomizeFace
+- `apply_bone_transforms(armature, snapshot["chaos_joints"], frame)` — LoadHeadData (snapshot equivalent)
 
-## ❌ Pipeline-only features — do NOT add to RandomizeFace
+### Blendshapes — applied to every object in this list
+| Object | RandomizeFace fn | LoadHeadData fn |
+|---|---|---|
+| `head_mesh` | `_apply_weights_to_shape_keys` | `apply_shape_key_values` |
+| `eye_wedge_R_obj` | `_apply_weights_to_shape_keys` | `apply_shape_key_values` |
+| `eye_wedge_L_obj` | `_apply_weights_to_shape_keys` | `apply_shape_key_values` |
+| `eye_wedge_R_bake` | `_apply_weights_to_shape_keys` | `apply_shape_key_values` |
+| `eye_wedge_L_bake` | `_apply_weights_to_shape_keys` | `apply_shape_key_values` |
+| `R_projector` | `_apply_weights_to_shape_keys` | `apply_shape_key_values` |
+| `L_projector` | `_apply_weights_to_shape_keys` | `apply_shape_key_values` |
+| `hd_eye_R` | `_apply_weights_to_shape_keys` | `apply_shape_key_values` |
+| `hd_eye_L` | `_apply_weights_to_shape_keys` | `apply_shape_key_values` |
+| `eyebrows_obj` | `_apply_weights_to_shape_keys` | `apply_shape_key_values` |
+| `eyelashes_obj` | `_apply_weights_to_shape_keys` | `apply_shape_key_values` |
 
-| Feature | Why it's pipeline-only |
+### Reset Frame
+Both use the same list:
+`reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eye_wedge_R_bake, eye_wedge_L_bake, R_projector, L_projector, hd_eye_R, hd_eye_L, eyebrows_obj, eyelashes_obj], frame)`
+
+### Color
+A single shared color is used for both body and eyes — there is no separate eye color.
+
+| Step | RandomizeFace | LoadHeadData |
+|---|---|---|
+| Body color | `randomize_head_material_color(head_mesh, rng_color, frame)` | `apply_material_color(head_mesh, skin_color, frame)` |
+| Eye color R | `assign_eye_color(eye_wedge_R_bake, cfg.projection.eye_wedge_R_bake_name, ...)` | same, using `skin_color` |
+| Eye color L | `assign_eye_color(eye_wedge_L_bake, cfg.projection.eye_wedge_L_bake_name, ...)` | same, using `skin_color` |
+| Attractive color | `apply_attractive_color(...)` if not None | ❌ intentionally absent — not applicable to loading |
+
+## Intentional Differences (do NOT add to RandomizeFace or LoadHeadData)
+
+| Feature | Pipeline-only or RF-only reason |
 |---|---|
-| `append_gen13_and_classify` / FBX import | Scene setup, runs once |
-| Material append & assignment | Scene setup, runs once |
-| Eye wedge / armature append | Scene setup, runs once |
-| Multi-frame `for frame in range(...)` loop | Pipeline iterates; RandomizeFace uses `frame_current` |
-| `bpy.ops.wm.save_as_mainfile` | Batch save checkpoint |
+| FBX/blend import, scene setup, material append | Pipeline setup — runs once |
+| Multi-frame `for frame in range(...)` loop | Pipeline iterates; single-frame ops use `frame_current` |
+| `bpy.ops.wm.save_as_mainfile` | Pipeline batch checkpoint |
 | Deterministic `_random.Random(cfg.runner.seed)` | Pipeline is reproducible; RandomizeFace is intentionally random |
+| `generate_*` / attractor / constrain / flatten | RandomizeFace generates live; LoadHeadData reads from snapshot |
+| `apply_attractive_color` | RandomizeFace only — not meaningful when restoring a fixed saved state |
 
 ## Checklist When Editing the Per-Frame Loop
 
-- [ ] Added a new `_apply_weights_to_shape_keys` call in the pipeline? → Add it in `RandomizeFace` and add the corresponding ref lookup + error check.
-- [ ] Added a new `_apply_transforms_to_bones` variant? → Mirror it.
-- [ ] Changed the `reset_frame` mesh list? → Keep both lists identical.
-- [ ] Changed attract / constrain / flatten call signatures? → Update both call sites.
-- [ ] Added a new tracked object ref? → Add `get_ref` + error guard to `RandomizeFace`.
+- [ ] Added a new `_apply_weights_to_shape_keys` call in the pipeline? → Add it in **both** RandomizeFace and LoadHeadData, with matching ref lookups and error guards in each.
+- [ ] Added a new `_apply_transforms_to_bones` variant? → Mirror in RandomizeFace; evaluate for LoadHeadData.
+- [ ] Changed the `reset_frame` mesh list? → Keep all three lists identical.
+- [ ] Changed attract / constrain / flatten call signatures? → Update RandomizeFace call site.
+- [ ] Added a new tracked object ref? → Add `get_ref` + error guard to **both** RandomizeFace and LoadHeadData.
+- [ ] Changed the color application (body or eye)? → Update both RandomizeFace and LoadHeadData; remember they use different source variables (`rng_color` vs `skin_color`).
 
 ## User Notification Requirement
 
-Whenever `SYNTHHEAD_OT_RandomizeFace` is modified as a consequence of syncing
-with the pipeline — even if the user only asked about the pipeline — you **MUST**
-call this out explicitly in your response with a bold header, for example:
+Whenever `SYNTHHEAD_OT_RandomizeFace` **or** `SYNTHHEAD_OT_LoadHeadData` is
+modified as a consequence of syncing with the pipeline — even if the user only
+asked about the pipeline — you **MUST** call this out explicitly in your
+response with a bold header for each operator touched, for example:
 
 > **⚠️ RandomizeFace was also updated to stay in sync with the pipeline.**
+> **⚠️ LoadHeadData was also updated to stay in sync with the pipeline.**
 
-The user may not be expecting a change to `RandomizeFace` and must always be
-made aware when it has been touched.
+The user may not be expecting changes to these operators and must always be made
+aware when they have been touched.

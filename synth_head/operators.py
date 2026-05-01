@@ -686,7 +686,7 @@ def _save_head_snapshot(operator, context, label: str, directory: Path) -> set[s
     joint_data = read_bone_transforms(armature, cfg.chaos_joint_names)
     var_shapes, expr_shapes = read_shape_key_values(
         head_mesh,
-        cfg.blendshapes.variation_shapes,
+        cfg.blendshapes.variation_shapes + list(cfg.blendshapes.independent_shapes.keys()),
         cfg.blendshapes.expression_shapes,
     )
     skin_color = read_material_color(head_mesh)
@@ -971,7 +971,7 @@ def _write_export_snapshot(
     joint_data = read_bone_transforms(armature, cfg.chaos_joint_names)
     var_shapes, expr_shapes = read_shape_key_values(
         head_mesh,
-        cfg.blendshapes.variation_shapes,
+        cfg.blendshapes.variation_shapes + list(cfg.blendshapes.independent_shapes.keys()),
         cfg.blendshapes.expression_shapes,
     )
     skin_color = read_material_color(head_mesh)

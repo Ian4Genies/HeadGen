@@ -330,16 +330,23 @@ def calc_offset(
 ) -> int:
     """Compute the image sequence node ``frame_offset`` to display *desired_frame*.
 
-    Blender formula:
-        ``image_index = (current_frame - start_frame) + offset``
+    Blender computes the shown file as::
 
-    Rearranged to solve for offset:
-        ``offset = desired_frame - (current_frame - start_frame)``
+        file_shown = (current_frame - start_frame + 1) + offset   [clamp happens first]
 
-    With ``start_frame`` always fixed at 1 for this system:
-        ``offset = desired_frame - current_frame + 1``
+    Rearranged to solve for offset::
+
+        offset = desired_frame - (current_frame - start_frame + 1)
+
+    With ``start_frame`` always fixed at 1 for this system::
+
+        offset = desired_frame - current_frame
+
+    NOTE: ``frame_duration`` on the node must be set larger than the maximum
+    timeline frame so Blender's internal clamp never fires before the offset
+    is applied.  Use ``runner.frame_count + 100`` when configuring the node.
     """
-    return desired_frame - (current_frame - start_frame)
+    return desired_frame - (current_frame - start_frame + 1)
 
 
 def name_from_current_offset(
@@ -355,7 +362,7 @@ def name_from_current_offset(
 
     Returns ``"default"`` when the computed index is absent from the manifest.
     """
-    image_index = (current_frame - start_frame) + offset
+    image_index = (current_frame - start_frame + 1) + offset
     name = manifest.name_at_index(image_index)
     return name if name is not None else "default"
 

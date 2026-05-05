@@ -479,6 +479,10 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
                 self.report({"WARNING"}, "Attractor enabled but no good heads found")
 
         # --- 4b. TEXTURE SWAP — ping/rebuild sequences, configure nodes ---
+        # frame_duration must exceed the timeline length so Blender's internal
+        # clamp never fires before the per-frame offset is applied.
+        fc = cfg.runner.frame_count
+        tex_frame_duration = fc + 100
         slot_manifests: dict = {}
         for slot in cfg.texture_swap.slots:
             manifest = ping_and_sync_sequence(slot)
@@ -486,8 +490,8 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
             mat = bpy.data.materials.get(slot.material_name)
             if mat:
                 first_file = Path(slot.sequence_path) / sequence_filename(sequence_prefix(slot), 1)
-                point_texture_sequence_node(mat, slot.node_name, first_file, 1, manifest.frame_count)
-                set_sequence_frames(mat, slot.node_name, manifest.frame_count)
+                point_texture_sequence_node(mat, slot.node_name, first_file, 1, tex_frame_duration)
+                set_sequence_frames(mat, slot.node_name, tex_frame_duration)
                 clear_sequence_offset_keyframes(mat, slot.node_name)
         self.report({"INFO"}, f"Texture swap: {len(slot_manifests)} sequence(s) synced")
 
@@ -497,7 +501,7 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         constrained_transforms: dict[int, dict] = {}
         constrained_bs: dict[int, dict[str, float]] = {}
         attractive_colors: dict[int, list[float] | None] = {}
-        fc = cfg.runner.frame_count
+        
         for frame in range(1, fc + 1):
             # flat is a dict of param names to values
             flat = flatten_params(all_transforms[frame], all_bs_weights[frame])
@@ -570,6 +574,15 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
 
         eyebrows_obj.hide_viewport = True
         eyelashes_obj.hide_viewport = True
+        eye_wedge_R_obj.hide_viewport = True
+        eye_wedge_L_obj.hide_viewport = True
+        R_projector.hide_viewport = True
+        L_projector.hide_viewport = True
+        hd_eye_R.hide_viewport = True
+        hd_eye_L.hide_viewport = True
+        L_eye_obj.hide_viewport = True
+        R_eye_obj.hide_viewport = True
+
 
         Path(cfg.runner.save_variation_blend_path).parent.mkdir(parents=True, exist_ok=True)
         bpy.ops.wm.save_as_mainfile(filepath=cfg.runner.save_variation_blend_path)

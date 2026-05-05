@@ -7,8 +7,7 @@
     "LeftBrowBind",
     "RightBrowBind",
     "RightEyeSocketBind",
-    "LeftEyeSocketBind",
-    "FaceBind"
+    "LeftEyeSocketBind"
   ],
   "transform_max": 0.2,
   "rotate_max":    10.0,

@@ -15,6 +15,14 @@ from .snapshot import (
 )
 from .mesh import clean_head_mesh
 from .projection import apply_bake_settings, bake_eye_side, bake_wedge_side, point_image_sequence_node
+from .texture_swap import (
+    get_sequence_node,
+    point_texture_sequence_node,
+    set_sequence_frames,
+    key_sequence_offset,
+    read_sequence_offset,
+    clear_sequence_offset_keyframes,
+)
 
 __all__ = [
     "add_object_to_armature",
@@ -40,4 +48,10 @@ __all__ = [
     "bake_eye_side",
     "bake_wedge_side",
     "point_image_sequence_node",
+    "get_sequence_node",
+    "point_texture_sequence_node",
+    "set_sequence_frames",
+    "key_sequence_offset",
+    "read_sequence_offset",
+    "clear_sequence_offset_keyframes",
 ]

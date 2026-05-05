@@ -24,6 +24,7 @@ from .blendshapes import (
 from .constraints import ConstraintRules, ClampRange
 from .modifiers import SmoothCorrectiveConfig
 from .attractor import AttractorConfig
+from .texture_swap import TextureSwapConfig, TextureSwapSlot
 
 
 def _load_json(path: Path) -> dict:
@@ -301,6 +302,7 @@ class PipelineConfig:
     materials: MaterialsConfig = field(default_factory=MaterialsConfig)
     projection: ProjectionConfig = field(default_factory=ProjectionConfig)
     export: ExportConfig = field(default_factory=ExportConfig)
+    texture_swap: TextureSwapConfig = field(default_factory=TextureSwapConfig)
     chaos_joint_names: frozenset[str] = field(default_factory=lambda: frozenset(CHAOS_JOINT_NAMES))
     config_dir: Path = field(default_factory=lambda: Path("."))
 
@@ -376,6 +378,17 @@ def load_config(config_dir: str | Path) -> PipelineConfig:
     else:
         materials = MaterialsConfig()
 
+    # --- texture swap ---
+    tex_swap_path = d / "texture_swap.json"
+    if tex_swap_path.exists():
+        texture_swap = TextureSwapConfig.from_dict(
+            _load_json(tex_swap_path),
+            default_material=materials.skin_material_name,
+        )
+        texture_swap = texture_swap.resolve(project_root)
+    else:
+        texture_swap = TextureSwapConfig()
+
     # --- projection ---
     proj_path = d / "projection.json"
     if proj_path.exists():
@@ -410,6 +423,7 @@ def load_config(config_dir: str | Path) -> PipelineConfig:
         materials=materials,
         projection=projection,
         export=export,
+        texture_swap=texture_swap,
         chaos_joint_names=joint_names,
         config_dir=d,
     )

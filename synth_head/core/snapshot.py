@@ -12,7 +12,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-SNAPSHOT_VERSION = 3
+SNAPSHOT_VERSION = 4
 
 
 def build_snapshot(
@@ -26,6 +26,7 @@ def build_snapshot(
     rules_raw: dict | None = None,
     skin_color: list[float] | None = None,
     texture_code: str = "A",
+    texture_overlays: dict[str, str] | None = None,
 ) -> dict:
     """Assemble a complete snapshot dict ready for serialization.
 
@@ -40,6 +41,8 @@ def build_snapshot(
         rules_raw: Legacy v1 rules_snapshot (kept for backward compat).
         skin_color: ``[r, g, b, a]`` floats read from the head material color node (v3+).
         texture_code: Identifier for the texture set applied to this head (v3+). Defaults to ``"A"``.
+        texture_overlays: ``{channel_key: pool_filename_or_"default"}`` mapping the
+            active texture overlay per channel (v4+).  ``None`` is stored as ``{}``.
     """
     snap: dict = {
         "version": SNAPSHOT_VERSION,
@@ -49,6 +52,7 @@ def build_snapshot(
         "note": note,
         "skin_color": skin_color if skin_color is not None else [0.0, 0.0, 0.0, 1.0],
         "texture_code": texture_code,
+        "texture_overlays": texture_overlays if texture_overlays is not None else {},
         "chaos_joints": chaos_joints,
         "variation_shapes": variation_shapes,
         "expression_shapes": expression_shapes,

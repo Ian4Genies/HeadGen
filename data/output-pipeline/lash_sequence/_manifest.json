@@ -1,0 +1,16 @@
+{
+  "pool_files": [
+    "crappy_lash_01.png",
+    "crappy_lash_02.png",
+    "crappy_lash_03.png",
+    "crappy_lash_04.png"
+  ],
+  "frame_count": 5,
+  "entries": {
+    "1": "default",
+    "2": "crappy_lash_01.png",
+    "3": "crappy_lash_02.png",
+    "4": "crappy_lash_03.png",
+    "5": "crappy_lash_04.png"
+  }
+}

@@ -8,6 +8,7 @@ if "bpy" in locals():
     from .core import config as core_config
     from .core import snapshot as core_snapshot
     from .core import export as core_export
+    from .core import texture_swap as core_texture_swap
     from . import scene
     from .scene import armature as scene_armature
     from .scene import fbx_import, chaos_anim, modifiers as scene_modifiers, refs as scene_refs
@@ -20,6 +21,7 @@ if "bpy" in locals():
     from .scene import export_bake as scene_export_bake
     from .scene import export_glb as scene_export_glb
     from .scene import projection as scene_projection
+    from .scene import texture_swap as scene_texture_swap
 
     importlib.reload(math)
     importlib.reload(core_modifiers)
@@ -28,6 +30,7 @@ if "bpy" in locals():
     importlib.reload(core_blendshapes)
     importlib.reload(constraints)
     importlib.reload(core_attractor)
+    importlib.reload(core_texture_swap)
     importlib.reload(core_config)
     importlib.reload(core_snapshot)
     importlib.reload(core_export)
@@ -46,6 +49,7 @@ if "bpy" in locals():
     importlib.reload(scene_export_bake)
     importlib.reload(scene_export_glb)
     importlib.reload(scene_projection)
+    importlib.reload(scene_texture_swap)
     importlib.reload(scene)
     importlib.reload(operators)
 

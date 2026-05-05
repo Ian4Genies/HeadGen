@@ -1,0 +1,16 @@
+{
+  "pool_files": [
+    "crappy_lip_01.png",
+    "crappy_lip_02.png",
+    "crappy_lip_03.png",
+    "crappy_lip_04.png"
+  ],
+  "frame_count": 5,
+  "entries": {
+    "1": "default",
+    "2": "crappy_lip_01.png",
+    "3": "crappy_lip_02.png",
+    "4": "crappy_lip_03.png",
+    "5": "crappy_lip_04.png"
+  }
+}

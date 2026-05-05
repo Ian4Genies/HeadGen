@@ -1,0 +1,16 @@
+{
+  "pool_files": [
+    "crappy_brow_01.png",
+    "crappy_brow_02.png",
+    "crappy_brow_03.png",
+    "crappy_brow_04.png"
+  ],
+  "frame_count": 5,
+  "entries": {
+    "1": "default",
+    "2": "crappy_brow_01.png",
+    "3": "crappy_brow_02.png",
+    "4": "crappy_brow_03.png",
+    "5": "crappy_brow_04.png"
+  }
+}

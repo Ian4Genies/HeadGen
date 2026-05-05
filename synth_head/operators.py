@@ -51,6 +51,23 @@ from .scene.export_glb import staging_scene, rewrite_head_material_slots, stamp_
 from .core.export import frame_glb_name, frame_dir_name, frame_png_name, eye_bake_seq_png_name
 from .core.snapshot import build_snapshot, save_snapshot, load_snapshot
 from .core.config import load_config, PipelineConfig
+from .core.texture_swap import (
+    ping_and_sync_sequence,
+    load_manifest,
+    pick_texture_index,
+    calc_offset,
+    name_from_current_offset,
+    offset_from_name,
+    sequence_prefix,
+    sequence_filename,
+)
+from .scene.texture_swap import (
+    point_texture_sequence_node,
+    set_sequence_frames,
+    key_sequence_offset,
+    read_sequence_offset,
+    clear_sequence_offset_keyframes,
+)
 
 import shutil
 import types
@@ -461,6 +478,19 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
             else:
                 self.report({"WARNING"}, "Attractor enabled but no good heads found")
 
+        # --- 4b. TEXTURE SWAP — ping/rebuild sequences, configure nodes ---
+        slot_manifests: dict = {}
+        for slot in cfg.texture_swap.slots:
+            manifest = ping_and_sync_sequence(slot)
+            slot_manifests[slot.key] = manifest
+            mat = bpy.data.materials.get(slot.material_name)
+            if mat:
+                first_file = Path(slot.sequence_path) / sequence_filename(sequence_prefix(slot), 1)
+                point_texture_sequence_node(mat, slot.node_name, first_file, 1, manifest.frame_count)
+                set_sequence_frames(mat, slot.node_name, manifest.frame_count)
+                clear_sequence_offset_keyframes(mat, slot.node_name)
+        self.report({"INFO"}, f"Texture swap: {len(slot_manifests)} sequence(s) synced")
+
         import random as _random
         attractor_rng = _random.Random(cfg.runner.seed)
         # --- 5. CONSTRAIN EACH FRAME (attract → constrain → split) ---
@@ -489,8 +519,9 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
             constrained_transforms[frame] = xforms
             # store the constrained weights for this frame
             constrained_bs[frame] = weights
-        # --- 6. BAKE TO SCENE (pose bones + shape keys + material color per frame) ---
+        # --- 6. BAKE TO SCENE (pose bones + shape keys + material color + texture offsets per frame) ---
         color_rng = _random.Random(cfg.runner.seed + 1 if cfg.runner.seed is not None else None)
+        texture_rng = _random.Random(cfg.runner.seed + 2 if cfg.runner.seed is not None else None)
         for frame in range(1, fc + 1):
             context.scene.frame_set(frame)
             reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eyebrows_obj, eyelashes_obj], frame)
@@ -518,7 +549,17 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
             attr_color = attractive_colors[frame]
             if attr_color is not None:
                 apply_attractive_color(head_mesh, attr_color, rng_color, cfg.materials.final_color_randomness, frame)
-        self.report({"INFO"}, f"Applied {fc} frames (reset + joints + blendshapes + material color)")
+            # Texture overlay offset keying
+            for slot in cfg.texture_swap.slots:
+                slot_manifest = slot_manifests.get(slot.key)
+                if slot_manifest is None:
+                    continue
+                mat = bpy.data.materials.get(slot.material_name)
+                if mat is None:
+                    continue
+                idx = pick_texture_index(slot_manifest, slot.percentage, texture_rng)
+                key_sequence_offset(mat, slot.node_name, calc_offset(idx, frame), frame)
+        self.report({"INFO"}, f"Applied {fc} frames (reset + joints + blendshapes + material color + texture offsets)")
         # --- 7. cleanup
 
         
@@ -655,6 +696,20 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         if attractive_color is not None:
             apply_attractive_color(head_mesh, attractive_color, rng_color, cfg.materials.final_color_randomness, frame)
 
+        # Texture overlay — read existing manifests, pick and key offsets
+        import random as _tex_random
+        texture_rng = _tex_random.Random()
+        for slot in cfg.texture_swap.slots:
+            slot_manifest = load_manifest(slot.sequence_path)
+            if slot_manifest is None:
+                self.report({"WARNING"}, f"No texture manifest for '{slot.key}' — skipping overlay")
+                continue
+            mat = bpy.data.materials.get(slot.material_name)
+            if mat is None:
+                continue
+            idx = pick_texture_index(slot_manifest, slot.percentage, texture_rng)
+            key_sequence_offset(mat, slot.node_name, calc_offset(idx, frame), frame)
+
         self.report({"INFO"}, f"Randomized {len(chaos_joints)} joints + blendshapes on frame {frame}")
         return {"FINISHED"}
 
@@ -693,15 +748,29 @@ def _save_head_snapshot(operator, context, label: str, directory: Path) -> set[s
 
     config_raw = _load_config_dir_raw(cfg)
 
+    # Capture active texture overlay names from image sequence nodes
+    snap_frame = context.scene.frame_current
+    texture_overlays: dict[str, str] = {}
+    for slot in cfg.texture_swap.slots:
+        slot_manifest = load_manifest(slot.sequence_path)
+        mat = bpy.data.materials.get(slot.material_name)
+        if slot_manifest is None or mat is None:
+            continue
+        offset = read_sequence_offset(mat, slot.node_name)
+        if offset is None:
+            continue
+        texture_overlays[slot.key] = name_from_current_offset(offset, snap_frame, slot_manifest)
+
     snapshot = build_snapshot(
         chaos_joints=joint_data,
         variation_shapes=var_shapes,
         expression_shapes=expr_shapes,
         config_snapshot=config_raw,
-        frame=context.scene.frame_current,
+        frame=snap_frame,
         label=label,
         note=operator.note,
         skin_color=skin_color,
+        texture_overlays=texture_overlays if texture_overlays else None,
     )
 
     saved = save_snapshot(snapshot, directory)
@@ -880,6 +949,29 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
             assign_eye_color(eye_wedge_R_bake, cfg.projection.eye_wedge_R_bake_name, cfg.projection.eye_color_name, skin_color, frame)
             assign_eye_color(eye_wedge_L_bake, cfg.projection.eye_wedge_L_bake_name, cfg.projection.eye_color_name, skin_color, frame)
 
+        # Restore texture overlays from snapshot
+        overlays = snapshot.get("texture_overlays", {})
+        if not overlays:
+            self.report({"WARNING"}, "Snapshot has no texture_overlays — texture offsets unchanged")
+        else:
+            for slot in cfg.texture_swap.slots:
+                name = overlays.get(slot.key)
+                if name is None:
+                    self.report({"WARNING"}, f"No texture overlay for '{slot.key}' in snapshot — skipping")
+                    continue
+                slot_manifest = load_manifest(slot.sequence_path)
+                if slot_manifest is None:
+                    self.report({"WARNING"}, f"No texture manifest for '{slot.key}' — skipping")
+                    continue
+                mat = bpy.data.materials.get(slot.material_name)
+                if mat is None:
+                    continue
+                tex_offset = offset_from_name(name, frame, slot_manifest)
+                if tex_offset is None:
+                    self.report({"WARNING"}, f"Texture '{name}' not found in '{slot.key}' manifest — skipping")
+                    continue
+                key_sequence_offset(mat, slot.node_name, tex_offset, frame)
+
         src = Path(self.filepath).name
         self.report({"INFO"}, f"Loaded snapshot '{src}' on frame {frame}")
         return {"FINISHED"}
@@ -977,6 +1069,18 @@ def _write_export_snapshot(
     skin_color = read_material_color(head_mesh)
     config_raw = _load_config_dir_raw(cfg)
 
+    # Capture active texture overlay names from image sequence nodes
+    texture_overlays: dict[str, str] = {}
+    for slot in cfg.texture_swap.slots:
+        slot_manifest = load_manifest(slot.sequence_path)
+        mat = bpy.data.materials.get(slot.material_name)
+        if slot_manifest is None or mat is None:
+            continue
+        offset = read_sequence_offset(mat, slot.node_name)
+        if offset is None:
+            continue
+        texture_overlays[slot.key] = name_from_current_offset(offset, frame, slot_manifest)
+
     snapshot = build_snapshot(
         chaos_joints=joint_data,
         variation_shapes=var_shapes,
@@ -986,6 +1090,7 @@ def _write_export_snapshot(
         label=label,
         note="",
         skin_color=skin_color,
+        texture_overlays=texture_overlays if texture_overlays else None,
     )
     return save_snapshot(snapshot, out_dir)
 

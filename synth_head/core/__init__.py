@@ -42,6 +42,20 @@ from .attractor import (
     update_manifest,
     snapshot_to_flat,
 )
+from .texture_swap import (
+    TextureSwapSlot,
+    TextureSwapConfig,
+    SequenceManifest,
+    load_manifest,
+    rebuild_sequence,
+    ping_and_sync_sequence,
+    pick_texture_index,
+    calc_offset,
+    name_from_current_offset,
+    offset_from_name,
+    sequence_prefix,
+    sequence_filename,
+)
 
 __all__ = [
     "clamp",
@@ -85,4 +99,16 @@ __all__ = [
     "attract",
     "update_manifest",
     "snapshot_to_flat",
+    "TextureSwapSlot",
+    "TextureSwapConfig",
+    "SequenceManifest",
+    "load_manifest",
+    "rebuild_sequence",
+    "ping_and_sync_sequence",
+    "pick_texture_index",
+    "calc_offset",
+    "name_from_current_offset",
+    "offset_from_name",
+    "sequence_prefix",
+    "sequence_filename",
 ]

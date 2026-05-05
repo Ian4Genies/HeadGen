@@ -1,0 +1,20 @@
+{
+    "paths": {
+      "brow_texture_pool": "input-pipeline/texture/brow",
+      "brow_texture_sequence": "output-pipeline/brow_sequence",
+
+      "lash_texture_pool": "input-pipeline/texture/lash",
+      "lash_texture_sequence": "output-pipeline/lash_sequence",
+
+      "lip_texture_pool": "input-pipeline/texture/lip",
+      "lip_texture_sequence": "output-pipeline/lip_sequence" 
+    },
+
+    "brow-sequence-node": "brow-sequence",
+    "lash-sequence-node": "lash-sequence",
+    "lip-sequence-node": "lip-sequence",
+    
+    "brow_Percentage": 0.5,
+    "lash_Percentage": 0.5,
+    "lip_Percentage": 0.5
+}

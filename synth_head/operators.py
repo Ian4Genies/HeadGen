@@ -572,7 +572,7 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
 
 
 
-        eyebrows_obj.hide_viewport = True
+        #eyebrows_obj.hide_viewport = True
         eyelashes_obj.hide_viewport = True
         eye_wedge_R_obj.hide_viewport = True
         eye_wedge_L_obj.hide_viewport = True

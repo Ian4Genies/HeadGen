@@ -14,7 +14,7 @@
     "lash-sequence-node": "lash-sequence",
     "lip-sequence-node": "lip-sequence",
     
-    "brow_Percentage": 0.5,
+    "brow_Percentage": 1.0,
     "lash_Percentage": 0.5,
     "lip_Percentage": 0.5
 }

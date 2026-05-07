@@ -574,8 +574,13 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
 
         eyebrows_obj.hide_viewport = True
         eyelashes_obj.hide_viewport = True
-        eye_wedge_R_obj.hide_viewport = True
-        eye_wedge_L_obj.hide_viewport = True
+        #eye_wedge_R_obj.hide_viewport = True
+        #eye_wedge_L_obj.hide_viewport = True
+        #eye_wedge_R_bake.hide_set(True)
+        #eye_wedge_L_bake.hide_set(True)
+        eye_wedge_L_obj.hide_set(True)
+        eye_wedge_R_obj.hide_set(True)
+
         R_projector.hide_viewport = True
         L_projector.hide_viewport = True
         hd_eye_R.hide_viewport = True
@@ -1180,7 +1185,7 @@ class SYNTHHEAD_OT_ExportPipeline(bpy.types.Operator):
                         frame_dir / frame_glb_name(frame),
                         format=cfg.export.glb_format,
                     )
-
+                
                 _write_export_snapshot(context, cfg, frame_dir, frame, label="final")
 
                 print(f"[SynthHead][Export] frame {frame}/{end} done")

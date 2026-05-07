@@ -33,6 +33,13 @@ from .export_bake import _build_bake_targets, _build_rewrite_targets
 
 _STAGING_COLLECTION_NAME = "ExportStaging"
 
+# Modifier types that are excluded from the export proxy but kept active during
+# the texture bake (which uses the render depsgraph / show_render flag).
+# Subdivision and geometry-node modifiers inflate the export mesh without adding
+# any information that isn't already captured in the baked PNG, so we strip them
+# by toggling show_viewport=False just long enough to freeze the proxy mesh.
+_EXPORT_EXCLUDE_MOD_TYPES: frozenset[str] = frozenset({"SUBSURF", "MULTIRES", "NODES"})
+
 
 # ---------------------------------------------------------------------------
 # Freeze + staging
@@ -55,6 +62,7 @@ def _freeze_object(
     label: str,
     depsgraph: bpy.types.Depsgraph,
     collection: bpy.types.Collection,
+    exclude_modifier_types: frozenset[str] = frozenset(),
 ) -> bpy.types.Object:
     """Freeze *src_obj* into a static mesh + wrapper object, linked into *collection*.
 
@@ -70,13 +78,33 @@ def _freeze_object(
     offset instead of at the pose we actually see in the viewport.  A negative
     determinant means the transform inverts winding order (mirror / negative
     scale), so we flip normals to keep shading correct in the GLB.
+
+    ``exclude_modifier_types`` lists Blender modifier type strings (e.g.
+    ``'SUBSURF'``, ``'NODES'``) whose ``show_viewport`` flag is temporarily set
+    to ``False`` before evaluation so they are skipped in the frozen mesh.
+    ``show_render`` is intentionally left untouched — the diffuse bake (which
+    uses the render depsgraph) must have already completed before this is called.
+    The flags are restored in a ``finally`` block regardless of errors.
     """
-    obj_eval = src_obj.evaluated_get(depsgraph)
-    frozen_mesh = bpy.data.meshes.new_from_object(
-        obj_eval,
-        preserve_all_data_layers=True,
-        depsgraph=depsgraph,
-    )
+    toggled_off: list[bpy.types.Modifier] = []
+    if exclude_modifier_types:
+        for mod in src_obj.modifiers:
+            if mod.type in exclude_modifier_types and mod.show_viewport:
+                mod.show_viewport = False
+                toggled_off.append(mod)
+        if toggled_off:
+            depsgraph = bpy.context.evaluated_depsgraph_get()
+
+    try:
+        obj_eval = src_obj.evaluated_get(depsgraph)
+        frozen_mesh = bpy.data.meshes.new_from_object(
+            obj_eval,
+            preserve_all_data_layers=True,
+            depsgraph=depsgraph,
+        )
+    finally:
+        for mod in toggled_off:
+            mod.show_viewport = True
     frozen_mesh.name = f"{label}_frozen"
 
     world_matrix = src_obj.matrix_world.copy()
@@ -124,7 +152,7 @@ def staging_scene(
     def _freeze(src_obj: bpy.types.Object | None, label: str) -> bpy.types.Object | None:
         if src_obj is None:
             return None
-        obj = _freeze_object(src_obj, label, depsgraph, collection)
+        obj = _freeze_object(src_obj, label, depsgraph, collection, _EXPORT_EXCLUDE_MOD_TYPES)
         created_objects.append(obj)
         created_meshes.append(obj.data)
         return obj

@@ -1,18 +1,36 @@
 {
   "pool_files": [
-    "crappy_brow_01.png",
-    "crappy_brow_02.png",
-    "crappy_brow_03.png",
-    "crappy_brow_04.png",
-    "crappy_brow_05_kawaii.png"
+    "eyebrowMap-0001-straightThin_AlbedoTransparency.png",
+    "eyebrowMap-0002-straightMid_AlbedoTransparency.png",
+    "eyebrowMap-0003-straightThick_AlbedoTransparency.png",
+    "eyebrowMap-0004-roundedThin_AlbedoTransparency.png",
+    "eyebrowMap-0005-roundedMid_AlbedoTransparency.png",
+    "eyebrowMap-0006-roundedThick_AlbedoTransparency.png",
+    "eyebrowMap-0007-angledThin_AlbedoTransparency.png",
+    "eyebrowMap-0008-angledMid_AlbedoTransparency.png",
+    "eyebrowMap-0009-angledThick_AlbedoTransparency.png",
+    "eyebrowMap-0010-triangleThin_AlbedoTransparency.png",
+    "eyebrowMap-0011-triangleMid_AlbedoTransparency.png",
+    "eyebrowMap-0012-triangleThick_AlbedoTransparency.png",
+    "eyebrowMap-0013-sShapedThin_AlbedoTransparency.png",
+    "eyebrowMap-0014-sShapedMid_AlbedoTransparency.png"
   ],
-  "frame_count": 6,
+  "frame_count": 15,
   "entries": {
     "1": "default",
-    "2": "crappy_brow_01.png",
-    "3": "crappy_brow_02.png",
-    "4": "crappy_brow_03.png",
-    "5": "crappy_brow_04.png",
-    "6": "crappy_brow_05_kawaii.png"
+    "2": "eyebrowMap-0001-straightThin_AlbedoTransparency.png",
+    "3": "eyebrowMap-0002-straightMid_AlbedoTransparency.png",
+    "4": "eyebrowMap-0003-straightThick_AlbedoTransparency.png",
+    "5": "eyebrowMap-0004-roundedThin_AlbedoTransparency.png",
+    "6": "eyebrowMap-0005-roundedMid_AlbedoTransparency.png",
+    "7": "eyebrowMap-0006-roundedThick_AlbedoTransparency.png",
+    "8": "eyebrowMap-0007-angledThin_AlbedoTransparency.png",
+    "9": "eyebrowMap-0008-angledMid_AlbedoTransparency.png",
+    "10": "eyebrowMap-0009-angledThick_AlbedoTransparency.png",
+    "11": "eyebrowMap-0010-triangleThin_AlbedoTransparency.png",
+    "12": "eyebrowMap-0011-triangleMid_AlbedoTransparency.png",
+    "13": "eyebrowMap-0012-triangleThick_AlbedoTransparency.png",
+    "14": "eyebrowMap-0013-sShapedThin_AlbedoTransparency.png",
+    "15": "eyebrowMap-0014-sShapedMid_AlbedoTransparency.png"
   }
 }

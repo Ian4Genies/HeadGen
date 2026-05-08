@@ -23,6 +23,6 @@
 
 
   "lip-color-node": "lip-color",
-  "lip_color_randomness": 0.05,
-  "lip_color_override": 0.2
+  "lip_color_randomness": 0.6,
+  "lip_color_override": 0.0
 }

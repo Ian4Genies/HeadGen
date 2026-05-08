@@ -38,6 +38,12 @@ class MaterialsConfig:
     skin_material_name: str = "head_mat"
     eye_material_name: str = "eye_mat"
     final_color_randomness: float = 0.1
+    hair_color_node: str = "hair-color"
+    hair_color_randomness: float = 0.05
+    hair_color_defaults: list = field(default_factory=list)
+    lip_color_node: str = "lip-color"
+    lip_color_randomness: float = 0.05
+    lip_color_override: float = 0.2
 
     @classmethod
     def from_dict(cls, d: dict) -> "MaterialsConfig":
@@ -47,6 +53,12 @@ class MaterialsConfig:
             skin_material_name=d.get("skin_material_name", "head_mat"),
             eye_material_name=d.get("eye_material_name", "eye_mat"),
             final_color_randomness=float(d.get("final_color_randomness", 0.1)),
+            hair_color_node=d.get("hair-color-node", "hair-color"),
+            hair_color_randomness=float(d.get("hair_color_randomness", 0.05)),
+            hair_color_defaults=list(d.get("hair_color_defaults", [])),
+            lip_color_node=d.get("lip-color-node", "lip-color"),
+            lip_color_randomness=float(d.get("lip_color_randomness", 0.05)),
+            lip_color_override=float(d.get("lip_color_override", 0.2)),
         )
 
     def resolve(self, base: Path) -> "MaterialsConfig":
@@ -58,6 +70,12 @@ class MaterialsConfig:
             skin_material_name=self.skin_material_name,
             eye_material_name=self.eye_material_name,
             final_color_randomness=self.final_color_randomness,
+            hair_color_node=self.hair_color_node,
+            hair_color_randomness=self.hair_color_randomness,
+            hair_color_defaults=list(self.hair_color_defaults),
+            lip_color_node=self.lip_color_node,
+            lip_color_randomness=self.lip_color_randomness,
+            lip_color_override=self.lip_color_override,
         )
 
 @dataclass

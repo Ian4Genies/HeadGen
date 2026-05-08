@@ -130,18 +130,38 @@ def _build_exclude_set(
 _DEFAULT_COLOR = np.array([0.0, 0.0, 0.0, 1.0], dtype=np.float64)
 
 
+# ---------------------------------------------------------------------------
+# Attractive color bundle returned from attract()
+# ---------------------------------------------------------------------------
+
+@dataclass
+class AttractiveColors:
+    """Weighted-average colors blended from the selected pool heads.
+
+    Each field is ``None`` when the pool has no valid data for that channel
+    (e.g. old snapshots without hair_color/lip_color).
+    """
+    body: list[float] | None
+    hair: list[float] | None
+    lip: list[float] | None
+
+
 class PoolCache:
     """In-memory cache for the attractive-head pool.
 
-    Holds a numpy matrix of flattened head parameters and a parallel color
-    matrix (N×4 RGBA) for attractive-color blending.  Both use the same row
-    ordering so indices from find_nearest directly index both matrices.
+    Holds a numpy matrix of flattened head parameters and parallel color
+    matrices (N×4 RGBA) for attractive-color blending.  All matrices share
+    the same row ordering so indices from find_nearest directly index all.
     Module-level singleton persists across operator calls within a session.
     """
 
     def __init__(self) -> None:
         self.matrix: np.ndarray | None = None
-        self.color_matrix: np.ndarray | None = None  # shape (N, 4) RGBA float64
+        self.color_matrix: np.ndarray | None = None       # shape (N, 4) RGBA float64
+        self.hair_color_matrix: np.ndarray | None = None  # shape (N, 4), placeholder when missing
+        self.hair_color_valid: np.ndarray | None = None   # shape (N,) bool
+        self.lip_color_matrix: np.ndarray | None = None   # shape (N, 4), placeholder when missing
+        self.lip_color_valid: np.ndarray | None = None    # shape (N,) bool
         self.filenames: list[str] = []
         self.param_keys: list[str] = []
         self._dir_path: str = ""
@@ -188,9 +208,17 @@ class PoolCache:
             if self.matrix is not None and keep_indices:
                 self.matrix = self.matrix[keep_indices]
                 self.color_matrix = self.color_matrix[keep_indices] if self.color_matrix is not None else None
+                self.hair_color_matrix = self.hair_color_matrix[keep_indices] if self.hair_color_matrix is not None else None
+                self.hair_color_valid = self.hair_color_valid[keep_indices] if self.hair_color_valid is not None else None
+                self.lip_color_matrix = self.lip_color_matrix[keep_indices] if self.lip_color_matrix is not None else None
+                self.lip_color_valid = self.lip_color_valid[keep_indices] if self.lip_color_valid is not None else None
             elif not keep_indices:
                 self.matrix = None
                 self.color_matrix = None
+                self.hair_color_matrix = None
+                self.hair_color_valid = None
+                self.lip_color_matrix = None
+                self.lip_color_valid = None
 
         for fname in added:
             path = d / fname
@@ -220,6 +248,34 @@ class PoolCache:
                 self.color_matrix = color_row.reshape(1, -1)
             else:
                 self.color_matrix = np.vstack([self.color_matrix, color_row])
+
+            raw_hair = snap.get("hair_color")
+            hair_valid = raw_hair is not None and len(raw_hair) >= 4
+            hair_row = (
+                np.array(raw_hair[:4], dtype=np.float64)
+                if hair_valid
+                else _DEFAULT_COLOR.copy()
+            )
+            if self.hair_color_matrix is None:
+                self.hair_color_matrix = hair_row.reshape(1, -1)
+                self.hair_color_valid = np.array([hair_valid], dtype=bool)
+            else:
+                self.hair_color_matrix = np.vstack([self.hair_color_matrix, hair_row])
+                self.hair_color_valid = np.append(self.hair_color_valid, hair_valid)
+
+            raw_lip = snap.get("lip_color")
+            lip_valid = raw_lip is not None and len(raw_lip) >= 4
+            lip_row = (
+                np.array(raw_lip[:4], dtype=np.float64)
+                if lip_valid
+                else _DEFAULT_COLOR.copy()
+            )
+            if self.lip_color_matrix is None:
+                self.lip_color_matrix = lip_row.reshape(1, -1)
+                self.lip_color_valid = np.array([lip_valid], dtype=bool)
+            else:
+                self.lip_color_matrix = np.vstack([self.lip_color_matrix, lip_row])
+                self.lip_color_valid = np.append(self.lip_color_valid, lip_valid)
 
             self.filenames.append(fname)
 
@@ -432,6 +488,27 @@ def nudge_params(
 # Top-level entry point
 # ---------------------------------------------------------------------------
 
+def _blend_masked_color_matrix(
+    color_matrix: np.ndarray,
+    valid_mask: np.ndarray,
+    weights: np.ndarray,
+    indices: np.ndarray,
+) -> list[float] | None:
+    """Weighted average of color_matrix rows at *indices*, skipping invalid rows.
+
+    Weights are renormalized over only the valid rows.  Returns ``None`` when
+    no selected row has a valid color.
+    """
+    sub_valid = valid_mask[indices]
+    if not sub_valid.any():
+        return None
+    sub_w = weights.copy()
+    sub_w[~sub_valid] = 0.0
+    sub_w /= sub_w.sum()
+    blended = sub_w @ color_matrix[indices]
+    return blended.tolist()
+
+
 def attract(
     flat_params: dict[str, float],
     pool: PoolCache,
@@ -439,30 +516,30 @@ def attract(
     variation_config,
     blendshape_config,
     rng: random.Random,
-) -> tuple[dict[str, float], list[float] | None, dict | None]:
-    """Apply the attractor nudge to *flat_params* and compute an attractive color.
+) -> tuple[dict[str, float], AttractiveColors, dict | None]:
+    """Apply the attractor nudge to *flat_params* and compute attractive colors.
 
     1. Pick N nearest attractive heads (N randomized per config).
-    2. Compute a weighted-average target from those heads (same weights used for both
-       shape/joint params and color — color is not included in distance calculations).
+    2. Compute a weighted-average target from those heads (same weights used for
+       shape/joint params and all color channels).
     3. Nudge each parameter toward the target by max_influence.
-    4. Blend the same pool heads' colors with the same weights → attractive_color.
+    4. Blend the same pool heads' body/hair/lip colors with the same weights.
 
-    Returns ``(nudged_flat, attractive_color, debug_info)``.
+    Returns ``(nudged_flat, AttractiveColors, debug_info)``.
 
-    ``attractive_color`` is a plain ``[r, g, b, a]`` list when the attractor is
-    active and the pool has color data, otherwise ``None``.
+    Each color field in ``AttractiveColors`` is a ``[r, g, b, a]`` list when the
+    attractor is active and the pool has valid data for that channel, otherwise
+    ``None``.  Hair and lip colors use masked averaging — pool heads without that
+    color recorded contribute zero weight so the average is over valid heads only.
 
     ``debug_info`` is a dict when ``config.debug`` is True, otherwise ``None``.
-
-    debug_info keys:
-      ``n_selected`` (int), ``selected_files`` (list[str]),
-      ``mean_abs_delta`` (float) — average absolute change across all params.
     """
+    _no_colors = AttractiveColors(body=None, hair=None, lip=None)
+
     if not config.enabled:
-        return flat_params, None, None
+        return flat_params, _no_colors, None
     if pool.matrix is None or pool.pool_size == 0:
-        return flat_params, None, None
+        return flat_params, _no_colors, None
 
     param_keys = pool.param_keys
     excluded = _build_exclude_set(config.exclude_params, param_keys)
@@ -486,17 +563,32 @@ def attract(
     n = rng.randint(config.min_attractors, config.max_attractors)
     n = min(n, pool.pool_size)
     if n < 1:
-        return flat_params, None, None
+        return flat_params, _no_colors, None
 
     indices = find_nearest(current_vec, pool.matrix, n, mins, maxs, dw)
     target, weights = compute_attractor_target(pool.matrix, indices, rng)
     nudged = nudge_params(flat_params, target, param_keys, config.max_influence, excluded)
 
-    # Blend the same pool heads' colors with the exact same weights.
-    attractive_color: list[float] | None = None
+    # Body color — all rows always have a value (defaults to black when missing).
+    body_color: list[float] | None = None
     if pool.color_matrix is not None:
         blended = weights @ pool.color_matrix[indices]
-        attractive_color = blended.tolist()
+        body_color = blended.tolist()
+
+    # Hair and lip — masked averages over only the rows that have real data.
+    hair_color: list[float] | None = None
+    if pool.hair_color_matrix is not None and pool.hair_color_valid is not None:
+        hair_color = _blend_masked_color_matrix(
+            pool.hair_color_matrix, pool.hair_color_valid, weights, indices
+        )
+
+    lip_color: list[float] | None = None
+    if pool.lip_color_matrix is not None and pool.lip_color_valid is not None:
+        lip_color = _blend_masked_color_matrix(
+            pool.lip_color_matrix, pool.lip_color_valid, weights, indices
+        )
+
+    colors = AttractiveColors(body=body_color, hair=hair_color, lip=lip_color)
 
     debug_info: dict | None = None
     if config.debug:
@@ -509,4 +601,4 @@ def attract(
             "mean_abs_delta": mean_abs_delta,
         }
 
-    return nudged, attractive_color, debug_info
+    return nudged, colors, debug_info

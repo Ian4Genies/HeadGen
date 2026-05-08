@@ -12,7 +12,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-SNAPSHOT_VERSION = 4
+SNAPSHOT_VERSION = 5
 
 
 def build_snapshot(
@@ -25,6 +25,8 @@ def build_snapshot(
     config_snapshot: dict | None = None,
     rules_raw: dict | None = None,
     skin_color: list[float] | None = None,
+    hair_color: list[float] | None = None,
+    lip_color: list[float] | None = None,
     texture_code: str = "A",
     texture_overlays: dict[str, str] | None = None,
 ) -> dict:
@@ -40,6 +42,8 @@ def build_snapshot(
         config_snapshot: Full config directory contents (v2+).
         rules_raw: Legacy v1 rules_snapshot (kept for backward compat).
         skin_color: ``[r, g, b, a]`` floats read from the head material color node (v3+).
+        hair_color: ``[r, g, b, a]`` floats read from the hair color node (v5+). ``None`` if node absent.
+        lip_color: ``[r, g, b, a]`` floats read from the lip color node (v5+). ``None`` if node absent.
         texture_code: Identifier for the texture set applied to this head (v3+). Defaults to ``"A"``.
         texture_overlays: ``{channel_key: pool_filename_or_"default"}`` mapping the
             active texture overlay per channel (v4+).  ``None`` is stored as ``{}``.
@@ -57,6 +61,10 @@ def build_snapshot(
         "variation_shapes": variation_shapes,
         "expression_shapes": expression_shapes,
     }
+    if hair_color is not None:
+        snap["hair_color"] = hair_color
+    if lip_color is not None:
+        snap["lip_color"] = lip_color
     if config_snapshot is not None:
         snap["config_snapshot"] = config_snapshot
     if rules_raw is not None:

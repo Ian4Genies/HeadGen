@@ -1,4 +1,5 @@
 import bpy
+import colorsys
 import random
 
 # ---------------------------------------------------------------------------
@@ -162,6 +163,81 @@ def apply_attractive_color(
     a = attractive_color[3] + randomness * (rng_color[3] - attractive_color[3])
 
     key_material_color(mat, (r, g, b, a), frame)
+
+
+def hex_to_linear_rgba(hex_str: str) -> list[float]:
+    """Parse a ``"#RRGGBB"`` hex string and return ``[r, g, b, 1.0]`` in linear RGB.
+
+    Applies the standard IEC 61966-2-1 sRGB gamma decode so the values match
+    what Blender stores internally (linear light).
+    """
+    h = hex_str.lstrip("#")
+    sr, sg, sb = (int(h[i:i+2], 16) / 255.0 for i in (0, 2, 4))
+
+    def _to_linear(c: float) -> float:
+        return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+
+    return [_to_linear(sr), _to_linear(sg), _to_linear(sb), 1.0]
+
+
+def read_named_node_color(
+    mesh_obj: bpy.types.Object,
+    node_label: str,
+) -> list[float] | None:
+    """Read RGBA from the RGB node labelled *node_label* in the first material slot.
+
+    Returns ``[r, g, b, a]`` as a plain list, or ``None`` if the node is not found.
+    """
+    if not mesh_obj.material_slots:
+        return None
+    mat = mesh_obj.material_slots[0].material
+    if mat is None or not mat.use_nodes:
+        return None
+    node = _find_node_by_label(mat.node_tree, node_label)
+    if node is None:
+        return None
+    output = node.outputs[0] if node.outputs else None
+    if output is None or output.type != "RGBA":
+        return None
+    return list(output.default_value)
+
+
+def apply_named_node_color(
+    mesh_obj: bpy.types.Object,
+    node_label: str,
+    color: tuple[float, float, float, float] | list[float],
+    frame: int,
+) -> bool:
+    """Set and keyframe the RGB node labelled *node_label* in the first material slot.
+
+    Returns ``True`` if the node was found and updated, ``False`` otherwise.
+    """
+    if not mesh_obj.material_slots:
+        return False
+    mat = mesh_obj.material_slots[0].material
+    if mat is None or not mat.use_nodes:
+        return False
+    node = _find_node_by_label(mat.node_tree, node_label)
+    if node is None:
+        return False
+    return _key_color_rgb_node(node, tuple(color), frame)
+
+
+def random_saturated_color(rng: random.Random) -> tuple[float, float, float, float]:
+    """Generate a high-saturation random color in linear RGB (lipstick simulation).
+
+    Picks a random hue with saturation 0.7–1.0 and value 0.3–0.8 in HSV space,
+    then converts to linear RGB via sRGB gamma decode.
+    """
+    h = rng.random()
+    s = rng.uniform(0.7, 1.0)
+    v = rng.uniform(0.3, 0.8)
+    sr, sg, sb = colorsys.hsv_to_rgb(h, s, v)
+
+    def _to_linear(c: float) -> float:
+        return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+
+    return (_to_linear(sr), _to_linear(sg), _to_linear(sb), 1.0)
 
 
 def read_material_color(

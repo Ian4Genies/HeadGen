@@ -35,6 +35,7 @@ class TextureSwapSlot:
     pool_path: str      # Absolute path to source pool directory
     sequence_path: str  # Absolute path to output sequence directory
     percentage: float   # Probability of choosing a non-default texture
+    enabled: bool = True  # When False, always keys the default (index 1) slot
 
 
 @dataclass
@@ -55,7 +56,8 @@ class TextureSwapConfig:
                 "sequence_path": "output-pipeline/brow_sequence",
                 "node_name":     "brow-sequence",
                 "percentage":    1.0,
-                "material_name": "head_mat"   // optional, falls back to default_material
+                "material_name": "head_mat",  // optional, falls back to default_material
+                "enabled":       true         // optional, defaults to true
             }
 
         Adding a new channel requires only a new entry in ``"channels"`` — no
@@ -70,6 +72,7 @@ class TextureSwapConfig:
                 pool_path=cfg.get("pool_path", ""),
                 sequence_path=cfg.get("sequence_path", ""),
                 percentage=float(cfg.get("percentage", 0.5)),
+                enabled=bool(cfg.get("enabled", True)),
             ))
 
         return cls(slots=slots)
@@ -85,6 +88,7 @@ class TextureSwapConfig:
                 pool_path=str((base / slot.pool_path).resolve()) if slot.pool_path else "",
                 sequence_path=str((base / slot.sequence_path).resolve()) if slot.sequence_path else "",
                 percentage=slot.percentage,
+                enabled=slot.enabled,
             ))
         return TextureSwapConfig(slots=resolved)
 

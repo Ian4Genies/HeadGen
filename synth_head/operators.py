@@ -618,7 +618,7 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
                 mat = bpy.data.materials.get(slot.material_name)
                 if mat is None:
                     continue
-                idx = pick_texture_index(slot_manifest, slot.percentage, texture_rng)
+                idx = 1 if not slot.enabled else pick_texture_index(slot_manifest, slot.percentage, texture_rng)
                 key_sequence_offset(mat, slot.node_name, calc_offset(idx, frame), frame)
         self.report({"INFO"}, f"Applied {fc} frames (reset + joints + blendshapes + material color + texture offsets)")
         # --- 7. cleanup
@@ -808,7 +808,7 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
             mat = bpy.data.materials.get(slot.material_name)
             if mat is None:
                 continue
-            idx = pick_texture_index(slot_manifest, slot.percentage, texture_rng)
+            idx = 1 if not slot.enabled else pick_texture_index(slot_manifest, slot.percentage, texture_rng)
             key_sequence_offset(mat, slot.node_name, calc_offset(idx, frame), frame)
 
         self.report({"INFO"}, f"Randomized {len(chaos_joints)} joints + blendshapes on frame {frame}")

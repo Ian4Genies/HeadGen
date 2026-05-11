@@ -1,16 +1,20 @@
 {
   "pool_files": [
-    "crappy_lash_01.png",
-    "crappy_lash_02.png",
-    "crappy_lash_03.png",
-    "crappy_lash_04.png"
+    "lash_01_nuetral_full.png",
+    "lash_02_nuetral_half.png",
+    "lash_03_thin_full.png",
+    "lash_04_thin_half.png",
+    "lash_05_thick_full.png",
+    "lash_06_thick_half.png"
   ],
-  "frame_count": 5,
+  "frame_count": 7,
   "entries": {
     "1": "default",
-    "2": "crappy_lash_01.png",
-    "3": "crappy_lash_02.png",
-    "4": "crappy_lash_03.png",
-    "5": "crappy_lash_04.png"
+    "2": "lash_01_nuetral_full.png",
+    "3": "lash_02_nuetral_half.png",
+    "4": "lash_03_thin_full.png",
+    "5": "lash_04_thin_half.png",
+    "6": "lash_05_thick_full.png",
+    "7": "lash_06_thick_half.png"
   }
 }

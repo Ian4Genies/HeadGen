@@ -1,0 +1,16 @@
+{
+  "pool_files": [
+    "beard_01_handlebar_mustache.png",
+    "beard_02_handlebar_mustache_goatee.png",
+    "beard_03_handlebar_mustache_goatee_shadow.png",
+    "beard_04_beard_flat.png"
+  ],
+  "frame_count": 5,
+  "entries": {
+    "1": "default",
+    "2": "beard_01_handlebar_mustache.png",
+    "3": "beard_02_handlebar_mustache_goatee.png",
+    "4": "beard_03_handlebar_mustache_goatee_shadow.png",
+    "5": "beard_04_beard_flat.png"
+  }
+}

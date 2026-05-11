@@ -47,32 +47,29 @@ class TextureSwapConfig:
     def from_dict(cls, d: dict, default_material: str = "head_mat") -> "TextureSwapConfig":
         """Build from the ``texture_swap.json`` dict.
 
-        Channel keys are discovered from path entries ending in
-        ``_texture_pool`` (e.g. ``brow_texture_pool`` → channel ``"brow"``).
+        Channels are defined as a ``"channels"`` dict, each key being the
+        channel name (e.g. ``"brow"``) and the value a struct with::
 
-        JSON key conventions:
-          - Pool path:      ``{channel}_texture_pool``
-          - Sequence path:  ``{channel}_texture_sequence``
-          - Node name:      ``{channel}-sequence-node``
-          - Percentage:     ``{channel}_Percentage``
-          - Material name:  ``{channel}_material_name``  (optional, per-slot override)
+            {
+                "pool_path":     "input-pipeline/texture/brow",
+                "sequence_path": "output-pipeline/brow_sequence",
+                "node_name":     "brow-sequence",
+                "percentage":    1.0,
+                "material_name": "head_mat"   // optional, falls back to default_material
+            }
+
+        Adding a new channel requires only a new entry in ``"channels"`` — no
+        code changes needed.
         """
-        paths = d.get("paths", {})
-        channel_keys = sorted(
-            key[: -len("_texture_pool")]
-            for key in paths
-            if key.endswith("_texture_pool")
-        )
-
         slots: list[TextureSwapSlot] = []
-        for channel in channel_keys:
+        for channel, cfg in sorted(d.get("channels", {}).items()):
             slots.append(TextureSwapSlot(
                 key=channel,
-                node_name=d.get(f"{channel}-sequence-node", ""),
-                material_name=d.get(f"{channel}_material_name", default_material),
-                pool_path=paths.get(f"{channel}_texture_pool", ""),
-                sequence_path=paths.get(f"{channel}_texture_sequence", ""),
-                percentage=float(d.get(f"{channel}_Percentage", 0.5)),
+                node_name=cfg.get("node_name", ""),
+                material_name=cfg.get("material_name", default_material),
+                pool_path=cfg.get("pool_path", ""),
+                sequence_path=cfg.get("sequence_path", ""),
+                percentage=float(cfg.get("percentage", 0.5)),
             ))
 
         return cls(slots=slots)

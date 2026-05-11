@@ -1,20 +1,28 @@
 {
-    "paths": {
-      "brow_texture_pool": "input-pipeline/texture/brow",
-      "brow_texture_sequence": "output-pipeline/brow_sequence",
-
-      "lash_texture_pool": "input-pipeline/texture/lash",
-      "lash_texture_sequence": "output-pipeline/lash_sequence",
-
-      "lip_texture_pool": "input-pipeline/texture/lip",
-      "lip_texture_sequence": "output-pipeline/lip_sequence" 
-    },
-
-    "brow-sequence-node": "brow-sequence",
-    "lash-sequence-node": "lash-sequence",
-    "lip-sequence-node": "lip-sequence",
-    
-    "brow_Percentage": 1.0,
-    "lash_Percentage": 0.9,
-    "lip_Percentage": 1.0
+    "channels": {
+        "brow": {
+            "pool_path":     "input-pipeline/texture/brow",
+            "sequence_path": "output-pipeline/brow_sequence",
+            "node_name":     "brow-sequence",
+            "percentage":    1.0
+        },
+        "lash": {
+            "pool_path":     "input-pipeline/texture/lash",
+            "sequence_path": "output-pipeline/lash_sequence",
+            "node_name":     "lash-sequence",
+            "percentage":    0.9
+        },
+        "lip": {
+            "pool_path":     "input-pipeline/texture/lip",
+            "sequence_path": "output-pipeline/lip_sequence",
+            "node_name":     "lip-sequence",
+            "percentage":    1.0
+        },
+        "beard": {
+            "pool_path":     "input-pipeline/texture/beard",
+            "sequence_path": "output-pipeline/beard_sequence",
+            "node_name":     "beard-sequence",
+            "percentage":    0.8
+        }
+    }
 }

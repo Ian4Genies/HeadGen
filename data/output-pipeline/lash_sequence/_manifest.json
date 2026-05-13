@@ -9,11 +9,9 @@
     "lash_01_nuetral_full.png",
     "lash_02_nuetral_half.png",
     "lash_03_thin_full.png",
-    "lash_04_thin_half.png",
-    "lash_05_thick_full.png",
-    "lash_06_thick_half.png"
+    "lash_04_thin_half.png"
   ],
-  "frame_count": 13,
+  "frame_count": 11,
   "entries": {
     "1": "default",
     "2": "eyelashes_SDS_basicMid.png",
@@ -25,8 +23,6 @@
     "8": "lash_01_nuetral_full.png",
     "9": "lash_02_nuetral_half.png",
     "10": "lash_03_thin_full.png",
-    "11": "lash_04_thin_half.png",
-    "12": "lash_05_thick_full.png",
-    "13": "lash_06_thick_half.png"
+    "11": "lash_04_thin_half.png"
   }
 }

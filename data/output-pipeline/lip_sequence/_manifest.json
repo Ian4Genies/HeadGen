@@ -1,38 +1,10 @@
 {
   "pool_files": [
-    "crappy_lip_02.png",
-    "lips_00_HighlightTest.png",
-    "lips_01_lowTexture.png",
-    "lips_02_midTexture.png",
-    "lips_03_bright.png",
-    "lips_04_invert.png",
-    "lips_SDS_00.png",
-    "lips_SDS_01.png",
-    "lips_SDS_02.png",
-    "lips_SDS_03_opacVar.png",
-    "lips_SDS_04_opacVar.png",
-    "lips_SDS_05_opacVar.png",
-    "lips_SDS_05b_opacVar.png",
-    "lips_SDS_06_morecontrast.png",
-    "lips_SDS_06_opacVar.png"
+    "lips_SDS_05_opacVar.png"
   ],
-  "frame_count": 16,
+  "frame_count": 2,
   "entries": {
     "1": "default",
-    "2": "crappy_lip_02.png",
-    "3": "lips_00_HighlightTest.png",
-    "4": "lips_01_lowTexture.png",
-    "5": "lips_02_midTexture.png",
-    "6": "lips_03_bright.png",
-    "7": "lips_04_invert.png",
-    "8": "lips_SDS_00.png",
-    "9": "lips_SDS_01.png",
-    "10": "lips_SDS_02.png",
-    "11": "lips_SDS_03_opacVar.png",
-    "12": "lips_SDS_04_opacVar.png",
-    "13": "lips_SDS_05_opacVar.png",
-    "14": "lips_SDS_05b_opacVar.png",
-    "15": "lips_SDS_06_morecontrast.png",
-    "16": "lips_SDS_06_opacVar.png"
+    "2": "lips_SDS_05_opacVar.png"
   }
 }

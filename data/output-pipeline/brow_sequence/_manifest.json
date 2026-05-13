@@ -1,42 +1,14 @@
 {
   "pool_files": [
-    "eyebrowMap-0001-straightThin_AlbedoTransparency.png",
-    "eyebrowMap-0002-straightMid_AlbedoTransparency.png",
-    "eyebrowMap-0003-straightThick_AlbedoTransparency.png",
-    "eyebrowMap-0004-roundedThin_AlbedoTransparency.png",
-    "eyebrowMap-0005-roundedMid_AlbedoTransparency.png",
-    "eyebrowMap-0006-roundedThick_AlbedoTransparency.png",
-    "eyebrowMap-0007-angledThin_AlbedoTransparency.png",
-    "eyebrowMap-0008-angledMid_AlbedoTransparency.png",
-    "eyebrowMap-0009-angledThick_AlbedoTransparency.png",
-    "eyebrowMap-0010-triangleThin_AlbedoTransparency.png",
-    "eyebrowMap-0011-triangleMid_AlbedoTransparency.png",
-    "eyebrowMap-0012-triangleThick_AlbedoTransparency.png",
-    "eyebrowMap-0013-sShapedThin_AlbedoTransparency.png",
-    "eyebrowMap-0014-sShapedMid_AlbedoTransparency.png",
     "eyebrows_SDS_straightMid.png",
     "eyebrows_SDS_straightThick.png",
     "eyebrows_SDS_straightThin.png"
   ],
-  "frame_count": 18,
+  "frame_count": 4,
   "entries": {
     "1": "default",
-    "2": "eyebrowMap-0001-straightThin_AlbedoTransparency.png",
-    "3": "eyebrowMap-0002-straightMid_AlbedoTransparency.png",
-    "4": "eyebrowMap-0003-straightThick_AlbedoTransparency.png",
-    "5": "eyebrowMap-0004-roundedThin_AlbedoTransparency.png",
-    "6": "eyebrowMap-0005-roundedMid_AlbedoTransparency.png",
-    "7": "eyebrowMap-0006-roundedThick_AlbedoTransparency.png",
-    "8": "eyebrowMap-0007-angledThin_AlbedoTransparency.png",
-    "9": "eyebrowMap-0008-angledMid_AlbedoTransparency.png",
-    "10": "eyebrowMap-0009-angledThick_AlbedoTransparency.png",
-    "11": "eyebrowMap-0010-triangleThin_AlbedoTransparency.png",
-    "12": "eyebrowMap-0011-triangleMid_AlbedoTransparency.png",
-    "13": "eyebrowMap-0012-triangleThick_AlbedoTransparency.png",
-    "14": "eyebrowMap-0013-sShapedThin_AlbedoTransparency.png",
-    "15": "eyebrowMap-0014-sShapedMid_AlbedoTransparency.png",
-    "16": "eyebrows_SDS_straightMid.png",
-    "17": "eyebrows_SDS_straightThick.png",
-    "18": "eyebrows_SDS_straightThin.png"
+    "2": "eyebrows_SDS_straightMid.png",
+    "3": "eyebrows_SDS_straightThick.png",
+    "4": "eyebrows_SDS_straightThin.png"
   }
 }

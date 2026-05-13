@@ -13,9 +13,12 @@
     "eyebrowMap-0011-triangleMid_AlbedoTransparency.png",
     "eyebrowMap-0012-triangleThick_AlbedoTransparency.png",
     "eyebrowMap-0013-sShapedThin_AlbedoTransparency.png",
-    "eyebrowMap-0014-sShapedMid_AlbedoTransparency.png"
+    "eyebrowMap-0014-sShapedMid_AlbedoTransparency.png",
+    "eyebrows_SDS_straightMid.png",
+    "eyebrows_SDS_straightThick.png",
+    "eyebrows_SDS_straightThin.png"
   ],
-  "frame_count": 15,
+  "frame_count": 18,
   "entries": {
     "1": "default",
     "2": "eyebrowMap-0001-straightThin_AlbedoTransparency.png",
@@ -31,6 +34,9 @@
     "12": "eyebrowMap-0011-triangleMid_AlbedoTransparency.png",
     "13": "eyebrowMap-0012-triangleThick_AlbedoTransparency.png",
     "14": "eyebrowMap-0013-sShapedThin_AlbedoTransparency.png",
-    "15": "eyebrowMap-0014-sShapedMid_AlbedoTransparency.png"
+    "15": "eyebrowMap-0014-sShapedMid_AlbedoTransparency.png",
+    "16": "eyebrows_SDS_straightMid.png",
+    "17": "eyebrows_SDS_straightThick.png",
+    "18": "eyebrows_SDS_straightThin.png"
   }
 }

@@ -1,5 +1,11 @@
 {
   "pool_files": [
+    "eyelashes_SDS_basicMid.png",
+    "eyelashes_SDS_basicSimple.png",
+    "eyelashes_SDS_catEyeMid.png",
+    "eyelashes_SDS_cateyeSimple.png",
+    "eyelashes_SDS_dollSimple.png",
+    "eyelashes_SDS_naturalFull.png",
     "lash_01_nuetral_full.png",
     "lash_02_nuetral_half.png",
     "lash_03_thin_full.png",
@@ -7,14 +13,20 @@
     "lash_05_thick_full.png",
     "lash_06_thick_half.png"
   ],
-  "frame_count": 7,
+  "frame_count": 13,
   "entries": {
     "1": "default",
-    "2": "lash_01_nuetral_full.png",
-    "3": "lash_02_nuetral_half.png",
-    "4": "lash_03_thin_full.png",
-    "5": "lash_04_thin_half.png",
-    "6": "lash_05_thick_full.png",
-    "7": "lash_06_thick_half.png"
+    "2": "eyelashes_SDS_basicMid.png",
+    "3": "eyelashes_SDS_basicSimple.png",
+    "4": "eyelashes_SDS_catEyeMid.png",
+    "5": "eyelashes_SDS_cateyeSimple.png",
+    "6": "eyelashes_SDS_dollSimple.png",
+    "7": "eyelashes_SDS_naturalFull.png",
+    "8": "lash_01_nuetral_full.png",
+    "9": "lash_02_nuetral_half.png",
+    "10": "lash_03_thin_full.png",
+    "11": "lash_04_thin_half.png",
+    "12": "lash_05_thick_full.png",
+    "13": "lash_06_thick_half.png"
   }
 }

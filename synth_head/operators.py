@@ -353,6 +353,67 @@ class SYNTHHEAD_OT_ping(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class SYNTHHEAD_OT_BatchConversion(bpy.types.Operator):
+    """Import the Gen13 head and register all scene references — first step before batch operations."""
+
+    bl_idname = "synth_head.batch_conversion"
+    bl_label = "Synth Head: Batch Conversion"
+    bl_description = "Import the Gen13 head from the configured .blend file and register all scene references"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        cfg = _get_config()
+
+        # # --- IMPORT & CLASSIFY ---
+        #head_geo_obj, body_geo_obj, armature_obj, L_eye_obj, R_eye_obj, eyebrows_obj, eyelashes_obj = append_gen13_and_classify(cfg.runner.gen13_blend_path)
+
+        # if not head_geo_obj:
+        #     self.report({"ERROR"}, "headOnly_geo mesh not found — aborting")
+        #     return {"CANCELLED"}
+        # if not body_geo_obj:
+        #     self.report({"ERROR"}, "bodyOnly_geo mesh not found — aborting")
+        #     return {"CANCELLED"}
+        # if not armature_obj:
+        #     self.report({"ERROR"}, "Armature not found — aborting")
+        #     return {"CANCELLED"}
+        # if not L_eye_obj:
+        #     self.report({"ERROR"}, "Left eye mesh not found — aborting")
+        #     return {"CANCELLED"}
+        # if not R_eye_obj:
+        #     self.report({"ERROR"}, "Right eye mesh not found — aborting")
+        #     return {"CANCELLED"}
+        # if not eyebrows_obj:
+        #     self.report({"WARNING"}, "Eyebrows mesh not found — continuing without it")
+        # if not eyelashes_obj:
+        #     self.report({"WARNING"}, "Eyelashes mesh not found — continuing without it")
+
+        # # --- REGISTER REFS ---
+        # set_ref(context, MESH, head_geo_obj)
+        # set_ref(context, BODY_GEO, body_geo_obj)
+        # set_ref(context, ARMATURE, armature_obj)
+        # set_ref(context, L_EYE, L_eye_obj)
+        # set_ref(context, R_EYE, R_eye_obj)
+        # set_ref(context, EYEBROWS, eyebrows_obj)
+        # set_ref(context, EYELASHES, eyelashes_obj)
+
+        #import fbx from new string path
+
+
+        head_geo_obj = bpy.ops.import_scene.fbx(filepath="data\conversion assets\Gen13_Head.fbx")
+
+        # Grab the imported object (it will be selected after import)
+        head_geo_obj = bpy.context.selected_objects[0]
+
+        # 
+
+
+
+
+
+        self.report({"INFO"}, f"Batch Conversion: Gen13 head imported — head='{head_geo_obj.name}'")
+        return {"FINISHED"}
+
+
 class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
     """Run the variation pipeline"""
 
@@ -1126,6 +1187,7 @@ class SYNTHHEAD_OT_CleanMesh(bpy.types.Operator):
 
         clean_head_mesh(head_mesh, wedge_R, wedge_L, body, cfg.cleanup)
 
+        set_ref(context, MESH, wedge_R)
         # Clear refs for the objects that were deleted by clean_head_mesh
         set_ref(context, EYE_WEDGE_R, None)
         set_ref(context, EYE_WEDGE_L, None)
@@ -1448,6 +1510,8 @@ class SYNTHHEAD_MT_main_menu(bpy.types.Menu):
         layout.operator(SYNTHHEAD_OT_hello.bl_idname)
         layout.operator(SYNTHHEAD_OT_ping.bl_idname)
         layout.separator()
+        layout.operator(SYNTHHEAD_OT_BatchConversion.bl_idname)
+        layout.separator()
         layout.operator(SYNTHHEAD_OT_VariationPipeline.bl_idname)
         layout.operator(SYNTHHEAD_OT_CleanMesh.bl_idname)
         layout.operator(SYNTHHEAD_OT_ExportPipeline.bl_idname)
@@ -1471,6 +1535,7 @@ CLASSES = [
     SYNTHHEAD_PG_PipelineRefs,
     SYNTHHEAD_OT_hello,
     SYNTHHEAD_OT_ping,
+    SYNTHHEAD_OT_BatchConversion,
     SYNTHHEAD_OT_VariationPipeline,
     SYNTHHEAD_OT_CleanMesh,
     SYNTHHEAD_OT_ExportPipeline,

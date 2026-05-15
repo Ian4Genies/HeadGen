@@ -267,7 +267,7 @@ def clean_head_mesh(
                      ``mouth_sew_indices``.
     """
     cut_and_sew(cfg.mouth_bag_group, head_obj, cfg.mouth_sew_indices)
-    join_and_merge([wedge_R_obj, wedge_L_obj, body_obj], head_obj)
+    join_and_merge([head_obj,wedge_L_obj, body_obj], wedge_R_obj)
 
     #3. Simple combine operation to combine the eye wedges and body into the head
 

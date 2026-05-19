@@ -11,6 +11,7 @@ if "bpy" in locals():
     from .core import texture_swap as core_texture_swap
     from . import scene
     from .scene import armature as scene_armature
+    from .scene import drivers as scene_drivers
     from .scene import fbx_import, chaos_anim, modifiers as scene_modifiers, refs as scene_refs
     from .scene import blendshapes as scene_blendshapes
     from .scene import reset as scene_reset
@@ -36,6 +37,7 @@ if "bpy" in locals():
     importlib.reload(core_export)
     importlib.reload(core)
     importlib.reload(scene_armature)
+    importlib.reload(scene_drivers)
     importlib.reload(fbx_import)
     importlib.reload(chaos_anim)
     importlib.reload(scene_modifiers)

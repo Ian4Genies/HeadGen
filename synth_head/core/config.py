@@ -309,6 +309,66 @@ class ExportConfig:
 
 
 @dataclass
+class DriverSpec:
+    """One driver relationship: a source property drives a target property.
+
+    Both sides address either a pose bone custom property (when *bone* is set)
+    or an object-level custom property (when *bone* is None).
+
+    The special string ``"ARMATURE"`` in *target_object* or *source_object*
+    is resolved to the canonical armature at runtime.
+
+    Fields:
+        target_object:      Scene object name or ``"ARMATURE"``.
+        target_bone:        Pose bone name, or None for an object-level property.
+        target_property:    Custom property key on the target, or shape key name
+                            when *target_is_shape_key* is True.
+        target_is_shape_key: When True the driver is placed on the mesh's shape
+                            key ``key_blocks["<target_property>"].value`` rather
+                            than on an object custom property.
+        source_object:      Scene object name or ``"ARMATURE"``.
+        source_bone:        Pose bone name, or None for an object-level property.
+        source_property:    Custom property key on the source.
+        expression:         FCurve driver expression.  Defaults to ``"var"``
+                            (passthrough).  Reserved for future function support.
+    """
+
+    target_object: str
+    target_bone: str | None
+    target_property: str
+    source_object: str
+    source_bone: str | None
+    source_property: str
+    expression: str = "var"
+    target_is_shape_key: bool = False
+
+
+@dataclass
+class DriversConfig:
+    """Collection of driver specs loaded from ``drivers.json``."""
+
+    drivers: list[DriverSpec] = field(default_factory=list)
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "DriversConfig":
+        specs: list[DriverSpec] = []
+        for entry in d.get("drivers", []):
+            t = entry["target"]
+            s = entry["source"]
+            specs.append(DriverSpec(
+                target_object=t["object"],
+                target_bone=t.get("bone"),
+                target_property=t["property"],
+                target_is_shape_key=bool(t.get("shape_key", False)),
+                source_object=s["object"],
+                source_bone=s.get("bone"),
+                source_property=s["property"],
+                expression=entry.get("expression", "var"),
+            ))
+        return cls(drivers=specs)
+
+
+@dataclass
 class PipelineConfig:
     runner: RunnerConfig = field(default_factory=RunnerConfig)
     cleanup: CleanupConfig = field(default_factory=CleanupConfig)
@@ -321,6 +381,7 @@ class PipelineConfig:
     projection: ProjectionConfig = field(default_factory=ProjectionConfig)
     export: ExportConfig = field(default_factory=ExportConfig)
     texture_swap: TextureSwapConfig = field(default_factory=TextureSwapConfig)
+    drivers: DriversConfig = field(default_factory=DriversConfig)
     chaos_joint_names: frozenset[str] = field(default_factory=lambda: frozenset(CHAOS_JOINT_NAMES))
     config_dir: Path = field(default_factory=lambda: Path("."))
 
@@ -430,6 +491,13 @@ def load_config(config_dir: str | Path) -> PipelineConfig:
     else:
         export = ExportConfig()
 
+    # --- drivers ---
+    drivers_path = d / "drivers.json"
+    if drivers_path.exists():
+        drivers = DriversConfig.from_dict(_load_json(drivers_path))
+    else:
+        drivers = DriversConfig()
+
     return PipelineConfig(
         runner=runner,
         cleanup=cleanup,
@@ -442,6 +510,7 @@ def load_config(config_dir: str | Path) -> PipelineConfig:
         projection=projection,
         export=export,
         texture_swap=texture_swap,
+        drivers=drivers,
         chaos_joint_names=joint_names,
         config_dir=d,
     )

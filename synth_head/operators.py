@@ -35,7 +35,8 @@ from .scene.chaos_anim import (
     _apply_transforms_to_bones,
     apply_bone_property_values,
 )
-from .scene.armature import add_object_to_armature, remove_orphan_armatures, attach_constrained_object_to_armature
+from .scene.armature import add_object_to_armature, remove_orphan_armatures, remove_non_canonical_armatures, attach_constrained_object_to_armature
+from .scene.drivers import build_drivers
 from .scene.blend_append import append_material_from_blend, append_object_from_blend, append_gen13_and_classify, append_eye_wedge_bake
 from .scene.materials import (
     assign_exclusive_material,
@@ -540,9 +541,11 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         attach_constrained_object_to_armature(hd_eye_L, armature_obj)
         add_object_to_armature(R_projector, armature_obj)
         add_object_to_armature(L_projector, armature_obj)
-        remove_orphan_armatures()
+        remove_non_canonical_armatures(armature_obj)
 
-        
+        # --- 2b. RIG SETUP — rebuild drivers from config ---
+        build_drivers(armature_obj, cfg.drivers)
+
         self.report({"INFO"}, f"Skin material assigned: '{head_mat.name}'")
         # --- 3. GENERATE RAW PARAMETERS ---
         armature = get_ref(context, ARMATURE)

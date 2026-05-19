@@ -99,6 +99,12 @@ def remove_orphan_armatures() -> None:
     Call this once after all objects from a batch append have been reparented
     to the canonical armature.  The imported armatures that Blender forces in
     as append artifacts will by then be childless and safe to delete.
+
+    .. deprecated::
+        Use :func:`remove_non_canonical_armatures` instead.  This function
+        breaks when imported armatures have custom bone shape meshes parented
+        to them, because those meshes count as children even after all rigged
+        objects have been re-parented to the canonical armature.
     """
     orphans = [
         obj for obj in bpy.data.objects
@@ -106,3 +112,27 @@ def remove_orphan_armatures() -> None:
     ]
     for orphan in orphans:
         bpy.data.objects.remove(orphan)
+
+
+def remove_non_canonical_armatures(canonical: bpy.types.Object) -> None:
+    """Remove every armature in the scene that is not *canonical*.
+
+    Also removes the direct children of each non-canonical armature (e.g.
+    custom bone shape meshes that were parented to the imported rig for
+    viewport organisation).
+
+    Call this once after all objects from a batch append have been reparented
+    to *canonical*.  Any armature dragged in as an append artifact — including
+    ones that still have custom bone shape children — will be deleted.
+
+    Args:
+        canonical: The single armature that must be kept.
+    """
+    to_remove = [
+        obj for obj in bpy.data.objects
+        if obj.type == "ARMATURE" and obj is not canonical
+    ]
+    for arm in to_remove:
+        for child in list(arm.children):
+            bpy.data.objects.remove(child, do_unlink=True)
+        bpy.data.objects.remove(arm, do_unlink=True)

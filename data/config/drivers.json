@@ -1,0 +1,36 @@
+{
+  "drivers": [
+    {
+      "target": { "object": "eye_R_geo_hd_target", "bone": null, "property": "var_iris_shrink", "shape_key": true },
+      "source": { "object": "ARMATURE", "bone": "LeftEyeSocketBind", "property": "var_iris_shrink" }
+    },
+    {
+      "target": { "object": "eye_L_geo_hd_target", "bone": null, "property": "var_iris_shrink", "shape_key": true },
+      "source": { "object": "ARMATURE", "bone": "LeftEyeSocketBind", "property": "var_iris_shrink" }
+    },
+    {
+      "target": { "object": "eye_R_geo_hd_target", "bone": null, "property": "var_iris_grow", "shape_key": true },
+      "source": { "object": "ARMATURE", "bone": "LeftEyeSocketBind", "property": "var_iris_grow" }
+    },
+    {
+      "target": { "object": "eye_L_geo_hd_target", "bone": null, "property": "var_iris_grow", "shape_key": true },
+      "source": { "object": "ARMATURE", "bone": "LeftEyeSocketBind", "property": "var_iris_grow" }
+    },
+    {
+      "target": { "object": "eye_R_geo_hd_target", "bone": null, "property": "var_pupil_shrink", "shape_key": true },
+      "source": { "object": "ARMATURE", "bone": "LeftEyeSocketBind", "property": "var_pupil_shrink" }
+    },
+    {
+      "target": { "object": "eye_L_geo_hd_target", "bone": null, "property": "var_pupil_shrink", "shape_key": true },
+      "source": { "object": "ARMATURE", "bone": "LeftEyeSocketBind", "property": "var_pupil_shrink" }
+    },
+    {
+      "target": { "object": "eye_R_geo_hd_target", "bone": null, "property": "var_pupil_grow", "shape_key": true },
+      "source": { "object": "ARMATURE", "bone": "LeftEyeSocketBind", "property": "var_pupil_grow" }
+    },
+    {
+      "target": { "object": "eye_L_geo_hd_target", "bone": null, "property": "var_pupil_grow", "shape_key": true },
+      "source": { "object": "ARMATURE", "bone": "LeftEyeSocketBind", "property": "var_pupil_grow" }
+    }
+  ]
+}

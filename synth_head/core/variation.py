@@ -140,6 +140,9 @@ class VariationConfig:
     joint_overrides: dict[str, float | dict] = field(
         default_factory=lambda: dict(DEFAULT_JOINT_OVERRIDES),
     )
+    # Bone (or object) custom properties to randomize each frame.
+    # Each entry: {"min": float, "max": float, "target_bone": str} or "target_object": str}
+    bone_properties: dict[str, dict] = field(default_factory=dict)
 
     @classmethod
     def from_dict(
@@ -158,6 +161,7 @@ class VariationConfig:
             scale_max=data.get("scale_max", 0.2),
             enable_scale=data.get("enable_scale", True),
             joint_overrides=overrides,
+            bone_properties={k: dict(v) for k, v in data.get("bone_properties", {}).items()},
         )
 
 
@@ -352,3 +356,36 @@ def generate_single_frame_transforms(
         config.transform_max, config.rotate_max, config.scale_max,
         config.enable_scale, config.joint_overrides,
     )
+
+
+def generate_bone_property_values(
+    config: VariationConfig,
+) -> dict[str, float]:
+    """Return ``{prop_name: value}`` for all bone_properties in *config*.
+
+    Each value is sampled uniformly from [spec["min"], spec["max"]].
+    Uses config.seed if set.
+    """
+    rng = random.Random(config.seed)
+    return {
+        name: rng.uniform(float(spec.get("min", 0.0)), float(spec.get("max", 1.0)))
+        for name, spec in config.bone_properties.items()
+    }
+
+
+def generate_bone_property_values_all_frames(
+    config: VariationConfig,
+) -> dict[int, dict[str, float]]:
+    """Return ``{frame: {prop_name: value}}`` for every frame in config.
+
+    Uses the same seeded RNG so results are reproducible when config.seed
+    is set.  Each frame advances the RNG independently.
+    """
+    rng = random.Random(config.seed)
+    result: dict[int, dict[str, float]] = {}
+    for frame in range(1, config.frame_count + 1):
+        result[frame] = {
+            name: rng.uniform(float(spec.get("min", 0.0)), float(spec.get("max", 1.0)))
+            for name, spec in config.bone_properties.items()
+        }
+    return result

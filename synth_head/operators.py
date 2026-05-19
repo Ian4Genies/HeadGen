@@ -12,6 +12,8 @@ from .core.ref_keys import MESH, BODY_GEO, ARMATURE, HEAD_MAT, L_EYE, R_EYE, EYE
 from .core.variation import (
     generate_chaos_transforms,
     generate_single_frame_transforms,
+    generate_bone_property_values,
+    generate_bone_property_values_all_frames,
 )
 from .scene.fbx_import import import_fbx_and_classify
 from .scene.refs import get_ref, set_ref, get_material_ref, set_material_ref
@@ -31,6 +33,7 @@ from .scene.chaos_anim import (
     apply_chaos_keyframes,
     apply_chaos_single_frame,
     _apply_transforms_to_bones,
+    apply_bone_property_values,
 )
 from .scene.armature import add_object_to_armature, remove_orphan_armatures, attach_constrained_object_to_armature
 from .scene.blend_append import append_material_from_blend, append_object_from_blend, append_gen13_and_classify, append_eye_wedge_bake
@@ -54,6 +57,8 @@ from .scene.snapshot import (
     apply_bone_transforms,
     apply_shape_key_values,
     apply_material_color,
+    read_bone_custom_props,
+    apply_bone_custom_prop_values,
 )
 from .scene.export_bake import scope_bake_environment, bake_head_materials
 from .scene.projection import apply_bake_settings, bake_eye_side, bake_wedge_side, point_image_sequence_node
@@ -550,6 +555,8 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         # generate_blendshape_weights generates a dict of shape names to weights
         head_mesh = get_ref(context, MESH)
         all_bs_weights = generate_blendshape_weights(cfg.blendshapes)
+        # generate bone property values (iris/pupil) to be applied to a chaos bone
+        all_bone_prop_values = generate_bone_property_values_all_frames(cfg.variation)
 
         # --- 4. SYNC ATTRACTOR POOL---
         # get_pool_cache returns a PoolCache object
@@ -594,8 +601,11 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         attractive_colors: dict[int, AttractiveColors] = {}
         
         for frame in range(1, fc + 1):
+            # merge bone property values into blendshape weights so they travel
+            # through the attractor / constraint pipeline together
+            combined_bs = {**all_bs_weights[frame], **all_bone_prop_values[frame]}
             # flat is a dict of param names to values
-            flat = flatten_params(all_transforms[frame], all_bs_weights[frame])
+            flat = flatten_params(all_transforms[frame], combined_bs)
             # attract nudges the flat params toward the attractor pool and returns
             # an attractive color blended from the same pool heads and weights
             flat, colors, dbg = attract(flat, pool, cfg.attractor, cfg.variation, cfg.blendshapes, attractor_rng)
@@ -632,11 +642,11 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
             _apply_weights_to_shape_keys(eye_wedge_L_bake, constrained_bs[frame], frame)
             _apply_weights_to_shape_keys(R_projector, constrained_bs[frame], frame)
             _apply_weights_to_shape_keys(L_projector, constrained_bs[frame], frame)
-            _apply_weights_to_shape_keys(hd_eye_R, constrained_bs[frame], frame)
-            _apply_weights_to_shape_keys(hd_eye_L, constrained_bs[frame], frame)
             #Eyebrows and Eyelashes
             _apply_weights_to_shape_keys(eyebrows_obj, constrained_bs[frame], frame)
             _apply_weights_to_shape_keys(eyelashes_obj, constrained_bs[frame], frame)
+            #Bone custom properties (iris/pupil) — routed to chaos bone via drivers
+            apply_bone_property_values(armature, constrained_bs[frame], cfg.variation.bone_properties, frame)
             #Skin / Body Color
             colors = attractive_colors[frame]
             rng_color = (color_rng.random(), color_rng.random(), color_rng.random(), 1.0)
@@ -786,6 +796,8 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         joint_names = [b.name for b in chaos_joints]
         transforms = generate_single_frame_transforms(cfg.variation, joint_names)
         bs_weights = generate_single_frame_blendshape_weights(cfg.blendshapes)
+        bone_prop_values = generate_bone_property_values(cfg.variation)
+        bs_weights = {**bs_weights, **bone_prop_values}
 
         pool = get_pool_cache()
         if cfg.attractor.enabled:
@@ -820,10 +832,9 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         _apply_weights_to_shape_keys(eye_wedge_L_bake, bs_weights, frame)
         _apply_weights_to_shape_keys(R_projector, bs_weights, frame)
         _apply_weights_to_shape_keys(L_projector, bs_weights, frame)
-        _apply_weights_to_shape_keys(hd_eye_R, bs_weights, frame)
-        _apply_weights_to_shape_keys(hd_eye_L, bs_weights, frame)
         _apply_weights_to_shape_keys(eyebrows_obj, bs_weights, frame)
         _apply_weights_to_shape_keys(eyelashes_obj, bs_weights, frame)
+        apply_bone_property_values(armature, bs_weights, cfg.variation.bone_properties, frame)
 
         #Skin / Body Color
         rng_color = (attractor_rng.random(), attractor_rng.random(), attractor_rng.random(), 1.0)
@@ -906,6 +917,7 @@ def _save_head_snapshot(operator, context, label: str, directory: Path) -> set[s
         cfg.blendshapes.variation_shapes + list(cfg.blendshapes.independent_shapes.keys()),
         cfg.blendshapes.expression_shapes,
     )
+    bone_prop_data = read_bone_custom_props(armature, cfg.variation.bone_properties)
     skin_color = read_material_color(head_mesh)
     hair_color = read_named_node_color(head_mesh, cfg.materials.hair_color_node)
     lip_color = read_named_node_color(head_mesh, cfg.materials.lip_color_node)
@@ -929,6 +941,7 @@ def _save_head_snapshot(operator, context, label: str, directory: Path) -> set[s
         chaos_joints=joint_data,
         variation_shapes=var_shapes,
         expression_shapes=expr_shapes,
+        bone_properties=bone_prop_data,
         config_snapshot=config_raw,
         frame=snap_frame,
         label=label,
@@ -1091,7 +1104,7 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
 
         chaos_joints = collect_chaos_joints(armature, cfg.chaos_joint_names)
 
-        reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eye_wedge_R_bake, eye_wedge_L_bake, R_projector, L_projector, hd_eye_R, hd_eye_L, eyebrows_obj, eyelashes_obj], frame)
+        reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eye_wedge_R_bake, eye_wedge_L_bake, R_projector, L_projector, eyebrows_obj, eyelashes_obj], frame)
         apply_bone_transforms(armature, snapshot.get("chaos_joints", {}), frame)
 
         all_shapes: dict[str, float] = {}
@@ -1104,10 +1117,9 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
         apply_shape_key_values(eye_wedge_L_bake, all_shapes, frame)
         apply_shape_key_values(R_projector, all_shapes, frame)
         apply_shape_key_values(L_projector, all_shapes, frame)
-        apply_shape_key_values(hd_eye_R, all_shapes, frame)
-        apply_shape_key_values(hd_eye_L, all_shapes, frame)
         apply_shape_key_values(eyebrows_obj, all_shapes, frame)
         apply_shape_key_values(eyelashes_obj, all_shapes, frame)
+        apply_bone_custom_prop_values(armature, snapshot.get("bone_properties", {}), cfg.variation.bone_properties, frame)
 
         skin_color = snapshot.get("skin_color")
         if skin_color is not None:
@@ -1241,6 +1253,7 @@ def _write_export_snapshot(
         cfg.blendshapes.variation_shapes + list(cfg.blendshapes.independent_shapes.keys()),
         cfg.blendshapes.expression_shapes,
     )
+    bone_prop_data = read_bone_custom_props(armature, cfg.variation.bone_properties)
     skin_color = read_material_color(head_mesh)
     hair_color = read_named_node_color(head_mesh, cfg.materials.hair_color_node)
     lip_color = read_named_node_color(head_mesh, cfg.materials.lip_color_node)
@@ -1262,6 +1275,7 @@ def _write_export_snapshot(
         chaos_joints=joint_data,
         variation_shapes=var_shapes,
         expression_shapes=expr_shapes,
+        bone_properties=bone_prop_data,
         config_snapshot=config_raw,
         frame=frame,
         label=label,

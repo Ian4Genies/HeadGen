@@ -117,6 +117,77 @@ def apply_shape_key_values(
         sk.keyframe_insert(data_path="value", frame=frame)
 
 
+def read_bone_custom_props(
+    armature: bpy.types.Object,
+    bone_props_config: dict[str, dict],
+) -> dict[str, float]:
+    """Read current bone/object custom property values for all bone_properties entries.
+
+    Routes each lookup to its target based on the config spec:
+    - ``"target_bone": "<name>"`` → pose bone custom property on *armature*
+    - ``"target_object": "<name>"`` → custom property on the named scene object
+
+    Missing targets or absent properties are silently skipped.
+
+    Args:
+        armature: The armature object (used for target_bone lookups).
+        bone_props_config: Config dict keyed by prop_name (from
+            VariationConfig.bone_properties).
+
+    Returns:
+        ``{prop_name: float}`` for every property that was found.
+    """
+    result: dict[str, float] = {}
+    for prop_name, spec in bone_props_config.items():
+        if "target_bone" in spec:
+            bone = armature.pose.bones.get(spec["target_bone"])
+            if bone is not None and prop_name in bone:
+                result[prop_name] = float(bone[prop_name])
+        elif "target_object" in spec:
+            obj = bpy.data.objects.get(spec["target_object"])
+            if obj is not None and prop_name in obj:
+                result[prop_name] = float(obj[prop_name])
+    return result
+
+
+def apply_bone_custom_prop_values(
+    armature: bpy.types.Object,
+    prop_values: dict[str, float],
+    bone_props_config: dict[str, dict],
+    frame: int,
+) -> None:
+    """Set bone/object custom property values from snapshot data and keyframe them.
+
+    Routes each property to its target based on the config spec:
+    - ``"target_bone": "<name>"`` → pose bone custom property on *armature*
+    - ``"target_object": "<name>"`` → custom property on the named scene object
+
+    Properties not found in *bone_props_config* or whose target doesn't exist
+    are silently skipped.
+
+    Args:
+        armature: The armature object (used for target_bone lookups).
+        prop_values: ``{prop_name: value}`` — values from the snapshot.
+        bone_props_config: Config dict keyed by prop_name (from
+            VariationConfig.bone_properties).
+        frame: Blender frame number to insert keyframes on.
+    """
+    for prop_name, val in prop_values.items():
+        spec = bone_props_config.get(prop_name)
+        if spec is None:
+            continue
+        if "target_bone" in spec:
+            bone = armature.pose.bones.get(spec["target_bone"])
+            if bone is not None:
+                bone[prop_name] = float(val)
+                bone.keyframe_insert(f'["{prop_name}"]', frame=frame)
+        elif "target_object" in spec:
+            obj = bpy.data.objects.get(spec["target_object"])
+            if obj is not None:
+                obj[prop_name] = float(val)
+                obj.keyframe_insert(f'["{prop_name}"]', frame=frame)
+
+
 def apply_material_color(
     mesh_obj: bpy.types.Object,
     color: list[float],

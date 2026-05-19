@@ -343,6 +343,7 @@ def build_range_vectors(
     var_set = set(blendshape_config.variation_shapes)
     expr_set = set(blendshape_config.expression_shapes)
     indep = blendshape_config.independent_shapes or {}
+    bone_props = variation_config.bone_properties or {}
 
     mins = np.zeros(len(param_keys), dtype=np.float64)
     maxs = np.ones(len(param_keys), dtype=np.float64)
@@ -374,6 +375,10 @@ def build_range_vectors(
                 maxs[i] = max(float(cap), 0.001)
             elif key in indep:
                 spec = indep[key]
+                mins[i] = float(spec.get("min", 0.0))
+                maxs[i] = float(spec.get("max", 1.0))
+            elif key in bone_props:
+                spec = bone_props[key]
                 mins[i] = float(spec.get("min", 0.0))
                 maxs[i] = float(spec.get("max", 1.0))
             else:

@@ -98,3 +98,41 @@ def apply_chaos_single_frame(
     _apply_transforms_to_bones(chaos_joints, joint_transforms, frame)
 
     bpy.ops.object.mode_set(mode="OBJECT")
+
+
+def apply_bone_property_values(
+    armature: bpy.types.Object,
+    prop_values: dict[str, float],
+    bone_props_config: dict[str, dict],
+    frame: int,
+) -> None:
+    """Write bone/object custom property values and insert keyframes.
+
+    Routes each property to its target based on the config spec:
+    - ``"target_bone": "<name>"`` → pose bone custom property on *armature*
+    - ``"target_object": "<name>"`` → custom property on the named scene object
+
+    Properties not found in *bone_props_config* or whose target doesn't exist
+    are silently skipped.
+
+    Args:
+        armature: The armature object (used for target_bone lookups).
+        prop_values: ``{prop_name: value}`` — values to write.
+        bone_props_config: Config dict keyed by prop_name (from
+            VariationConfig.bone_properties).
+        frame: Blender frame number to insert keyframes on.
+    """
+    for prop_name, val in prop_values.items():
+        spec = bone_props_config.get(prop_name)
+        if spec is None:
+            continue
+        if "target_bone" in spec:
+            bone = armature.pose.bones.get(spec["target_bone"])
+            if bone is not None:
+                bone[prop_name] = val
+                bone.keyframe_insert(f'["{prop_name}"]', frame=frame)
+        elif "target_object" in spec:
+            obj = bpy.data.objects.get(spec["target_object"])
+            if obj is not None:
+                obj[prop_name] = val
+                obj.keyframe_insert(f'["{prop_name}"]', frame=frame)

@@ -81,8 +81,8 @@
     "NeckBind.rotation":             0.0
   },
   "bone_properties": {
-    "var_iris_shrink":  { "min": 0.0, "max": 1, "target_bone": "LeftEyeSocketBind" },
-    "var_iris_grow":    { "min": 0.0, "max": 0.2, "target_bone": "LeftEyeSocketBind" },
+    "var_iris_shrink":  { "min": 0.2, "max": 1, "target_bone": "LeftEyeSocketBind" },
+    "var_iris_grow":    { "min": 0.0, "max": 0.0, "target_bone": "LeftEyeSocketBind" },
     "var_pupil_shrink": { "min": 0.0, "max": 0.5, "target_bone": "LeftEyeSocketBind" },
     "var_pupil_grow":   { "min": 0.0, "max": 0.5, "target_bone": "LeftEyeSocketBind" }
   }

@@ -43,6 +43,8 @@ def reset_shape_keys(
             continue
         if sk.name == "Shrinkwrap":
             continue
+        if sk.name.startswith("auth_"):
+            continue
         sk.value = 0.0
         sk.keyframe_insert(data_path="value", frame=frame)
 

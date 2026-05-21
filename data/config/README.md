@@ -18,6 +18,7 @@ All paths in `runner.json` are relative to the `data/` directory.
 | `attractor.json` | Attractive-head attractor system (nudge toward curated references) |
 | `materials.json` | Skin material source file and node configuration |
 | `cleanup.json` | Mesh surgery settings: mouth bag group, lip sew indices, eye wedge and body object names |
+| `drivers.json` | FCurve drivers that wire one property (bone, object, or shape key) to another |
 | `projection.json` | Eye projection bake objects: bake wedges, HD eyes, and projector empties |
 | `export.json` | Pipeline 03 (Export) settings: bake resolutions, GLB format, per-part include flags |
 
@@ -577,6 +578,53 @@ Each entry merges vertex `idx_A` onto vertex `idx_B` (both are head-mesh vertex 
 5. The wedge and body objects are removed from the scene.
 
 Shape keys with shared names across meshes are merged by name — each vert carries the delta from its source mesh. On welded seam verts the head's delta takes priority.
+
+---
+
+## drivers.json
+
+Defines FCurve drivers that wire a **source** property to a **target** property at pipeline setup time. Stale drivers from the imported `.blend` are cleared and rebuilt from this file on every run.
+
+```json
+{
+  "drivers": [
+    {
+      "target": { "object": "eye_R_geo_hd_target", "bone": null, "property": "var_iris_shrink", "shape_key": true },
+      "source": { "object": "ARMATURE", "bone": "LeftEyeSocketBind", "property": "var_iris_shrink" }
+    },
+    {
+      "target": { "object": "some_mesh", "bone": null, "property": "some_shape", "shape_key": true },
+      "source": { "object": "other_mesh", "bone": null, "property": "source_shape", "shape_key": true }
+    }
+  ]
+}
+```
+
+The special object name `"ARMATURE"` resolves to the canonical armature at runtime.
+
+### `target` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `object` | string | Scene object name, or `"ARMATURE"` |
+| `bone` | string \| null | Pose bone name (object-level property when null) |
+| `property` | string | Custom property key, or shape key name when `shape_key` is true |
+| `shape_key` | bool | When true, driver is placed on `obj.data.shape_keys.key_blocks["property"].value` |
+
+### `source` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `object` | string | Scene object name, or `"ARMATURE"` |
+| `bone` | string \| null | Pose bone name (object-level property when null); ignored when `shape_key` is true |
+| `property` | string | Custom property key, or shape key name when `shape_key` is true |
+| `shape_key` | bool | When true, driver variable reads from `obj.data.shape_keys.key_blocks["property"].value` |
+
+### `expression` (optional, top-level per entry)
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `expression` | string | `"var"` | FCurve driver expression. `"var"` is a passthrough (1:1 copy). |
 
 ---
 

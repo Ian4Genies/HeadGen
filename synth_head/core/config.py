@@ -319,18 +319,22 @@ class DriverSpec:
     is resolved to the canonical armature at runtime.
 
     Fields:
-        target_object:      Scene object name or ``"ARMATURE"``.
-        target_bone:        Pose bone name, or None for an object-level property.
-        target_property:    Custom property key on the target, or shape key name
-                            when *target_is_shape_key* is True.
+        target_object:       Scene object name or ``"ARMATURE"``.
+        target_bone:         Pose bone name, or None for an object-level property.
+        target_property:     Custom property key on the target, or shape key name
+                             when *target_is_shape_key* is True.
         target_is_shape_key: When True the driver is placed on the mesh's shape
-                            key ``key_blocks["<target_property>"].value`` rather
-                            than on an object custom property.
-        source_object:      Scene object name or ``"ARMATURE"``.
-        source_bone:        Pose bone name, or None for an object-level property.
-        source_property:    Custom property key on the source.
-        expression:         FCurve driver expression.  Defaults to ``"var"``
-                            (passthrough).  Reserved for future function support.
+                             key ``key_blocks["<target_property>"].value`` rather
+                             than on an object custom property.
+        source_object:       Scene object name or ``"ARMATURE"``.
+        source_bone:         Pose bone name, or None for an object-level property.
+        source_property:     Custom property key on the source, or shape key name
+                             when *source_is_shape_key* is True.
+        source_is_shape_key: When True the driver variable reads from the source
+                             mesh's shape key ``key_blocks["<source_property>"].value``
+                             rather than from a custom property.
+        expression:          FCurve driver expression.  Defaults to ``"var"``
+                             (passthrough).  Reserved for future function support.
     """
 
     target_object: str
@@ -341,6 +345,7 @@ class DriverSpec:
     source_property: str
     expression: str = "var"
     target_is_shape_key: bool = False
+    source_is_shape_key: bool = False
 
 
 @dataclass
@@ -363,6 +368,7 @@ class DriversConfig:
                 source_object=s["object"],
                 source_bone=s.get("bone"),
                 source_property=s["property"],
+                source_is_shape_key=bool(s.get("shape_key", False)),
                 expression=entry.get("expression", "var"),
             ))
         return cls(drivers=specs)

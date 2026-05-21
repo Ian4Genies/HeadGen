@@ -14,6 +14,15 @@ For shape key targets the driver is placed on the mesh's ``Key`` data block
 (``obj.data.shape_keys``) at path ``key_blocks["<name>"].value``, which is
 the correct Blender data path for driving shape key weights via FCurves.
 
+Supported source types
+----------------------
+- Object custom property  (default)
+- Pose bone custom property  (when ``source_bone`` is set)
+- Mesh shape key value  (when ``source_is_shape_key`` is True)
+
+For shape key sources the driver variable targets the ``Key`` data block
+(``id_type = "KEY"``) at ``key_blocks["<name>"].value``.
+
 All functions here touch the live Blender scene and must be tested
 interactively via Blender: Start rather than with pytest.
 """
@@ -89,6 +98,21 @@ def build_drivers(
 
         source_path = _build_prop_path(spec.source_bone, spec.source_property)
 
+        if spec.source_is_shape_key:
+            source_shape_keys = getattr(getattr(source_obj, "data", None), "shape_keys", None)
+            if source_shape_keys is None:
+                print(
+                    f"[SynthHead][Drivers] WARNING: source object '{spec.source_object}' "
+                    f"has no shape keys — skipping driver for '{spec.target_property}'"
+                )
+                continue
+            if source_shape_keys.key_blocks.get(spec.source_property) is None:
+                print(
+                    f"[SynthHead][Drivers] WARNING: source shape key '{spec.source_property}' "
+                    f"not found on '{spec.source_object}' — skipping"
+                )
+                continue
+
         if spec.target_is_shape_key:
             shape_keys = getattr(getattr(target_obj, "data", None), "shape_keys", None)
             if shape_keys is None:
@@ -120,8 +144,13 @@ def build_drivers(
         var = driver.variables.new()
         var.name = "var"
         var.type = "SINGLE_PROP"
-        var.targets[0].id = source_obj
-        var.targets[0].data_path = source_path
+        if spec.source_is_shape_key:
+            var.targets[0].id_type = "KEY"
+            var.targets[0].id = source_obj.data.shape_keys
+            var.targets[0].data_path = f'key_blocks["{spec.source_property}"].value'
+        else:
+            var.targets[0].id = source_obj
+            var.targets[0].data_path = source_path
 
         if spec.target_is_shape_key:
             target_label = f"{spec.target_object}.shape_keys['{spec.target_property}']"
@@ -130,9 +159,10 @@ def build_drivers(
         else:
             target_label = f"{spec.target_object}.{spec.target_property}"
 
-        source_label = (
-            f"{spec.source_object}.{spec.source_bone}.{spec.source_property}"
-            if spec.source_bone
-            else f"{spec.source_object}.{spec.source_property}"
-        )
+        if spec.source_is_shape_key:
+            source_label = f"{spec.source_object}.shape_keys['{spec.source_property}']"
+        elif spec.source_bone:
+            source_label = f"{spec.source_object}.{spec.source_bone}.{spec.source_property}"
+        else:
+            source_label = f"{spec.source_object}.{spec.source_property}"
         print(f"[SynthHead][Drivers] Wired: {source_label} → {target_label}  expr='{spec.expression}'")

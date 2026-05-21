@@ -50,7 +50,27 @@
   ],
   "max_var_shapes":   4,
   "max_variation":    1.0,
-  "variation_overrides": {},
+  "variation_overrides": {
+    "eyes_female_varGp01I": 0.6,
+    "eyes_female_varGp01G": 0.6,
+    "eyes_female_varGp01E": 0.6,
+    "eyes_female_varGp01B": 0.6,
+    "eyes_male_varGp01H": 0.6,
+    "eyes_male_varGp01K": 0.6,
+
+    "nose_female_varGp01A": 0.4,
+    "nose_female_varGp01C": 0.4,
+    "nose_female_varGp01D": 0.4,
+    "nose_female_varGp01F": 0.4,
+    "nose_female_varGp01H": 0.4,
+    "nose_female_varGp01K": 0.4,
+    "nose_male_varGp01A": 0.4,
+    "nose_male_varGp01D": 0.4,
+    "nose_male_varGp01E": 0.4,
+    "nose_male_varGp01I": 0.4,
+    "nose_male_varGp01K": 0.4
+
+  },
 
   "expression_shapes": [
     "BROW_LOWERER_L",

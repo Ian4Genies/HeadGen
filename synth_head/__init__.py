@@ -6,6 +6,7 @@ if "bpy" in locals():
     from .core import blendshapes as core_blendshapes
     from .core import attractor as core_attractor
     from .core import config as core_config
+    from .core import rerandomize as core_rerandomize
     from .core import snapshot as core_snapshot
     from .core import export as core_export
     from .core import texture_swap as core_texture_swap
@@ -24,6 +25,8 @@ if "bpy" in locals():
     from .scene import projection as scene_projection
     from .scene import texture_swap as scene_texture_swap
 
+    from .scene import rerandomize as scene_rerandomize
+
     importlib.reload(math)
     importlib.reload(core_modifiers)
     importlib.reload(ref_keys)
@@ -33,6 +36,7 @@ if "bpy" in locals():
     importlib.reload(core_attractor)
     importlib.reload(core_texture_swap)
     importlib.reload(core_config)
+    importlib.reload(core_rerandomize)
     importlib.reload(core_snapshot)
     importlib.reload(core_export)
     importlib.reload(core)
@@ -52,6 +56,7 @@ if "bpy" in locals():
     importlib.reload(scene_export_glb)
     importlib.reload(scene_projection)
     importlib.reload(scene_texture_swap)
+    importlib.reload(scene_rerandomize)
     importlib.reload(scene)
     importlib.reload(operators)
 

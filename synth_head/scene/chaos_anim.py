@@ -9,8 +9,10 @@ from __future__ import annotations
 
 import bpy
 
-from ..core.math import euler_degrees_to_quaternion
+from ..core.math import euler_degrees_to_quaternion, quaternion_to_euler_degrees
 from ..core.variation import ChaosTransform
+
+_AXIS_INDEX = {"x": 0, "y": 1, "z": 2}
 
 
 def collect_chaos_joints(
@@ -49,6 +51,63 @@ def _apply_transforms_to_bones(
         bone.keyframe_insert(data_path="location", frame=frame)
         bone.keyframe_insert(data_path="rotation_quaternion", frame=frame)
         bone.keyframe_insert(data_path="scale", frame=frame)
+
+
+def apply_partial_joint_keys(
+    chaos_joints: list[bpy.types.PoseBone],
+    flat: dict[str, float],
+    joint_keys: set[str],
+    frame: int,
+) -> None:
+    """Set and keyframe only the specific joint flat keys in *joint_keys*.
+
+    Untargeted axes on a bone keep their current pose values.  Rotation uses
+    the bone's current euler for unchanged axes, then converts the full euler
+    back to quaternion for write/keyframe.
+    """
+    by_bone: dict[str, dict[str, set[str]]] = {}
+    for key in joint_keys:
+        parts = key.split(".")
+        if len(parts) != 3:
+            continue
+        bone_name, channel, axis = parts
+        if channel not in ("location", "rotation", "scale") or axis not in _AXIS_INDEX:
+            continue
+        channels = by_bone.setdefault(bone_name, {})
+        channels.setdefault(channel, set()).add(axis)
+
+    bone_map = {bone.name: bone for bone in chaos_joints}
+
+    for bone_name, channels in by_bone.items():
+        bone = bone_map.get(bone_name)
+        if bone is None:
+            continue
+
+        if "location" in channels:
+            for axis in channels["location"]:
+                idx = _AXIS_INDEX[axis]
+                val = flat[f"{bone_name}.location.{axis}"]
+                bone.location[idx] = val
+                bone.keyframe_insert(data_path="location", index=idx, frame=frame)
+
+        if "scale" in channels:
+            for axis in channels["scale"]:
+                idx = _AXIS_INDEX[axis]
+                val = flat[f"{bone_name}.scale.{axis}"]
+                bone.scale[idx] = val
+                bone.keyframe_insert(data_path="scale", index=idx, frame=frame)
+
+        if "rotation" in channels:
+            euler = list(quaternion_to_euler_degrees(tuple(bone.rotation_quaternion)))
+            for axis in channels["rotation"]:
+                idx = _AXIS_INDEX[axis]
+                euler[idx] = flat[f"{bone_name}.rotation.{axis}"]
+            w, x, y, z = euler_degrees_to_quaternion(tuple(euler))
+            bone.rotation_quaternion.w = w
+            bone.rotation_quaternion.x = x
+            bone.rotation_quaternion.y = y
+            bone.rotation_quaternion.z = z
+            bone.keyframe_insert(data_path="rotation_quaternion", frame=frame)
 
 
 def apply_chaos_keyframes(

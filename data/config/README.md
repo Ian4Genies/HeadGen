@@ -21,6 +21,7 @@ All paths in `runner.json` are relative to the `data/` directory.
 | `drivers.json` | FCurve drivers that wire one property (bone, object, or shape key) to another |
 | `projection.json` | Eye projection bake objects: bake wedges, HD eyes, and projector empties |
 | `export.json` | Pipeline 03 (Export) settings: bake resolutions, GLB format, per-part include flags |
+| `rerandomize.json` | Selective post-pipeline re-randomization targets (joints, properties, shapes) |
 
 ---
 
@@ -743,3 +744,48 @@ The operator uses `bpy.data.meshes.new_from_object` on the evaluated depsgraph t
 ### `body_geo` is out of scope
 
 After Clean Mesh, `body_geo` no longer exists as a standalone object — it was sewn into `head_geo`. The Export Pipeline never references it.
+
+---
+
+## rerandomize.json
+
+Controls selective post-pipeline re-randomization via **Synth Head: Rerandomize Selected** (all frames) and **Synth Head: Rerandomize Selected Frame** (current frame only). Run after the Variation Pipeline on an existing blend.
+
+```json
+{
+  "enabled": true,
+  "seed": null,
+  "reapply_constraints": true,
+  "targets": [
+    "nose_female_varGp01C",
+    "property:var_iris_shrink",
+    "JawBind.scale.y"
+  ]
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `enabled` | bool | When `false`, both rerandomize operators no-op with an info message |
+| `seed` | int \| null | RNG seed for reproducible re-sampling. `null` = random each run |
+| `reapply_constraints` | bool | When `true` (default), runs `constraints.json` after sampling. Coupled params may change together — e.g. re-rolling `NoseBind.scale.x` also adjusts `NoseBind.scale.y` / `.z` via nose ratio rules. Set `false` to touch **only** the listed targets |
+| `targets` | string[] | Parameters to re-sample (see target syntax below) |
+
+### Target syntax
+
+| Input | Resolved as |
+|---|---|
+| `property:someName` | Bone custom property from `chaos_joints.json` → `bone_properties` |
+| `shape:someName` | Blendshape from `blendshapes.json` (explicit) |
+| `JointName.channel.axis` | Chaos joint transform channel — use `location`, `rotation`, or `scale` (e.g. `NoseBind.rotation.x`, `JawBind.scale.y`). Shorthand `rotate` / `rot` / `loc` is accepted and normalized |
+| Plain name in blendshapes only | Blendshape |
+| Plain name in `bone_properties` only | Bone property |
+| Plain name in **both** | Blendshape (default) — use `property:` prefix to force bone property |
+| Wildcards (`*`, `?`, `[…]`) | Expands against known parameters (e.g. `property:var_iris_*`, `nose_*`) |
+
+Ranges come from existing `chaos_joints.json` and `blendshapes.json` overrides — this file lists **what** to re-roll, not new ranges. Only the targeted joint **axes** are keyframed (e.g. `NoseBind.scale.x` does not re-key location or rotation on that bone).
+
+When `reapply_constraints` is `true`, relational rules in `constraints.json` run after sampling and any params they adjust are written too.
+
+**Not supported in Phase 1:** colors, texture overlays, attractor nudging, or variation group-lottery reroll.
+

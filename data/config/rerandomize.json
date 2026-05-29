@@ -1,0 +1,8 @@
+{
+  "enabled": true,
+  "seed": null,
+  "targets": [
+    "NoseBind.rotation.x",
+    "NoseBind.scale.x"
+  ]
+}

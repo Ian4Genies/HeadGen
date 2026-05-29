@@ -25,6 +25,7 @@ from .constraints import ConstraintRules, ClampRange
 from .modifiers import SmoothCorrectiveConfig
 from .attractor import AttractorConfig
 from .texture_swap import TextureSwapConfig, TextureSwapSlot
+from .rerandomize import RerandomizeConfig
 
 
 def _load_json(path: Path) -> dict:
@@ -388,6 +389,7 @@ class PipelineConfig:
     export: ExportConfig = field(default_factory=ExportConfig)
     texture_swap: TextureSwapConfig = field(default_factory=TextureSwapConfig)
     drivers: DriversConfig = field(default_factory=DriversConfig)
+    rerandomize: RerandomizeConfig = field(default_factory=RerandomizeConfig)
     chaos_joint_names: frozenset[str] = field(default_factory=lambda: frozenset(CHAOS_JOINT_NAMES))
     config_dir: Path = field(default_factory=lambda: Path("."))
 
@@ -504,6 +506,13 @@ def load_config(config_dir: str | Path) -> PipelineConfig:
     else:
         drivers = DriversConfig()
 
+    # --- rerandomize ---
+    rerandomize_path = d / "rerandomize.json"
+    if rerandomize_path.exists():
+        rerandomize = RerandomizeConfig.from_dict(_load_json(rerandomize_path))
+    else:
+        rerandomize = RerandomizeConfig()
+
     return PipelineConfig(
         runner=runner,
         cleanup=cleanup,
@@ -517,6 +526,7 @@ def load_config(config_dir: str | Path) -> PipelineConfig:
         export=export,
         texture_swap=texture_swap,
         drivers=drivers,
+        rerandomize=rerandomize,
         chaos_joint_names=joint_names,
         config_dir=d,
     )

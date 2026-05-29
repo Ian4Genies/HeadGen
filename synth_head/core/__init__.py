@@ -34,6 +34,14 @@ from .blendshapes import (
     generate_single_frame_blendshape_weights,
 )
 from .config import RunnerConfig, PipelineConfig, BakeSettings, load_config
+from .rerandomize import (
+    RerandomizeConfig,
+    ResolvedTarget,
+    resolve_targets,
+    rerandomize_flat,
+    sample_value,
+    build_param_registry,
+)
 from .attractor import (
     AttractorConfig,
     PoolCache,
@@ -93,6 +101,12 @@ __all__ = [
     "PipelineConfig",
     "BakeSettings",
     "load_config",
+    "RerandomizeConfig",
+    "ResolvedTarget",
+    "resolve_targets",
+    "rerandomize_flat",
+    "sample_value",
+    "build_param_registry",
     "AttractorConfig",
     "PoolCache",
     "get_pool_cache",

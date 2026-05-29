@@ -67,6 +67,8 @@ from .scene.export_glb import staging_scene, rewrite_head_material_slots, stamp_
 from .core.export import frame_glb_name, frame_dir_name, frame_png_name, eye_bake_seq_png_name
 from .core.snapshot import build_snapshot, save_snapshot, load_snapshot
 from .core.config import load_config, PipelineConfig
+from .core.rerandomize import resolve_targets, rerandomize_flat
+from .scene.rerandomize import read_flat_params_at_frame, apply_rerandomized_frame
 from .core.texture_swap import (
     ping_and_sync_sequence,
     load_manifest,
@@ -203,6 +205,12 @@ def _debug_config(cfg: PipelineConfig) -> None:
     p(f"  max_influence:    {cfg.attractor.max_influence}")
     p(f"  distance_weights: {cfg.attractor.distance_weights}")
     p(f"  exclude_params:   {cfg.attractor.exclude_params}")
+
+    p(f"--- RERANDOMIZE ---")
+    p(f"  enabled:  {cfg.rerandomize.enabled}")
+    p(f"  seed:     {cfg.rerandomize.seed}")
+    p(f"  reapply_constraints: {cfg.rerandomize.reapply_constraints}")
+    p(f"  targets:  {cfg.rerandomize.targets}")
 
     p(f"--- CLEANUP ---")
     p(f"  assets_blend_path: {cfg.cleanup.assets_blend_path}")
@@ -890,6 +898,102 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         return {"FINISHED"}
 
 
+def _guard_rerandomize_refs(operator, context) -> bool:
+    """Return True when all refs required for selective rerandomize are present."""
+    checks = [
+        (ARMATURE, "No armature stored — run Variation Pipeline first"),
+        (MESH, "No mesh stored — run Variation Pipeline first"),
+        (EYE_WEDGE_R, "No eye wedge R mesh stored — run Variation Pipeline first"),
+        (EYE_WEDGE_L, "No eye wedge L mesh stored — run Variation Pipeline first"),
+        (EYE_WEDGE_R_BAKE, "No eye wedge R bake mesh stored — run Variation Pipeline first"),
+        (EYE_WEDGE_L_BAKE, "No eye wedge L bake mesh stored — run Variation Pipeline first"),
+        (R_PROJECTOR, "No R projector mesh stored — run Variation Pipeline first"),
+        (L_PROJECTOR, "No L projector mesh stored — run Variation Pipeline first"),
+        (EYEBROWS, "No eyebrows mesh stored — run Variation Pipeline first"),
+        (EYELASHES, "No eyelashes mesh stored — run Variation Pipeline first"),
+    ]
+    for ref_key, message in checks:
+        if not get_ref(context, ref_key):
+            operator.report({"ERROR"}, message)
+            return False
+    return True
+
+
+def _execute_rerandomize(operator, context, frames: list[int]) -> set[str]:
+    """Shared selective rerandomize logic for one or more frames."""
+    import random as _random
+
+    if not _guard_rerandomize_refs(operator, context):
+        return {"CANCELLED"}
+
+    cfg = _get_config()
+    rr = cfg.rerandomize
+
+    if not rr.enabled:
+        operator.report({"INFO"}, "Rerandomize disabled in rerandomize.json")
+        return {"FINISHED"}
+
+    if not rr.targets:
+        operator.report({"ERROR"}, "rerandomize.json targets list is empty")
+        return {"CANCELLED"}
+
+    resolved, errors = resolve_targets(rr.targets, cfg)
+    for msg in errors:
+        operator.report({"ERROR"}, msg)
+        return {"CANCELLED"}
+
+    if not resolved:
+        operator.report({"ERROR"}, "No targets resolved — check rerandomize.json")
+        return {"CANCELLED"}
+
+    rng = _random.Random(rr.seed) if rr.seed is not None else _random.Random()
+
+    for frame in frames:
+        flat = read_flat_params_at_frame(context, cfg, frame)
+        if not flat:
+            operator.report({"ERROR"}, f"Could not read parameters at frame {frame}")
+            return {"CANCELLED"}
+        flat, apply_keys = rerandomize_flat(flat, resolved, rng, cfg)
+        apply_rerandomized_frame(context, cfg, frame, flat, apply_keys)
+
+    operator.report(
+        {"INFO"},
+        f"Rerandomized {len(resolved)} parameter(s) on {len(frames)} frame(s)",
+    )
+    return {"FINISHED"}
+
+
+class SYNTHHEAD_OT_RerandomizeSelected(bpy.types.Operator):
+    """Re-randomize configured parameters across all variation frames"""
+
+    bl_idname = "synth_head.rerandomize_selected"
+    bl_label = "Synth Head: Rerandomize Selected"
+    bl_description = (
+        "Re-sample parameters listed in rerandomize.json across every frame "
+        "in runner.frame_count"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        cfg = _get_config()
+        frames = list(range(1, cfg.runner.frame_count + 1))
+        return _execute_rerandomize(self, context, frames)
+
+
+class SYNTHHEAD_OT_RerandomizeSelectedFrame(bpy.types.Operator):
+    """Re-randomize configured parameters on the current frame only"""
+
+    bl_idname = "synth_head.rerandomize_selected_frame"
+    bl_label = "Synth Head: Rerandomize Selected Frame"
+    bl_description = (
+        "Re-sample parameters listed in rerandomize.json on the current frame only"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        return _execute_rerandomize(self, context, [context.scene.frame_current])
+
+
 def _load_config_dir_raw(cfg: PipelineConfig) -> dict:
     """Read every JSON file in the config directory for embedding in snapshots."""
     raw: dict = {}
@@ -1533,6 +1637,8 @@ class SYNTHHEAD_MT_main_menu(bpy.types.Menu):
         layout.operator(SYNTHHEAD_OT_CleanMesh.bl_idname)
         layout.operator(SYNTHHEAD_OT_ExportPipeline.bl_idname)
         layout.operator(SYNTHHEAD_OT_RandomizeFace.bl_idname)
+        layout.operator(SYNTHHEAD_OT_RerandomizeSelected.bl_idname)
+        layout.operator(SYNTHHEAD_OT_RerandomizeSelectedFrame.bl_idname)
         layout.separator()
         layout.operator(SYNTHHEAD_OT_SaveHeadIssue.bl_idname)
         layout.operator(SYNTHHEAD_OT_SaveGoodHead.bl_idname)
@@ -1557,6 +1663,8 @@ CLASSES = [
     SYNTHHEAD_OT_CleanMesh,
     SYNTHHEAD_OT_ExportPipeline,
     SYNTHHEAD_OT_RandomizeFace,
+    SYNTHHEAD_OT_RerandomizeSelected,
+    SYNTHHEAD_OT_RerandomizeSelectedFrame,
     SYNTHHEAD_OT_SaveHeadIssue,
     SYNTHHEAD_OT_SaveGoodHead,
     SYNTHHEAD_OT_SaveHeadAttractive,

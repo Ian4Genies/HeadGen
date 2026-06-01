@@ -1,0 +1,33 @@
+{
+  "paths": {
+    "assets_blend_path": "gen13.blend",
+    "baked-sequence-R-path": "output-pipeline/eye-bake-sequence-R/",
+    "baked-sequence-L-path": "output-pipeline/eye-bake-sequence-L/"
+  },
+  "eye_wedge_R_bake_name": "eye_wedge_R_bake",
+  "eye_wedge_L_bake_name": "eye_wedge_L_bake",
+  "hd_eye_R_name": "eye_R_geo_hd_target",
+  "hd_eye_L_name": "eye_L_geo_hd_target",
+  "R_projector_name": "eye_wedge_R_projector",
+  "L_projector_name": "eye_wedge_L_projector",
+  "eye-baked-sequence-name": "baked-sequence",
+  "eye-bake-diffuse-name": "bake-diffuse",
+  "eye-bake-switch-name": "bake-switch",
+  "eye-color-name":"eye-color",
+  "eye-bake-settings": {
+    "render_engine": "CYCLES",
+    "bake_type": "DIFFUSE",
+    "use_pass_direct": false,
+    "use_pass_indirect": false,
+    "use_pass_color": true,
+    "use_selected_to_active": false,
+    "use_cage": false,
+    "cage_extrusion": 0.05,
+    "max_ray_distance": 0.2,
+    "target": "IMAGE_TEXTURES",
+    "margin_type": "EXTEND",
+    "margin": 16,
+    "use_clear": true,
+    "save_mode": "EXTERNAL"
+  }
+}

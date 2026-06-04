@@ -393,6 +393,40 @@ def clean_head_mesh_old(
         bpy.data.objects.remove(obj, do_unlink=True)
 
 
+def copy_modifiers_to_wedges(
+    source: bpy.types.Object,
+    wedge_R: bpy.types.Object,
+    wedge_L: bpy.types.Object,
+) -> None:
+    """Copy all modifiers from *source* to both eye wedge objects.
+
+    Existing modifiers on each wedge are cleared before copying so the result
+    is an exact mirror of the source modifier stack.  Property values are
+    copied attribute-by-attribute; read-only and structural RNA properties
+    (``rna_type``, ``name``, ``type``) are skipped to avoid Blender errors.
+    """
+    _SKIP_PROPS = frozenset(("rna_type", "name", "type", "show_expanded"))
+
+    def _copy_to(target: bpy.types.Object) -> None:
+        target.modifiers.clear()
+        for src_mod in source.modifiers:
+            dst_mod = target.modifiers.new(name=src_mod.name, type=src_mod.type)
+            for prop in src_mod.bl_rna.properties:
+                if prop.identifier in _SKIP_PROPS or prop.is_readonly:
+                    continue
+                try:
+                    setattr(dst_mod, prop.identifier, getattr(src_mod, prop.identifier))
+                except Exception:
+                    pass
+
+    _copy_to(wedge_R)
+    _copy_to(wedge_L)
+    print(
+        f"[SynthHead][prep_eye_wedges] Copied {len(source.modifiers)} modifier(s) "
+        f"from '{source.name}' → '{wedge_R.name}', '{wedge_L.name}'"
+    )
+
+
 def join_and_merge(mesh_objects: list, target_object: bpy.types.Object, merge_distance: float = 0.01):
     """
     Joins a list of mesh objects into a target object, then merges vertices by distance.

@@ -51,7 +51,7 @@ from .scene.materials import (
 )
 from .scene.modifiers import add_smooth_corrective
 from .scene.reset import reset_frame
-from .scene.mesh import clean_head_mesh
+from .scene.mesh import clean_head_mesh, copy_modifiers_to_wedges
 from .scene.snapshot import (
     read_bone_transforms,
     read_shape_key_values,
@@ -1303,6 +1303,7 @@ class SYNTHHEAD_OT_CleanMesh(bpy.types.Operator):
             return {"CANCELLED"}
 
         cfg = _get_config()
+        copy_modifiers_to_wedges(head_mesh, wedge_R, wedge_L)
 
         clean_head_mesh(head_mesh, wedge_R, wedge_L, body, cfg.cleanup)
 
@@ -1580,6 +1581,9 @@ class SYNTHHEAD_OT_BakeEyes(bpy.types.Operator):
         Path(cfg.runner.save_eye_bake_blend_path).parent.mkdir(parents=True, exist_ok=True)
         bpy.ops.wm.save_as_mainfile(filepath=cfg.runner.save_eye_bake_blend_path)
 
+        Path(cfg.runner.save_variation_blend_path).parent.mkdir(parents=True, exist_ok=True)
+        bpy.ops.wm.save_as_mainfile(filepath=cfg.runner.save_variation_blend_path)
+ 
         self.report({"INFO"}, f"Eye bake complete: {frame_count} frames per side")
         return {"FINISHED"}
 

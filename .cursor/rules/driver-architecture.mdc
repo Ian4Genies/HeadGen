@@ -1,0 +1,68 @@
+---
+description: Documents the Blender driver system that propagates shape keys and bone properties to secondary meshes. Must be read before reasoning about why a mesh appears "untouched" by the variation system.
+alwaysApply: true
+---
+
+# Driver Architecture — Secondary Meshes Are Driven, Not Directly Set
+
+## Rule: Check `data/config/drivers.json` First
+
+Before concluding that a mesh is "untouched", "missing from apply lists", or has a
+snapshot/parity gap, **read `data/config/drivers.json`**. Many meshes receive their
+values automatically via Blender FCurve drivers built from that config — the variation
+system never needs to write to them directly.
+
+## Two Driver Patterns
+
+### Pattern A — Shape Key → Shape Key (from `headOnly_geo`)
+
+All variation and `auth_*` shape keys set on `headOnly_geo` are **mirrored automatically**
+to secondary meshes via drivers:
+
+| Driven target meshes |
+|---|
+| `eye_wedge_L`, `eye_wedge_R` |
+| `eye_wedge_L_bake`, `eye_wedge_R_bake` |
+| `eyeControlShape` |
+| `NoseStaticGuideMax`, `NoseStaticGuideMin` |
+
+`headOnly_geo` is the **single source of truth** for all shape key values. The variation
+system writes to `headOnly_geo` only; drivers propagate to the rest. The snapshot system
+correctly captures from `headOnly_geo` only for the same reason.
+
+### Pattern B — Bone Custom Property → Shape Key (for HD eyes)
+
+HD eye shape keys (`var_iris_shrink`, `var_iris_grow`, `var_pupil_shrink`, `var_pupil_grow`)
+on `eye_R_geo_hd_target` and `eye_L_geo_hd_target` are driven from **custom properties on
+`LeftEyeSocketBind`** (the ARMATURE object):
+
+```
+ARMATURE["LeftEyeSocketBind"]["var_iris_shrink"]
+    → eye_R_geo_hd_target shape key "var_iris_shrink"
+    → eye_L_geo_hd_target shape key "var_iris_shrink"
+(same for var_iris_grow, var_pupil_shrink, var_pupil_grow)
+```
+
+The variation system writes these as bone custom properties. The HD eye meshes update
+automatically. Saving/restoring the bone custom properties is sufficient — no direct
+shape key write to HD eye meshes is needed or correct.
+
+## What This Means for Snapshot Analysis
+
+| Apparent "gap" | Actual explanation |
+|---|---|
+| HD eyes never receive direct shape key application | Driven from bone custom props — correct by design |
+| Bake meshes / wedges not in pipeline's direct apply loop for `auth_*` shapes | Driven from `headOnly_geo` — correct by design |
+| Snapshot captures shape keys from `headOnly_geo` only | Sufficient — drivers propagate to all dependents on scene eval |
+| Restoring bone custom props restores HD eye iris/pupil size | Yes — via Pattern B drivers |
+
+## When Editing the Scene Rig or Driver Config
+
+- Adding a new shape key to variation → only `headOnly_geo` needs it; add driver entries
+  in `drivers.json` for any secondary mesh that must follow it.
+- Adding a new bone custom property → add driver entries in `drivers.json` to connect it
+  to any mesh shape keys that should respond.
+- Drivers are built at pipeline setup time via `build_drivers(cfg)` — they persist in the
+  `.blend` file and do not need to be rebuilt per frame.
+- Never add redundant direct-apply calls to driven meshes; this does not break anything
+  but creates false maintenance burden and misleading parity analysis.

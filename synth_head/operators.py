@@ -1568,6 +1568,18 @@ class SYNTHHEAD_OT_BakeEyes(bpy.types.Operator):
             out_dir_L / _eye_bake_png(start, "L"), start, frame_count,
         )
 
+        #cleanup
+        #hide bake wedges
+        bake_R.hide_set(True)
+        bake_L.hide_set(True)
+        #reveal wedges
+        wedge_R.hide_set(False)
+        wedge_L.hide_set(False)
+
+        #save blend file
+        Path(cfg.runner.save_eye_bake_blend_path).parent.mkdir(parents=True, exist_ok=True)
+        bpy.ops.wm.save_as_mainfile(filepath=cfg.runner.save_eye_bake_blend_path)
+
         self.report({"INFO"}, f"Eye bake complete: {frame_count} frames per side")
         return {"FINISHED"}
 

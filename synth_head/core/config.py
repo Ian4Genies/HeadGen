@@ -214,6 +214,7 @@ class RunnerConfig:
     fbx_path: str = ""
     gen13_blend_path: str = ""
     save_variation_blend_path: str = ""
+    save_eye_bake_blend_path: str = ""
     save_water_tight_blend_path: str = ""
     save_export_blend_path: str = ""
     issues_dir: str = ""
@@ -230,6 +231,7 @@ class RunnerConfig:
             fbx_path=paths.get("fbx", ""),
             gen13_blend_path=paths.get("gen13_blend", ""),
             save_variation_blend_path=paths.get("save_variation_blend", ""),
+            save_eye_bake_blend_path=paths.get("save_eye_bake_blend", ""),
             save_water_tight_blend_path=paths.get("save_water_tight_blend", ""),
             save_export_blend_path=paths.get("save_export_blend", ""),
             issues_dir=paths.get("issues_dir", ""),
@@ -246,6 +248,7 @@ class RunnerConfig:
             fbx_path=str((base / self.fbx_path).resolve()) if self.fbx_path else "",
             gen13_blend_path=str((base / self.gen13_blend_path).resolve()) if self.gen13_blend_path else "",
             save_variation_blend_path=str((base / self.save_variation_blend_path).resolve()) if self.save_variation_blend_path else "",
+            save_eye_bake_blend_path=str((base / self.save_eye_bake_blend_path).resolve()) if self.save_eye_bake_blend_path else "",
             save_water_tight_blend_path=str((base / self.save_water_tight_blend_path).resolve()) if self.save_water_tight_blend_path else "",
             save_export_blend_path=str((base / self.save_export_blend_path).resolve()) if self.save_export_blend_path else "",
             issues_dir=str((base / self.issues_dir).resolve()) if self.issues_dir else "",

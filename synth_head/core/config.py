@@ -397,15 +397,19 @@ class PipelineConfig:
     config_dir: Path = field(default_factory=lambda: Path("."))
 
 
-def load_config(config_dir: str | Path) -> PipelineConfig:
+def load_config(config_dir: str | Path, project_root: str | Path | None = None) -> PipelineConfig:
     """Load an entire pipeline configuration from a directory of JSON files.
 
     Expected files (all optional — missing files fall back to dataclass defaults):
         runner.json, chaos_joints.json, blendshapes.json,
         constraints.json, modifiers.json
+
+    *project_root* is the ``data/`` directory used to resolve relative paths in
+    runner.json and other path fields.  Defaults to the parent of *config_dir*
+    (e.g. ``data/config/`` → ``data/``).
     """
     d = Path(config_dir)
-    project_root = d.parent  # data/config/ → data/
+    root = Path(project_root) if project_root is not None else d.parent
 
     # --- runner ---
     runner_path = d / "runner.json"
@@ -413,7 +417,7 @@ def load_config(config_dir: str | Path) -> PipelineConfig:
         runner = RunnerConfig.from_dict(_load_json(runner_path))
     else:
         runner = RunnerConfig()
-    runner = runner.resolve(project_root)
+    runner = runner.resolve(root)
 
     fc = runner.frame_count
     seed = runner.seed
@@ -456,7 +460,7 @@ def load_config(config_dir: str | Path) -> PipelineConfig:
     attr_path = d / "attractor.json"
     if attr_path.exists():
         attractor = AttractorConfig.from_dict(_load_json(attr_path))
-        attractor = attractor.resolve(project_root)
+        attractor = attractor.resolve(root)
     else:
         attractor = AttractorConfig()
 
@@ -464,7 +468,7 @@ def load_config(config_dir: str | Path) -> PipelineConfig:
     mat_path = d / "materials.json"
     if mat_path.exists():
         materials = MaterialsConfig.from_dict(_load_json(mat_path))
-        materials = materials.resolve(project_root)
+        materials = materials.resolve(root)
     else:
         materials = MaterialsConfig()
 
@@ -475,7 +479,7 @@ def load_config(config_dir: str | Path) -> PipelineConfig:
             _load_json(tex_swap_path),
             default_material=materials.skin_material_name,
         )
-        texture_swap = texture_swap.resolve(project_root)
+        texture_swap = texture_swap.resolve(root)
     else:
         texture_swap = TextureSwapConfig()
 
@@ -483,7 +487,7 @@ def load_config(config_dir: str | Path) -> PipelineConfig:
     proj_path = d / "projection.json"
     if proj_path.exists():
         projection = ProjectionConfig.from_dict(_load_json(proj_path))
-        projection = projection.resolve(project_root)
+        projection = projection.resolve(root)
     else:
         projection = ProjectionConfig()
 
@@ -491,7 +495,7 @@ def load_config(config_dir: str | Path) -> PipelineConfig:
     cleanup_path = d / "cleanup.json"
     if cleanup_path.exists():
         cleanup = CleanupConfig.from_dict(_load_json(cleanup_path))
-        cleanup = cleanup.resolve(project_root)
+        cleanup = cleanup.resolve(root)
     else:
         cleanup = CleanupConfig()
 

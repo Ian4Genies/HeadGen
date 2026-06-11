@@ -1,0 +1,51 @@
+{
+  "items": [
+    {
+      "id": "var_iris_shrink",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-06-11T00:35:56.828426+00:00"
+    },
+    {
+      "id": "var_iris_grow",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-06-11T00:35:56.828426+00:00"
+    },
+    {
+      "id": "var_pupil_shrink",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-06-11T00:35:56.828426+00:00"
+    },
+    {
+      "id": "var_pupil_grow",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-06-11T00:35:56.828426+00:00"
+    }
+  ],
+  "updated_at": "2026-06-11T00:49:27.755870+00:00",
+  "defaults": {
+    "var_iris_shrink": {
+      "min": 0.2,
+      "max": 1.0,
+      "target_bone": "LeftEyeSocketBind"
+    },
+    "var_iris_grow": {
+      "min": 0.0,
+      "max": 0.0,
+      "target_bone": "LeftEyeSocketBind"
+    },
+    "var_pupil_shrink": {
+      "min": 0.0,
+      "max": 0.5,
+      "target_bone": "LeftEyeSocketBind"
+    },
+    "var_pupil_grow": {
+      "min": 0.0,
+      "max": 0.5,
+      "target_bone": "LeftEyeSocketBind"
+    }
+  }
+}

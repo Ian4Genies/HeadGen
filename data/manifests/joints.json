@@ -1,0 +1,62 @@
+{
+  "items": [
+    {
+      "id": "FaceBind",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-06-11T00:35:56.812496+00:00"
+    },
+    {
+      "id": "JawBind",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-06-11T00:35:56.812496+00:00"
+    },
+    {
+      "id": "LeftBrowBind",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-06-11T00:35:56.812496+00:00"
+    },
+    {
+      "id": "LeftEyeSocketBind",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-06-11T00:35:56.812496+00:00"
+    },
+    {
+      "id": "MouthBind",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-06-11T00:35:56.812496+00:00"
+    },
+    {
+      "id": "MouthInnerBind",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-06-11T00:35:56.812496+00:00"
+    },
+    {
+      "id": "NoseBind",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-06-11T00:35:56.812496+00:00"
+    },
+    {
+      "id": "RightBrowBind",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-06-11T00:35:56.812496+00:00"
+    },
+    {
+      "id": "RightEyeSocketBind",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-06-11T00:35:56.812496+00:00"
+    }
+  ],
+  "updated_at": "2026-06-11T00:49:27.751872+00:00",
+  "blocked": [
+    "NeckBind"
+  ]
+}

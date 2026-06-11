@@ -985,11 +985,68 @@ select:focus {
   gap: 0.35rem;
 }
 
-.indep-editor,
-.bone-props-editor {
+.chaos-editor {
   display: flex;
   flex-direction: column;
+  gap: 1.25rem;
+}
+
+.joint-lists {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.joint-group .group-name {
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.mirror-badge {
+  font-size: 0.65rem;
+  color: #7dd3fc;
+  margin-left: 0.25rem;
+}
+
+.mode-row {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.btn.active-mode {
+  background: rgba(139, 92, 246, 0.25);
+  color: #ede9fe;
+  box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.45);
+}
+
+.range-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.bone-prop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.bone-prop-card {
+  padding: 0.75rem;
+}
+
+.target-mode-row {
+  display: flex;
+  align-items: center;
   gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.target-mode-row .field-label {
+  margin-right: 0.25rem;
 }
 
 .toast {

@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 
 from . import manifests as mf
 from . import profiles as prof
+from .chaos_schema import chaos_joints_schema
 from .schema import CONFIG_FILES
 
 app = FastAPI(title="Synth Head Config", version="1.0.0")
@@ -47,6 +48,11 @@ class ManifestRegister(BaseModel):
 def _startup() -> None:
     prof.ensure_profiles_layout()
     mf.ensure_manifests()
+
+
+@app.get("/api/schema/chaos_joints")
+def get_chaos_joints_schema() -> dict:
+    return chaos_joints_schema()
 
 
 @app.get("/api/schema")

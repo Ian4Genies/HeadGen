@@ -13,6 +13,7 @@ import {
 import { mountManifestList, mountRegistryPicker } from "./manifest-list.js";
 import { mountGroupedManifestList, mountShapePicker } from "./grouped-list.js";
 import { mountClampEditor, mountJointOverrideEditor } from "./joint-override-editor.js";
+import { mountChaosJointsEditor } from "./chaos-joints-editor.js";
 import { FILE_LAYOUTS } from "./file-layouts.js";
 
 function deepClone(v) {
@@ -77,6 +78,18 @@ export class ConfigForm {
   render() {
     this.#root.innerHTML = "";
     this.#root.className = "form-scroll";
+    if (this.#fileId === "chaos_joints") {
+      this.#root.appendChild(
+        mountChaosJointsEditor({
+          data: this.#data,
+          onChange: (next) => {
+            this.#data = deepClone(next);
+            this.#touch();
+          },
+        }),
+      );
+      return;
+    }
     const layout = FILE_LAYOUTS[this.#fileId];
     if (layout) {
       this.#root.appendChild(this.#renderLayout(layout));

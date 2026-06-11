@@ -44,7 +44,8 @@ export async function mountGroupedManifestList({
     root.innerHTML = "";
     const blocked = new Set(manifest.blocked ?? []);
     const allIds = manifest.items.map((i) => i.id);
-    const catalog = allIds.filter((id) => !blocked.has(id));
+    const catalog = allIds.filter((id) => !blocked.has(id))
+      .filter((id) => (groupMode === "joints" ? !id.startsWith("Right") : true));
 
     const toolbar = el("div", "list-toolbar");
     const search = el("input", "input search");

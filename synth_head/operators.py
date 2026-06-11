@@ -1269,7 +1269,6 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
         self.report({"INFO"}, f"Loaded snapshot '{src}' on frame {frame}")
         return {"FINISHED"}
 
-
 class SYNTHHEAD_OT_CleanMesh(bpy.types.Operator):
     """Combine eye wedges and body into the head mesh, sew the lips, and remove the mouth bag"""
 
@@ -1312,6 +1311,12 @@ class SYNTHHEAD_OT_CleanMesh(bpy.types.Operator):
         set_ref(context, EYE_WEDGE_R, None)
         set_ref(context, EYE_WEDGE_L, None)
         set_ref(context, BODY_GEO, None)
+ 
+        # Swap material order — move slot 1 up to slot 0 on the combined object
+        if len(wedge_R.material_slots) >= 2:
+            wedge_R.active_material_index = 1
+            with context.temp_override(object=wedge_R):
+                bpy.ops.object.material_slot_move(direction='UP')
 
         self.report({"INFO"}, "Mesh cleaned: lips sewn, mouth bag removed, wedges and body merged")
         Path(cfg.runner.save_water_tight_blend_path).parent.mkdir(parents=True, exist_ok=True)

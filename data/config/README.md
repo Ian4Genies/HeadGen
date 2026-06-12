@@ -545,6 +545,9 @@ Controls the **Clean Mesh** operator, which performs all one-time mesh surgery a
   "eye_wedge_R_name": "eye_wedge_R",
   "eye_wedge_L_name": "eye_wedge_L",
   "mouth_bag_group": "MouthBag",
+  "join_merge_distance": 0.001,
+  "lip_sew_merge_distance": 0.000001,
+  "seam_weld_distance": 0.00001,
   "mouth_sew_indices": {
     "123": 456,
     "124": 457
@@ -558,6 +561,9 @@ Controls the **Clean Mesh** operator, which performs all one-time mesh surgery a
 | `eye_wedge_R_name` | string | Scene name of the right eye wedge object to ingest into the head mesh |
 | `eye_wedge_L_name` | string | Scene name of the left eye wedge object to ingest into the head mesh |
 | `mouth_bag_group` | string | Vertex group name on the head mesh whose vertices are deleted (the interior mouth bag geometry) |
+| `join_merge_distance` | float | `remove_doubles` threshold after joining head, eye wedges, and body (object-local units). Scale with asset size — smaller mesh → smaller value. |
+| `lip_sew_merge_distance` | float | `remove_doubles` threshold when welding paired lip verts from `mouth_sew_indices`. |
+| `seam_weld_distance` | float | Global `remove_doubles` threshold for seam borders when using the legacy bmesh merge path. |
 | `mouth_sew_indices` | object | Pairs of head-mesh vertex indices to snap and merge, closing the lip border after the mouth bag is removed. Keys and values are both indices into the **original untransformed head mesh**. |
 
 ### mouth_sew_indices format

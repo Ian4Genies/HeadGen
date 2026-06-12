@@ -85,6 +85,7 @@ def _ingest_mesh(
 def _merge_pairs(
     bm: bmesh.types.BMesh,
     pairs: list[tuple[bmesh.types.BMVert, bmesh.types.BMVert]],
+    merge_distance: float,
 ) -> None:
     """Snap the first vert of each pair onto the second, then weld them.
 
@@ -99,7 +100,7 @@ def _merge_pairs(
         mover.co = target.co.copy()
         touched.extend((mover, target))
 
-    bmesh.ops.remove_doubles(bm, verts=touched, dist=1e-5)
+    bmesh.ops.remove_doubles(bm, verts=touched, dist=merge_distance)
 
 
 def _collect_vertex_group(
@@ -131,6 +132,7 @@ def cut_and_sew(
     cut_group_name: str,
     mesh_obj: bpy.types.Object,
     sew_pairs,
+    merge_distance: float = 1e-6,
 ) -> None:
     """Delete a vertex group and sew paired vertex indices in one bmesh session.
 
@@ -224,7 +226,7 @@ def cut_and_sew(
         for mover, target in surviving_pairs:
             mover.co = target.co.copy()
             touched.extend((mover, target))
-        bmesh.ops.remove_doubles(bm, verts=touched, dist=1e-5)
+        bmesh.ops.remove_doubles(bm, verts=touched, dist=merge_distance)
         bm.verts.ensure_lookup_table()
 
     # --- 6. Write back + restore animation ------------------------------------
@@ -266,8 +268,17 @@ def clean_head_mesh(
         cfg:         CleanupConfig providing ``mouth_bag_group`` and
                      ``mouth_sew_indices``.
     """
-    cut_and_sew(cfg.mouth_bag_group, head_obj, cfg.mouth_sew_indices)
-    join_and_merge([head_obj,wedge_L_obj, body_obj], wedge_R_obj)
+    cut_and_sew(
+        cfg.mouth_bag_group,
+        head_obj,
+        cfg.mouth_sew_indices,
+        merge_distance=cfg.lip_sew_merge_distance,
+    )
+    join_and_merge(
+        [head_obj, wedge_L_obj, body_obj],
+        wedge_R_obj,
+        merge_distance=cfg.join_merge_distance,
+    )
 
     #3. Simple combine operation to combine the eye wedges and body into the head
 
@@ -352,7 +363,7 @@ def clean_head_mesh_old(
 
     # --- 4. Sew lips ---------------------------------------------------------
     if surviving_pairs:
-        _merge_pairs(bm, surviving_pairs)
+        _merge_pairs(bm, surviving_pairs, cfg.lip_sew_merge_distance)
         bm.verts.ensure_lookup_table()
         print(f"[SynthHead][clean_mesh] Sewed {len(surviving_pairs)} lip pair(s); "
               f"after sew: {len(bm.verts)} verts")
@@ -365,7 +376,7 @@ def clean_head_mesh_old(
     # --- 6. Weld all overlapping seam borders --------------------------------
     bm.verts.ensure_lookup_table()
     pre_weld = len(bm.verts)
-    bmesh.ops.remove_doubles(bm, verts=bm.verts[:], dist=1e-4)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts[:], dist=cfg.seam_weld_distance)
     print(f"[SynthHead][clean_mesh] Global remove_doubles: "
           f"{pre_weld} -> {len(bm.verts)} verts (welded {pre_weld - len(bm.verts)})")
 
@@ -425,16 +436,20 @@ def copy_modifiers_to_wedges(
         f"[SynthHead][prep_eye_wedges] Copied {len(source.modifiers)} modifier(s) "
         f"from '{source.name}' → '{wedge_R.name}', '{wedge_L.name}'"
     )
+ 
 
-
-def join_and_merge(mesh_objects: list, target_object: bpy.types.Object, merge_distance: float = 0.01):
+def join_and_merge(
+    mesh_objects: list,
+    target_object: bpy.types.Object,
+    merge_distance: float = 0.001,
+):
     """
     Joins a list of mesh objects into a target object, then merges vertices by distance.
-    
+
     Args:
         mesh_objects: List of mesh objects to join into the target
         target_object: The object to join everything into
-        merge_distance: Distance threshold for merging vertices (default 0.0001)
+        merge_distance: Distance threshold for merging vertices (object-local units)
     """
     
     # Deselect all

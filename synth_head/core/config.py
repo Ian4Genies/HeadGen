@@ -86,6 +86,9 @@ class CleanupConfig:
     eye_wedge_L_name: str = ""
     mouth_bag_group: str = ""
     mouth_sew_indices: dict[str, int] = field(default_factory=dict)
+    join_merge_distance: float = 0.001
+    lip_sew_merge_distance: float = 1e-6
+    seam_weld_distance: float = 1e-5
 
     @classmethod
     def from_dict(cls, d: dict) -> "CleanupConfig":
@@ -96,6 +99,9 @@ class CleanupConfig:
             eye_wedge_L_name=d.get("eye_wedge_L_name", ""),
             mouth_bag_group=d.get("mouth_bag_group", ""),
             mouth_sew_indices=d.get("mouth_sew_indices", {}),
+            join_merge_distance=d.get("join_merge_distance", 0.001),
+            lip_sew_merge_distance=d.get("lip_sew_merge_distance", 1e-6),
+            seam_weld_distance=d.get("seam_weld_distance", 1e-5),
         )
 
     def resolve(self, base: Path) -> "CleanupConfig":
@@ -105,6 +111,9 @@ class CleanupConfig:
             eye_wedge_L_name=self.eye_wedge_L_name,
             mouth_bag_group=self.mouth_bag_group,
             mouth_sew_indices=self.mouth_sew_indices,
+            join_merge_distance=self.join_merge_distance,
+            lip_sew_merge_distance=self.lip_sew_merge_distance,
+            seam_weld_distance=self.seam_weld_distance,
         )
 
 @dataclass

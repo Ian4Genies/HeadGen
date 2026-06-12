@@ -5,6 +5,9 @@
     "eye_wedge_R_name": "eye_wedge_R",
     "eye_wedge_L_name": "eye_wedge_L",
     "mouth_bag_group": "MouthBag",
+    "join_merge_distance": 0.0000001,
+    "lip_sew_merge_distance": 0.00000001,
+    "seam_weld_distance": 0.0000001,
     "mouth_sew_indices": {
       "1098": 1707,
       "1183": 1074,

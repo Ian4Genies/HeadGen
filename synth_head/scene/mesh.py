@@ -246,7 +246,7 @@ def cut_and_sew(
           f"{len(mesh.vertices)} verts, {len(mesh.polygons)} faces")
 
 
-def clean_head_mesh(
+def clean_head_mesh_wedge(
     head_obj: bpy.types.Object,
     wedge_R_obj: bpy.types.Object,
     wedge_L_obj: bpy.types.Object,
@@ -280,7 +280,36 @@ def clean_head_mesh(
         merge_distance=cfg.join_merge_distance,
     )
 
-    #3. Simple combine operation to combine the eye wedges and body into the head
+def Clean_head_mesh_Simple(
+    head_obj: bpy.types.Object,
+    body_obj: bpy.types.Object,
+    cfg,    
+) -> None:
+    """Clean the head mesh: cut the mouth bag and sew the lips.
+
+    Stripped-down replacement for ``clean_head_mesh_old``.  Only the
+    lip-cut-and-sew step runs; eye wedges and body geo are left untouched
+    and must be combined by some other mechanism (see ``clean_head_mesh_old``
+    for the full bmesh-based merge if you need it).
+
+    Args:
+        head_obj:    The head mesh Object (edited in place).
+        body_obj:    The body mesh Object (edited in place).
+        cfg:         CleanupConfig providing ``mouth_bag_group`` and
+                     ``mouth_sew_indices``.
+    """
+    cut_and_sew(
+        cfg.mouth_bag_group,
+        head_obj,
+        cfg.mouth_sew_indices,
+        merge_distance=cfg.lip_sew_merge_distance,
+    )
+    join_and_merge(
+        [head_obj, body_obj],
+        head_obj,
+        merge_distance=cfg.join_merge_distance,
+    )
+
 
 def clean_head_mesh_old(
     head_obj: bpy.types.Object,

@@ -51,7 +51,7 @@ from .scene.materials import (
 )
 from .scene.modifiers import add_smooth_corrective
 from .scene.reset import reset_frame
-from .scene.mesh import clean_head_mesh, copy_modifiers_to_wedges
+from .scene.mesh import clean_head_mesh_wedge, Clean_head_mesh_Simple , copy_modifiers_to_wedges
 from .scene.snapshot import (
     read_bone_transforms,
     read_shape_key_values,
@@ -1371,42 +1371,47 @@ class SYNTHHEAD_OT_CleanMesh(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
+        cfg = _get_config()
+
         head_mesh = get_ref(context, MESH)
         if not head_mesh:
             self.report({"ERROR"}, "No mesh stored — run Variation Pipeline first")
             return {"CANCELLED"}
+        if (cfg.feature_flags.wedge_projection):
+            wedge_R = get_ref(context, EYE_WEDGE_R)
+            if not wedge_R:
+                self.report({"ERROR"}, "No eye wedge R stored — run Variation Pipeline first")
+                return {"CANCELLED"}
 
-        wedge_R = get_ref(context, EYE_WEDGE_R)
-        if not wedge_R:
-            self.report({"ERROR"}, "No eye wedge R stored — run Variation Pipeline first")
-            return {"CANCELLED"}
-
-        wedge_L = get_ref(context, EYE_WEDGE_L)
-        if not wedge_L:
-            self.report({"ERROR"}, "No eye wedge L stored — run Variation Pipeline first")
-            return {"CANCELLED"}
+            wedge_L = get_ref(context, EYE_WEDGE_L)
+            if not wedge_L:
+                self.report({"ERROR"}, "No eye wedge L stored — run Variation Pipeline first")
+                return {"CANCELLED"}
 
         body = get_ref(context, BODY_GEO)
         if not body:
             self.report({"ERROR"}, "No body geo stored — run Variation Pipeline first")
             return {"CANCELLED"}
 
-        cfg = _get_config()
-        copy_modifiers_to_wedges(head_mesh, wedge_R, wedge_L)
 
-        clean_head_mesh(head_mesh, wedge_R, wedge_L, body, cfg.cleanup)
+        if (cfg.feature_flags.wedge_projection):
+            copy_modifiers_to_wedges(head_mesh, wedge_R, wedge_L)
+            clean_head_mesh_wedge(head_mesh, wedge_R, wedge_L, body, cfg.cleanup)
+        else:
+            Clean_head_mesh_Simple(head_mesh, body, cfg.cleanup)
 
-        set_ref(context, MESH, wedge_R)
-        # Clear refs for the objects that were deleted by clean_head_mesh
-        set_ref(context, EYE_WEDGE_R, None)
-        set_ref(context, EYE_WEDGE_L, None)
-        set_ref(context, BODY_GEO, None)
- 
-        # Swap material order — move slot 1 up to slot 0 on the combined object
-        if len(wedge_R.material_slots) >= 2:
-            wedge_R.active_material_index = 1
-            with context.temp_override(object=wedge_R):
-                bpy.ops.object.material_slot_move(direction='UP')
+        if (cfg.feature_flags.wedge_projection):
+            set_ref(context, MESH, wedge_R)
+            # Clear refs for the objects that were deleted by clean_head_mesh
+            set_ref(context, EYE_WEDGE_R, None)
+            set_ref(context, EYE_WEDGE_L, None)
+            set_ref(context, BODY_GEO, None)
+    
+            # Swap material order — move slot 1 up to slot 0 on the combined object
+            if len(wedge_R.material_slots) >= 2:
+                wedge_R.active_material_index = 1
+                with context.temp_override(object=wedge_R):
+                    bpy.ops.object.material_slot_move(direction='UP')
 
         self.report({"INFO"}, "Mesh cleaned: lips sewn, mouth bag removed, wedges and body merged")
         Path(cfg.runner.save_water_tight_blend_path).parent.mkdir(parents=True, exist_ok=True)

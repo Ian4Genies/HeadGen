@@ -22,6 +22,7 @@ All paths in `runner.json` are relative to the `data/` directory.
 | `projection.json` | Eye projection bake objects: bake wedges, HD eyes, and projector empties |
 | `export.json` | Pipeline 03 (Export) settings: bake resolutions, GLB format, per-part include flags |
 | `rerandomize.json` | Selective post-pipeline re-randomization targets (joints, properties, shapes) |
+| `featureFlags.json` | Boolean feature flags that gate optional pipeline behaviours |
 
 ---
 
@@ -795,3 +796,18 @@ When `reapply_constraints` is `true`, relational rules in `constraints.json` run
 
 **Not supported in Phase 1:** colors, texture overlays, attractor nudging, or variation group-lottery reroll.
 
+---
+
+## featureFlags.json
+
+Boolean gates for optional pipeline behaviours. Missing file = all flags at their default values.
+
+```json
+{
+  "wedgeProjection": true
+}
+```
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `wedgeProjection` | bool | `true` | When `true`, the eye-wedge projection bake step runs during pipeline execution. Set to `false` to skip it. |

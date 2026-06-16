@@ -109,3 +109,12 @@ def append_eye_wedge_bake(
     hd_eye_R = bpy.data.objects.get(hd_eye_R_name)
     hd_eye_L = bpy.data.objects.get(hd_eye_L_name)
     return R_bake, L_bake, hd_eye_R, hd_eye_L, R_projector, L_projector
+
+def append_HD_eyes_only(
+    blend_path: str,
+    hd_eye_R_name: str,
+    hd_eye_L_name: str,
+) -> bpy.types.Object | None:
+    hd_eye_R = append_object_from_blend(blend_path, hd_eye_R_name)
+    hd_eye_L = append_object_from_blend(blend_path, hd_eye_L_name)
+    return hd_eye_R, hd_eye_L

@@ -8,7 +8,7 @@ import bpy
 from pathlib import Path
 
 from .core.math import clamp
-from .core.ref_keys import MESH, BODY_GEO, ARMATURE, HEAD_MAT, L_EYE, R_EYE, EYEBROWS, EYELASHES, EYE_MAT, EYE_WEDGE_R, EYE_WEDGE_L, EYE_WEDGE_R_BAKE, EYE_WEDGE_L_BAKE, HD_EYE_R, HD_EYE_L, R_PROJECTOR, L_PROJECTOR
+from .core.ref_keys import MESH, BODY_GEO, ARMATURE, HEAD_MAT, L_EYE, R_EYE, EYEBROWS, EYELASHES, EYE_MAT, EYE_WEDGE_R, EYE_WEDGE_L, EYE_WEDGE_R_BAKE, EYE_WEDGE_L_BAKE, HD_EYE_R, HD_EYE_L, R_PROJECTOR, L_PROJECTOR, WEDGE_PROJECTION
 from .core.variation import (
     generate_chaos_transforms,
     generate_single_frame_transforms,
@@ -16,7 +16,7 @@ from .core.variation import (
     generate_bone_property_values_all_frames,
 )
 from .scene.fbx_import import import_fbx_and_classify
-from .scene.refs import get_ref, set_ref, get_material_ref, set_material_ref
+from .scene.refs import get_ref, set_ref, get_material_ref, set_material_ref, set_flag, get_flag
 from .core.blendshapes import (
     generate_blendshape_weights,
     generate_single_frame_blendshape_weights,
@@ -341,6 +341,13 @@ class SYNTHHEAD_PG_PipelineRefs(bpy.types.PropertyGroup):
         type=bpy.types.Object,
         poll=lambda self, obj: obj.type == 'MESH',
     )
+    # Feature flags — written once by VariationPipeline, read by all downstream operators
+    wedge_projection: bpy.props.BoolProperty(
+        name="Wedge Projection",
+        default=False,
+    )
+
+
 class SYNTHHEAD_OT_hello(bpy.types.Operator):
     """Smoke-test operator to verify the addon loads"""
 
@@ -438,6 +445,8 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
 
     def execute(self, context):
         cfg = _get_config()
+        set_flag(context, WEDGE_PROJECTION, cfg.feature_flags.wedge_projection)
+
         # --- 1. IMPORT & VALIDATE ---
         # head_geo_obj, body_geo_obj, armature_obj, L_eye_obj, R_eye_obj, eyebrows_obj, eyelashes_obj = import_fbx_and_classify(
         #     context, cfg.runner.fbx_path,
@@ -776,6 +785,8 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
 
     def execute(self, context):
         cfg = _get_config()
+        wedge_projection = get_flag(context, WEDGE_PROJECTION)
+
         armature = get_ref(context, ARMATURE)
         if not armature:
             self.report({"ERROR"}, "No armature stored — run Variation Pipeline first")
@@ -786,7 +797,7 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
             self.report({"ERROR"}, "No mesh stored — run Variation Pipeline first")
             return {"CANCELLED"}
 
-        if (cfg.feature_flags.wedge_projection):
+        if wedge_projection:
             eye_wedge_R_obj = get_ref(context, EYE_WEDGE_R)
             if not eye_wedge_R_obj:
                 self.report({"ERROR"}, "No eye wedge R mesh stored — run Variation Pipeline first")
@@ -877,13 +888,13 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
 
         frame = context.scene.frame_current
 
-        if (cfg.feature_flags.wedge_projection):
+        if wedge_projection:
             reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eyebrows_obj, eyelashes_obj], frame)
         else:
             reset_frame(chaos_joints, [head_mesh, hd_eye_R, hd_eye_L, eyebrows_obj, eyelashes_obj], frame)
         _apply_transforms_to_bones(chaos_joints, transforms, frame)
         _apply_weights_to_shape_keys(head_mesh, bs_weights, frame)
-        if (cfg.feature_flags.wedge_projection):
+        if wedge_projection:
             _apply_weights_to_shape_keys(eye_wedge_R_obj, bs_weights, frame)
             _apply_weights_to_shape_keys(eye_wedge_L_obj, bs_weights, frame)
             _apply_weights_to_shape_keys(eye_wedge_R_bake, bs_weights, frame)
@@ -899,7 +910,7 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         #Skin / Body Color
         rng_color = (attractor_rng.random(), attractor_rng.random(), attractor_rng.random(), 1.0)
         randomize_head_material_color(head_mesh, rng_color, frame)
-        if (cfg.feature_flags.wedge_projection):
+        if wedge_projection:
             assign_eye_color(eye_wedge_R_bake, cfg.projection.eye_wedge_R_bake_name, cfg.projection.eye_color_name, rng_color, frame)
             assign_eye_color(eye_wedge_L_bake, cfg.projection.eye_wedge_L_bake_name, cfg.projection.eye_color_name, rng_color, frame)
         else:
@@ -953,18 +964,26 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
 
 def _guard_rerandomize_refs(operator, context) -> bool:
     """Return True when all refs required for selective rerandomize are present."""
+    wedge_projection = get_flag(context, WEDGE_PROJECTION)
+
     checks = [
         (ARMATURE, "No armature stored — run Variation Pipeline first"),
         (MESH, "No mesh stored — run Variation Pipeline first"),
-        (EYE_WEDGE_R, "No eye wedge R mesh stored — run Variation Pipeline first"),
-        (EYE_WEDGE_L, "No eye wedge L mesh stored — run Variation Pipeline first"),
-        (EYE_WEDGE_R_BAKE, "No eye wedge R bake mesh stored — run Variation Pipeline first"),
-        (EYE_WEDGE_L_BAKE, "No eye wedge L bake mesh stored — run Variation Pipeline first"),
-        (R_PROJECTOR, "No R projector mesh stored — run Variation Pipeline first"),
-        (L_PROJECTOR, "No L projector mesh stored — run Variation Pipeline first"),
+        (HD_EYE_R, "No HD eye R stored — run Variation Pipeline first"),
+        (HD_EYE_L, "No HD eye L stored — run Variation Pipeline first"),
         (EYEBROWS, "No eyebrows mesh stored — run Variation Pipeline first"),
         (EYELASHES, "No eyelashes mesh stored — run Variation Pipeline first"),
     ]
+    if wedge_projection:
+        checks += [
+            (EYE_WEDGE_R, "No eye wedge R mesh stored — run Variation Pipeline first"),
+            (EYE_WEDGE_L, "No eye wedge L mesh stored — run Variation Pipeline first"),
+            (EYE_WEDGE_R_BAKE, "No eye wedge R bake mesh stored — run Variation Pipeline first"),
+            (EYE_WEDGE_L_BAKE, "No eye wedge L bake mesh stored — run Variation Pipeline first"),
+            (R_PROJECTOR, "No R projector mesh stored — run Variation Pipeline first"),
+            (L_PROJECTOR, "No L projector mesh stored — run Variation Pipeline first"),
+        ]
+
     for ref_key, message in checks:
         if not get_ref(context, ref_key):
             operator.report({"ERROR"}, message)
@@ -1207,6 +1226,8 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
         return {"RUNNING_MODAL"}
 
     def execute(self, context):
+        wedge_projection = get_flag(context, WEDGE_PROJECTION)
+
         armature = get_ref(context, ARMATURE)
         if not armature:
             self.report({"ERROR"}, "No armature stored — run Variation Pipeline first")
@@ -1217,30 +1238,6 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
             self.report({"ERROR"}, "No mesh stored — run Variation Pipeline first")
             return {"CANCELLED"}
 
-        eye_wedge_R_obj = get_ref(context, EYE_WEDGE_R)
-        if not eye_wedge_R_obj:
-            self.report({"ERROR"}, "No eye wedge R mesh stored — run Variation Pipeline first")
-            return {"CANCELLED"}
-        eye_wedge_L_obj = get_ref(context, EYE_WEDGE_L)
-        if not eye_wedge_L_obj:
-            self.report({"ERROR"}, "No eye wedge L mesh stored — run Variation Pipeline first")
-            return {"CANCELLED"}
-        eye_wedge_R_bake = get_ref(context, EYE_WEDGE_R_BAKE)
-        if not eye_wedge_R_bake:
-            self.report({"ERROR"}, "No eye wedge R bake mesh stored — run Variation Pipeline first")
-            return {"CANCELLED"}
-        eye_wedge_L_bake = get_ref(context, EYE_WEDGE_L_BAKE)
-        if not eye_wedge_L_bake:
-            self.report({"ERROR"}, "No eye wedge L bake mesh stored — run Variation Pipeline first")
-            return {"CANCELLED"}
-        R_projector = get_ref(context, R_PROJECTOR)
-        if not R_projector:
-            self.report({"ERROR"}, "No R projector mesh stored — run Variation Pipeline first")
-            return {"CANCELLED"}
-        L_projector = get_ref(context, L_PROJECTOR)
-        if not L_projector:
-            self.report({"ERROR"}, "No L projector mesh stored — run Variation Pipeline first")
-            return {"CANCELLED"}
         hd_eye_R = get_ref(context, HD_EYE_R)
         if not hd_eye_R:
             self.report({"ERROR"}, "No HD eye R stored — run Variation Pipeline first")
@@ -1249,6 +1246,38 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
         if not hd_eye_L:
             self.report({"ERROR"}, "No HD eye L stored — run Variation Pipeline first")
             return {"CANCELLED"}
+
+        if wedge_projection:
+            eye_wedge_R_obj = get_ref(context, EYE_WEDGE_R)
+            if not eye_wedge_R_obj:
+                self.report({"ERROR"}, "No eye wedge R mesh stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+            eye_wedge_L_obj = get_ref(context, EYE_WEDGE_L)
+            if not eye_wedge_L_obj:
+                self.report({"ERROR"}, "No eye wedge L mesh stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+            eye_wedge_R_bake = get_ref(context, EYE_WEDGE_R_BAKE)
+            if not eye_wedge_R_bake:
+                self.report({"ERROR"}, "No eye wedge R bake mesh stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+            eye_wedge_L_bake = get_ref(context, EYE_WEDGE_L_BAKE)
+            if not eye_wedge_L_bake:
+                self.report({"ERROR"}, "No eye wedge L bake mesh stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+            R_projector = get_ref(context, R_PROJECTOR)
+            if not R_projector:
+                self.report({"ERROR"}, "No R projector mesh stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+            L_projector = get_ref(context, L_PROJECTOR)
+            if not L_projector:
+                self.report({"ERROR"}, "No L projector mesh stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+        else:
+            eye_mat = get_material_ref(context, EYE_MAT)
+            if not eye_mat:
+                self.report({"ERROR"}, "No eye material stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+
         eyebrows_obj = get_ref(context, EYEBROWS)
         if not eyebrows_obj:
             self.report({"ERROR"}, "No eyebrows mesh stored — run Variation Pipeline first")
@@ -1264,19 +1293,23 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
 
         chaos_joints = collect_chaos_joints(armature, cfg.chaos_joint_names)
 
-        reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eye_wedge_R_bake, eye_wedge_L_bake, R_projector, L_projector, eyebrows_obj, eyelashes_obj], frame)
+        if wedge_projection:
+            reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eye_wedge_R_bake, eye_wedge_L_bake, R_projector, L_projector, hd_eye_R, hd_eye_L, eyebrows_obj, eyelashes_obj], frame)
+        else:
+            reset_frame(chaos_joints, [head_mesh, hd_eye_R, hd_eye_L, eyebrows_obj, eyelashes_obj], frame)
         apply_bone_transforms(armature, snapshot.get("chaos_joints", {}), frame)
 
         all_shapes: dict[str, float] = {}
         all_shapes.update(snapshot.get("variation_shapes", {}))
         all_shapes.update(snapshot.get("expression_shapes", {}))
         apply_shape_key_values(head_mesh, all_shapes, frame)
-        apply_shape_key_values(eye_wedge_R_obj, all_shapes, frame)
-        apply_shape_key_values(eye_wedge_L_obj, all_shapes, frame)
-        apply_shape_key_values(eye_wedge_R_bake, all_shapes, frame)
-        apply_shape_key_values(eye_wedge_L_bake, all_shapes, frame)
-        apply_shape_key_values(R_projector, all_shapes, frame)
-        apply_shape_key_values(L_projector, all_shapes, frame)
+        if wedge_projection:
+            apply_shape_key_values(eye_wedge_R_obj, all_shapes, frame)
+            apply_shape_key_values(eye_wedge_L_obj, all_shapes, frame)
+            apply_shape_key_values(eye_wedge_R_bake, all_shapes, frame)
+            apply_shape_key_values(eye_wedge_L_bake, all_shapes, frame)
+            apply_shape_key_values(R_projector, all_shapes, frame)
+            apply_shape_key_values(L_projector, all_shapes, frame)
         apply_shape_key_values(eyebrows_obj, all_shapes, frame)
         apply_shape_key_values(eyelashes_obj, all_shapes, frame)
         apply_bone_custom_prop_values(armature, snapshot.get("bone_properties", {}), cfg.variation.bone_properties, frame)
@@ -1284,8 +1317,12 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
         skin_color = snapshot.get("skin_color")
         if skin_color is not None:
             apply_material_color(head_mesh, skin_color, frame)
-            assign_eye_color(eye_wedge_R_bake, cfg.projection.eye_wedge_R_bake_name, cfg.projection.eye_color_name, skin_color, frame)
-            assign_eye_color(eye_wedge_L_bake, cfg.projection.eye_wedge_L_bake_name, cfg.projection.eye_color_name, skin_color, frame)
+            if wedge_projection:
+                assign_eye_color(eye_wedge_R_bake, cfg.projection.eye_wedge_R_bake_name, cfg.projection.eye_color_name, skin_color, frame)
+                assign_eye_color(eye_wedge_L_bake, cfg.projection.eye_wedge_L_bake_name, cfg.projection.eye_color_name, skin_color, frame)
+            else:
+                assign_eye_color(hd_eye_R, eye_mat.name, cfg.projection.eye_color_name, skin_color, frame)
+                assign_eye_color(hd_eye_L, eye_mat.name, cfg.projection.eye_color_name, skin_color, frame)
 
         hair_color = snapshot.get("hair_color")
         if hair_color:

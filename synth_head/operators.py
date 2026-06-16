@@ -508,7 +508,7 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         assign_exclusive_material(L_eye_obj, eye_mat)
         assign_exclusive_material(R_eye_obj, eye_mat)
         
-        # --- 2. CLEANUP PREP---
+        # --- 2. Eye Setup---
         #EYE WEDGES
         if (cfg.feature_flags.wedge_projection):
             eye_wedge_R_obj = append_object_from_blend(
@@ -566,6 +566,8 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
             attach_constrained_object_to_armature(hd_eye_R, armature_obj)
             attach_constrained_object_to_armature(hd_eye_L, armature_obj)
             remove_non_canonical_armatures(armature_obj)
+            assign_exclusive_material(hd_eye_R, eye_mat)
+            assign_exclusive_material(hd_eye_L, eye_mat)
 
         # --- 2b. RIG SETUP — rebuild drivers from config ---
         build_drivers(armature_obj, cfg.drivers)
@@ -662,10 +664,6 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
                 reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eyebrows_obj, eyelashes_obj], frame)
             else:
                 reset_frame(chaos_joints, [head_mesh, hd_eye_R, hd_eye_L, eyebrows_obj, eyelashes_obj], frame)
-            if (cfg.feature_flags.wedge_projection):
-                reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eyebrows_obj, eyelashes_obj], frame)
-            else:
-                reset_frame(chaos_joints, [head_mesh, hd_eye_R, hd_eye_L, eyebrows_obj, eyelashes_obj], frame)
             
             #Core Head Parts
             _apply_transforms_to_bones(chaos_joints, constrained_transforms[frame], frame)
@@ -694,8 +692,8 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
                 assign_eye_color(eye_wedge_R_bake, cfg.projection.eye_wedge_R_bake_name, cfg.projection.eye_color_name, rng_color, frame)
                 assign_eye_color(eye_wedge_L_bake, cfg.projection.eye_wedge_L_bake_name, cfg.projection.eye_color_name, rng_color, frame)
             else:
-                assign_eye_color(hd_eye_R, cfg.projection.hd_eye_R_name, cfg.projection.eye_color_name, rng_color, frame)
-                assign_eye_color(hd_eye_L, cfg.projection.hd_eye_L_name, cfg.projection.eye_color_name, rng_color, frame)
+                assign_eye_color(hd_eye_R, eye_mat.name, cfg.projection.eye_color_name, rng_color, frame)
+                assign_eye_color(hd_eye_L, eye_mat.name, cfg.projection.eye_color_name, rng_color, frame)
             attr_color = colors.body
             if attr_color is not None:
                 final_skin_color = _blend_colors(attr_color, rng_color, cfg.materials.final_color_randomness)
@@ -777,6 +775,7 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
+        cfg = _get_config()
         armature = get_ref(context, ARMATURE)
         if not armature:
             self.report({"ERROR"}, "No armature stored — run Variation Pipeline first")
@@ -812,6 +811,11 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
             if not L_projector:
                 self.report({"ERROR"}, "No L projector mesh stored — run Variation Pipeline first")
                 return {"CANCELLED"}
+        else:
+            eye_mat = get_material_ref(context, EYE_MAT)
+            if not eye_mat:
+                self.report({"ERROR"}, "No eye material stored — run Variation Pipeline first")
+                return {"CANCELLED"}
 
         hd_eye_R = get_ref(context, HD_EYE_R)
         if not hd_eye_R:
@@ -821,6 +825,7 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         if not hd_eye_L:
             self.report({"ERROR"}, "No HD eye L stored — run Variation Pipeline first")
             return {"CANCELLED"}
+
         eyebrows_obj = get_ref(context, EYEBROWS)
         if not eyebrows_obj:
             self.report({"ERROR"}, "No eyebrows mesh stored — run Variation Pipeline first")
@@ -834,7 +839,8 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
             self.report({"ERROR"}, "No body mesh stored — run Variation Pipeline first")
             return {"CANCELLED"}
 
-        cfg = _get_config()
+
+
 
         chaos_joints = collect_chaos_joints(armature, cfg.chaos_joint_names)
         if not chaos_joints:
@@ -871,7 +877,10 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
 
         frame = context.scene.frame_current
 
-        reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eyebrows_obj, eyelashes_obj], frame)
+        if (cfg.feature_flags.wedge_projection):
+            reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eyebrows_obj, eyelashes_obj], frame)
+        else:
+            reset_frame(chaos_joints, [head_mesh, hd_eye_R, hd_eye_L, eyebrows_obj, eyelashes_obj], frame)
         _apply_transforms_to_bones(chaos_joints, transforms, frame)
         _apply_weights_to_shape_keys(head_mesh, bs_weights, frame)
         if (cfg.feature_flags.wedge_projection):
@@ -894,8 +903,8 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
             assign_eye_color(eye_wedge_R_bake, cfg.projection.eye_wedge_R_bake_name, cfg.projection.eye_color_name, rng_color, frame)
             assign_eye_color(eye_wedge_L_bake, cfg.projection.eye_wedge_L_bake_name, cfg.projection.eye_color_name, rng_color, frame)
         else:
-            assign_eye_color(hd_eye_R, cfg.projection.hd_eye_R_name, cfg.projection.eye_color_name, rng_color, frame)
-            assign_eye_color(hd_eye_L, cfg.projection.hd_eye_L_name, cfg.projection.eye_color_name, rng_color, frame)
+            assign_eye_color(hd_eye_R, eye_mat.name, cfg.projection.eye_color_name, rng_color, frame)
+            assign_eye_color(hd_eye_L, eye_mat.name, cfg.projection.eye_color_name, rng_color, frame)
         attr_color = colors.body
         if attr_color is not None:
             final_skin_color = _blend_colors(attr_color, rng_color, cfg.materials.final_color_randomness)

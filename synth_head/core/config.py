@@ -305,6 +305,8 @@ class ExportConfig:
 
     hd_eye_bake_resolution: int = 512
 
+    clean_head_on_export: bool = False
+
     @classmethod
     def from_dict(cls, d: dict) -> "ExportConfig":
         raw_range = d.get("frame_range")
@@ -336,6 +338,7 @@ class ExportConfig:
             bake_lash_texture_direct=bool(d.get("bake_lash_texture_direct", False)),
             bake_hd_eye_texture_direct=bool(d.get("bake_hd_eye_texture_direct", False)),
             hd_eye_bake_resolution=int(d.get("hd_eye_bake_resolution", 512)),
+            clean_head_on_export=bool(d.get("clean_head_on_export", False)),
         )
 
 

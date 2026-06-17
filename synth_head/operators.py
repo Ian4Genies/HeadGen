@@ -51,7 +51,7 @@ from .scene.materials import (
 )
 from .scene.modifiers import add_smooth_corrective
 from .scene.reset import reset_frame
-from .scene.mesh import clean_head_mesh_wedge, Clean_head_mesh_Simple , copy_modifiers_to_wedges
+from .scene.mesh import clean_head_mesh_wedge, Clean_head_mesh_Simple, copy_modifiers_to_wedges, cut_and_sew
 from .scene.snapshot import (
     read_bone_transforms,
     read_shape_key_values,
@@ -1584,6 +1584,16 @@ class SYNTHHEAD_OT_ExportPipeline(bpy.types.Operator):
                                 png_paths[suffix] = p
 
                 with staging_scene(refs, cfg.export) as stage:
+                    if cfg.export.clean_head_on_export:
+                        cut_and_sew(
+                            cfg.cleanup.mouth_bag_group,
+                            stage.head_geo,
+                            cfg.cleanup.mouth_sew_indices,
+                            merge_distance=cfg.cleanup.lip_sew_merge_distance,
+                            remove_mouth_bag=cfg.cleanup.remove_mouth_bag,
+                            snap_lips=cfg.cleanup.snap_lips,
+                            sew_lips=cfg.cleanup.sew_lips,
+                        )
                     rewrite_head_material_slots(stage.head_geo, png_paths, cfg.export)
                     stamp_frame_names(stage.objects, frame)
                     export_glb(

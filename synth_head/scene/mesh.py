@@ -133,6 +133,8 @@ def cut_and_sew(
     mesh_obj: bpy.types.Object,
     sew_pairs,
     merge_distance: float = 1e-6,
+    remove_mouth_bag: bool = True,
+    sew_lips: bool = True,
 ) -> None:
     """Delete a vertex group and sew paired vertex indices in one bmesh session.
 
@@ -143,20 +145,22 @@ def cut_and_sew(
       1. Stash shape key animation action so the bmesh round-trip can't orphan it.
       2. Resolve BMVert references for every sew pair and every cut vert.
       3. Drop any sew pair whose verts overlap the cut set.
-      4. Delete the cut verts.
-      5. Snap each surviving sew pair together and weld via remove_doubles.
+      4. Delete the cut verts (only when *remove_mouth_bag* is True).
+      5. Snap each surviving sew pair together and weld (only when *sew_lips* is True).
       6. Write the mesh back and restore the animation action if needed.
 
     Args:
-        cut_group_name: Vertex group name on *mesh_obj* whose members will be
-                        deleted.  Pass an empty string to skip the cut.
-        mesh_obj:       The mesh Object to edit in place.
-        sew_pairs:      Index pairs to merge after the cut.  Accepts either
-                        a ``{"<idx_a>": idx_b, ...}`` dict (as read from
-                        cleanup.json) or an iterable of ``(idx_a, idx_b)``
-                        tuples.  Both indices reference the ORIGINAL mesh
-                        (pre-cut), since all refs are resolved before the
-                        cut runs.
+        cut_group_name:    Vertex group name on *mesh_obj* whose members will be
+                           deleted.  Pass an empty string to skip the cut.
+        mesh_obj:          The mesh Object to edit in place.
+        sew_pairs:         Index pairs to merge after the cut.  Accepts either
+                           a ``{"<idx_a>": idx_b, ...}`` dict (as read from
+                           cleanup.json) or an iterable of ``(idx_a, idx_b)``
+                           tuples.  Both indices reference the ORIGINAL mesh
+                           (pre-cut), since all refs are resolved before the
+                           cut runs.
+        remove_mouth_bag:  When False, step 4 (delete cut verts) is skipped.
+        sew_lips:          When False, step 5 (snap + weld sew pairs) is skipped.
     """
     mesh = mesh_obj.data
 
@@ -216,12 +220,12 @@ def cut_and_sew(
           + (f" (dropped {lost_pairs} overlapping cut)" if lost_pairs else ""))
 
     # --- 4. Delete cut verts --------------------------------------------------
-    if cut_verts:
+    if remove_mouth_bag and cut_verts:
         bmesh.ops.delete(bm, geom=cut_verts, context="VERTS")
         bm.verts.ensure_lookup_table()
 
     # --- 5. Sew surviving pairs ----------------------------------------------
-    if surviving_pairs:
+    if sew_lips and surviving_pairs:
         touched: list[bmesh.types.BMVert] = []
         for mover, target in surviving_pairs:
             mover.co = target.co.copy()
@@ -273,6 +277,8 @@ def clean_head_mesh_wedge(
         head_obj,
         cfg.mouth_sew_indices,
         merge_distance=cfg.lip_sew_merge_distance,
+        remove_mouth_bag=cfg.remove_mouth_bag,
+        sew_lips=cfg.sew_lips,
     )
     join_and_merge(
         [head_obj, wedge_L_obj, body_obj],
@@ -303,6 +309,8 @@ def Clean_head_mesh_Simple(
         head_obj,
         cfg.mouth_sew_indices,
         merge_distance=cfg.lip_sew_merge_distance,
+        remove_mouth_bag=cfg.remove_mouth_bag,
+        sew_lips=cfg.sew_lips,
     )
     join_and_merge(
         [head_obj, body_obj],

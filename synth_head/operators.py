@@ -61,7 +61,7 @@ from .scene.snapshot import (
     read_bone_custom_props,
     apply_bone_custom_prop_values,
 )
-from .scene.export_bake import scope_bake_environment, bake_head_materials
+from .scene.export_bake import scope_bake_environment, bake_head_materials, bake_object_material
 from .scene.projection import apply_bake_settings, bake_eye_side, bake_wedge_side, point_image_sequence_node
 from .scene.export_glb import staging_scene, rewrite_head_material_slots, stamp_frame_names, export_glb
 from .core.export import frame_glb_name, frame_dir_name, frame_png_name, eye_bake_seq_png_name
@@ -144,10 +144,14 @@ def _debug_config(cfg: PipelineConfig) -> None:
     p(f"  include_eyes:                  {cfg.export.include_eyes}")
     p(f"  include_brows:                 {cfg.export.include_brows}")
     p(f"  include_lashes:                {cfg.export.include_lashes}")
+    p(f"  include_hd_eyes:               {cfg.export.include_hd_eyes}")
     p(f"  bake_wedge_texture_direct:     {cfg.export.bake_wedge_texture_direct}")
     p(f"  copy_eye_projection:           {cfg.export.copy_eye_projection}")
     p(f"  bake_brow_texture_direct:      {cfg.export.bake_brow_texture_direct}")
     p(f"  bake_lash_texture_direct:      {cfg.export.bake_lash_texture_direct}")
+    p(f"  bake_hd_eye_texture_direct:    {cfg.export.bake_hd_eye_texture_direct}")
+    p(f"  hd_eye_material_name:          {cfg.export.hd_eye_material_name}")
+    p(f"  hd_eye_bake_resolution:        {cfg.export.hd_eye_bake_resolution}")
 
     p(f"--- CHAOS JOINTS ({len(cfg.chaos_joint_names)}) ---")
     p(f"  names:          {sorted(cfg.chaos_joint_names)}")
@@ -1421,11 +1425,10 @@ class SYNTHHEAD_OT_CleanMesh(bpy.types.Operator):
 def _gather_export_refs(context) -> types.SimpleNamespace:
     """Collect all source-scene refs that the export pipeline needs.
 
-    Returns a namespace with: head_geo, L_eye, R_eye, eyebrows, eyelashes.
-    Missing refs come through as None — staging_scene handles them based on
-    the include_* flags in ExportConfig.  body_geo is deliberately omitted:
-    it was sewn into head_geo during Clean Mesh and no longer exists as a
-    standalone object.
+    Returns a namespace with: head_geo, L_eye, R_eye, eyebrows, eyelashes,
+    hd_eye_R, hd_eye_L.  Missing refs come through as None — staging_scene
+    handles them based on the include_* flags in ExportConfig.  body_geo is
+    deliberately omitted: it was sewn into head_geo during Clean Mesh.
     """
     return types.SimpleNamespace(
         head_geo=get_ref(context, MESH),
@@ -1433,6 +1436,8 @@ def _gather_export_refs(context) -> types.SimpleNamespace:
         R_eye=get_ref(context, R_EYE),
         eyebrows=get_ref(context, EYEBROWS),
         eyelashes=get_ref(context, EYELASHES),
+        hd_eye_R=get_ref(context, HD_EYE_R),
+        hd_eye_L=get_ref(context, HD_EYE_L),
     )
 
 
@@ -1509,6 +1514,7 @@ class SYNTHHEAD_OT_ExportPipeline(bpy.types.Operator):
 
     def execute(self, context):
         cfg = _get_config()
+        wedge_projection = get_flag(context, WEDGE_PROJECTION)
         refs = _gather_export_refs(context)
 
         if refs.head_geo is None:
@@ -1544,7 +1550,7 @@ class SYNTHHEAD_OT_ExportPipeline(bpy.types.Operator):
                     margin=cfg.export.bake_margin,
                 )
 
-                if cfg.export.copy_eye_projection:
+                if wedge_projection and cfg.export.copy_eye_projection:
                     seq_R = Path(cfg.projection.baked_sequence_R_path)
                     seq_L = Path(cfg.projection.baked_sequence_L_path)
                     for side, seq_dir, suffix in (
@@ -1558,6 +1564,24 @@ class SYNTHHEAD_OT_ExportPipeline(bpy.types.Operator):
                             png_paths[suffix] = dst
                         else:
                             print(f"[SynthHead][Export] WARNING: eye bake not found: {src}")
+
+                if not wedge_projection and cfg.export.bake_hd_eye_texture_direct:
+                    for obj, suffix in (
+                        (refs.hd_eye_R, "R_hd_eye"),
+                        (refs.hd_eye_L, "L_hd_eye"),
+                    ):
+                        if obj is not None:
+                            p = bake_object_material(
+                                obj,
+                                cfg.export.hd_eye_material_name,
+                                suffix,
+                                cfg.export.hd_eye_bake_resolution,
+                                frame_dir,
+                                cfg.export.bake_samples,
+                                cfg.export.bake_margin,
+                            )
+                            if p is not None:
+                                png_paths[suffix] = p
 
                 with staging_scene(refs, cfg.export) as stage:
                     rewrite_head_material_slots(stage.head_geo, png_paths, cfg.export)

@@ -281,15 +281,20 @@ class ExportConfig:
     head_bake_material_name: str = "head_mat"
     eye_wedge_R_material_name: str = "eye_mat.001"
     eye_wedge_L_material_name: str = "eye_mat.002"
+    hd_eye_material_name: str = "eye_mat"
 
     include_eyes: bool = True
     include_brows: bool = False
     include_lashes: bool = False
+    include_hd_eyes: bool = False
 
     bake_wedge_texture_direct: bool = False
     copy_eye_projection: bool = True
     bake_brow_texture_direct: bool = False
     bake_lash_texture_direct: bool = False
+    bake_hd_eye_texture_direct: bool = False
+
+    hd_eye_bake_resolution: int = 512
 
     @classmethod
     def from_dict(cls, d: dict) -> "ExportConfig":
@@ -311,13 +316,17 @@ class ExportConfig:
             head_bake_material_name=str(d.get("head_bake_material_name", "head_mat")),
             eye_wedge_R_material_name=str(d.get("eye_wedge_R_material_name", "eye_mat.001")),
             eye_wedge_L_material_name=str(d.get("eye_wedge_L_material_name", "eye_mat.002")),
+            hd_eye_material_name=str(d.get("hd_eye_material_name", "eye_mat")),
             include_eyes=bool(d.get("include_eyes", True)),
             include_brows=bool(d.get("include_brows", False)),
             include_lashes=bool(d.get("include_lashes", False)),
+            include_hd_eyes=bool(d.get("include_hd_eyes", False)),
             bake_wedge_texture_direct=bool(d.get("bake_wedge_texture_direct", True)),
             copy_eye_projection=bool(d.get("copy_eye_projection", False)),
             bake_brow_texture_direct=bool(d.get("bake_brow_texture_direct", False)),
             bake_lash_texture_direct=bool(d.get("bake_lash_texture_direct", False)),
+            bake_hd_eye_texture_direct=bool(d.get("bake_hd_eye_texture_direct", False)),
+            hd_eye_bake_resolution=int(d.get("hd_eye_bake_resolution", 512)),
         )
 
 

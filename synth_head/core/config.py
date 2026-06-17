@@ -88,6 +88,7 @@ class CleanupConfig:
     mouth_sew_indices: dict[str, int] = field(default_factory=dict)
     remove_mouth_bag: bool = True
     sew_lips: bool = True
+    snap_lips: bool = True
     join_merge_distance: float = 0.001
     lip_sew_merge_distance: float = 1e-6
     seam_weld_distance: float = 1e-5
@@ -103,6 +104,7 @@ class CleanupConfig:
             mouth_sew_indices=d.get("mouth_sew_indices", {}),
             remove_mouth_bag=bool(d.get("remove_mouth_bag", True)),
             sew_lips=bool(d.get("sew_lips", True)),
+            snap_lips=bool(d.get("snap_lips", True)),
             join_merge_distance=d.get("join_merge_distance", 0.001),
             lip_sew_merge_distance=d.get("lip_sew_merge_distance", 1e-6),
             seam_weld_distance=d.get("seam_weld_distance", 1e-5),
@@ -117,6 +119,7 @@ class CleanupConfig:
             mouth_sew_indices=self.mouth_sew_indices,
             remove_mouth_bag=self.remove_mouth_bag,
             sew_lips=self.sew_lips,
+            snap_lips=self.snap_lips,
             join_merge_distance=self.join_merge_distance,
             lip_sew_merge_distance=self.lip_sew_merge_distance,
             seam_weld_distance=self.seam_weld_distance,

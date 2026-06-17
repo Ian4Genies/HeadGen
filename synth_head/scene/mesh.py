@@ -134,6 +134,7 @@ def cut_and_sew(
     sew_pairs,
     merge_distance: float = 1e-6,
     remove_mouth_bag: bool = True,
+    snap_lips: bool = True,
     sew_lips: bool = True,
 ) -> None:
     """Delete a vertex group and sew paired vertex indices in one bmesh session.
@@ -160,7 +161,12 @@ def cut_and_sew(
                            (pre-cut), since all refs are resolved before the
                            cut runs.
         remove_mouth_bag:  When False, step 4 (delete cut verts) is skipped.
-        sew_lips:          When False, step 5 (snap + weld sew pairs) is skipped.
+        snap_lips:         When True, each surviving pair is moved to its midpoint
+                           before any welding.  Runs independently of *sew_lips*,
+                           so pairs can be snapped without being merged.
+        sew_lips:          When True, snapped pairs are welded via remove_doubles.
+                           If *snap_lips* is False the mover is still snapped to
+                           the target position so remove_doubles can merge them.
     """
     mesh = mesh_obj.data
 
@@ -224,12 +230,20 @@ def cut_and_sew(
         bmesh.ops.delete(bm, geom=cut_verts, context="VERTS")
         bm.verts.ensure_lookup_table()
 
-    # --- 5. Sew surviving pairs ----------------------------------------------
+    # --- 5a. Snap pairs to midpoint -------------------------------------------
+    if snap_lips and surviving_pairs:
+        for a, b in surviving_pairs:
+            mid = (a.co + b.co) / 2
+            a.co = mid
+            b.co = mid.copy()
+
+    # --- 5b. Weld snapped pairs -----------------------------------------------
     if sew_lips and surviving_pairs:
         touched: list[bmesh.types.BMVert] = []
-        for mover, target in surviving_pairs:
-            mover.co = target.co.copy()
-            touched.extend((mover, target))
+        for a, b in surviving_pairs:
+            if not snap_lips:
+                a.co = b.co.copy()
+            touched.extend((a, b))
         bmesh.ops.remove_doubles(bm, verts=touched, dist=merge_distance)
         bm.verts.ensure_lookup_table()
 
@@ -278,8 +292,9 @@ def clean_head_mesh_wedge(
         cfg.mouth_sew_indices,
         merge_distance=cfg.lip_sew_merge_distance,
         remove_mouth_bag=cfg.remove_mouth_bag,
+        snap_lips=cfg.snap_lips,
         sew_lips=cfg.sew_lips,
-    )
+    ) 
     join_and_merge(
         [head_obj, wedge_L_obj, body_obj],
         wedge_R_obj,
@@ -310,6 +325,7 @@ def Clean_head_mesh_Simple(
         cfg.mouth_sew_indices,
         merge_distance=cfg.lip_sew_merge_distance,
         remove_mouth_bag=cfg.remove_mouth_bag,
+        snap_lips=cfg.snap_lips,
         sew_lips=cfg.sew_lips,
     )
     join_and_merge(

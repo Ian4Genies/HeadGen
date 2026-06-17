@@ -51,7 +51,7 @@ from .scene.materials import (
 )
 from .scene.modifiers import add_smooth_corrective
 from .scene.reset import reset_frame
-from .scene.mesh import clean_head_mesh_wedge, Clean_head_mesh_Simple, copy_modifiers_to_wedges, cut_and_sew
+from .scene.mesh import clean_head_mesh_wedge, Clean_head_mesh_Simple, copy_modifiers_to_wedges, cut_and_sew, join_and_merge
 from .scene.snapshot import (
     read_bone_transforms,
     read_shape_key_values,
@@ -1432,6 +1432,7 @@ def _gather_export_refs(context) -> types.SimpleNamespace:
     """
     return types.SimpleNamespace(
         head_geo=get_ref(context, MESH),
+        body_geo=get_ref(context, BODY_GEO),
         L_eye=get_ref(context, L_EYE),
         R_eye=get_ref(context, R_EYE),
         eyebrows=get_ref(context, EYEBROWS),
@@ -1532,6 +1533,14 @@ class SYNTHHEAD_OT_ExportPipeline(bpy.types.Operator):
         start, end = int(fr[0]), int(fr[1])
 
         self.report({"INFO"}, f"Export pipeline: frames {start}..{end} → {out_dir}")
+
+        if refs.body_geo is not None:
+            join_and_merge(
+                [refs.head_geo, refs.body_geo],
+                refs.head_geo,
+                merge_distance=cfg.cleanup.join_merge_distance,
+            )
+            set_ref(context, BODY_GEO, None)
 
         with scope_bake_environment(refs.head_geo, cfg.export) as bake_ctx:
             for frame in range(start, end + 1):

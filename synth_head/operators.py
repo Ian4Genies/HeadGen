@@ -8,7 +8,7 @@ import bpy
 from pathlib import Path
 
 from .core.math import clamp
-from .core.ref_keys import MESH, BODY_GEO, ARMATURE, HEAD_MAT, L_EYE, R_EYE, EYEBROWS, EYELASHES, EYE_MAT, EYE_WEDGE_R, EYE_WEDGE_L, EYE_WEDGE_R_BAKE, EYE_WEDGE_L_BAKE, HD_EYE_R, HD_EYE_L, R_PROJECTOR, L_PROJECTOR, WEDGE_PROJECTION
+from .core.ref_keys import MESH, BODY_GEO, ARMATURE, HEAD_MAT, L_EYE, R_EYE, EYEBROWS, EYELASHES, EYE_MAT, EYE_WEDGE_R, EYE_WEDGE_L, EYE_WEDGE_R_BAKE, EYE_WEDGE_L_BAKE, HD_EYE_R, HD_EYE_L, R_PROJECTOR, L_PROJECTOR, EYE_BOOLEAN_L, EYE_BOOLEAN_R, WEDGE_PROJECTION
 from .core.variation import (
     generate_chaos_transforms,
     generate_single_frame_transforms,
@@ -345,6 +345,17 @@ class SYNTHHEAD_PG_PipelineRefs(bpy.types.PropertyGroup):
         type=bpy.types.Object,
         poll=lambda self, obj: obj.type == 'MESH',
     )
+    # Eye boolean cutters
+    eye_boolean_L: bpy.props.PointerProperty(
+        name="Eye Boolean L",
+        type=bpy.types.Object,
+        poll=lambda self, obj: obj.type == 'MESH',
+    )
+    eye_boolean_R: bpy.props.PointerProperty(
+        name="Eye Boolean R",
+        type=bpy.types.Object,
+        poll=lambda self, obj: obj.type == 'MESH',
+    )
     # Feature flags — written once by VariationPipeline, read by all downstream operators
     wedge_projection: bpy.props.BoolProperty(
         name="Wedge Projection",
@@ -456,8 +467,11 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         #     context, cfg.runner.fbx_path,
         # )
 
-        head_geo_obj, body_geo_obj, armature_obj, L_eye_obj, R_eye_obj, eyebrows_obj, eyelashes_obj  = append_gen13_and_classify(cfg.runner.gen13_blend_path)
-
+        (
+            head_geo_obj, body_geo_obj, armature_obj,
+            L_eye_obj, R_eye_obj, eyebrows_obj, eyelashes_obj,
+            L_boolean_obj, R_boolean_obj,
+        ) = append_gen13_and_classify(cfg.runner.gen13_blend_path)
 
         if not head_geo_obj:
             self.report({"ERROR"}, "headOnly_geo mesh not found in FBX — aborting")
@@ -479,8 +493,12 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
             
         if not eyelashes_obj:
             self.report({"ERROR"}, "Eyelashes mesh not found in FBX — aborting")
-            
-
+        if not L_boolean_obj:
+            self.report({"ERROR"}, "eye_L_boolean mesh not found — aborting")
+            return {"CANCELLED"}
+        if not R_boolean_obj:
+            self.report({"ERROR"}, "eye_R_boolean mesh not found — aborting")
+            return {"CANCELLED"}
 
         # set the head mesh and armature references
         set_ref(context, MESH, head_geo_obj)
@@ -490,6 +508,8 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         set_ref(context, R_EYE, R_eye_obj)
         set_ref(context, EYEBROWS, eyebrows_obj)
         set_ref(context, EYELASHES, eyelashes_obj)
+        set_ref(context, EYE_BOOLEAN_L, L_boolean_obj)
+        set_ref(context, EYE_BOOLEAN_R, R_boolean_obj)
         #hide eyebrows and eyelashes
 
 

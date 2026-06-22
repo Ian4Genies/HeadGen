@@ -87,8 +87,16 @@ def append_gen13_and_classify(
     add_object_to_armature(eyebrows_obj, armature_obj)
     eyelashes_obj = append_object_from_blend(blend_path, "eyelashes_geo")
     add_object_to_armature(eyelashes_obj, armature_obj)
+    L_boolean_obj = append_object_from_blend(blend_path, "eye_L_boolean")
+    add_object_to_armature(L_boolean_obj, armature_obj)
+    R_boolean_obj = append_object_from_blend(blend_path, "eye_R_boolean")
+    add_object_to_armature(R_boolean_obj, armature_obj)
 
-    return head_geo_obj, body_geo_obj, armature_obj, L_eye_obj, R_eye_obj, eyebrows_obj, eyelashes_obj 
+    return (
+        head_geo_obj, body_geo_obj, armature_obj,
+        L_eye_obj, R_eye_obj, eyebrows_obj, eyelashes_obj,
+        L_boolean_obj, R_boolean_obj,
+    )
 
 
 def append_eye_wedge_bake(

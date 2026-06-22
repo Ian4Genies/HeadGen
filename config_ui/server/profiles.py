@@ -9,7 +9,7 @@ from pathlib import Path
 
 from synth_head.core.config import load_config
 
-from .schema import CONFIG_FILE_IDS
+from .schema import CONFIG_FILE_IDS, DEFAULT_CONFIG_FILES
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 PROFILES_DIR = PROJECT_ROOT / "data" / "profiles"
@@ -50,6 +50,23 @@ def _copy_json_tree(source: Path, dest: Path) -> None:
         shutil.copy2(src, dest / src.name)
 
 
+def _ensure_profile_files(profile_path: Path) -> None:
+    """Backfill any CONFIG_FILE_IDS JSON missing from *profile_path*."""
+    profile_path.mkdir(parents=True, exist_ok=True)
+    for file_id in CONFIG_FILE_IDS:
+        dest = profile_path / f"{file_id}.json"
+        if dest.exists():
+            continue
+        live = LIVE_CONFIG_DIR / f"{file_id}.json"
+        if live.exists():
+            shutil.copy2(live, dest)
+        elif file_id in DEFAULT_CONFIG_FILES:
+            dest.write_text(
+                json.dumps(DEFAULT_CONFIG_FILES[file_id], indent=2) + "\n",
+                encoding="utf-8",
+            )
+
+
 def _sync_to_live(profile_name: str) -> None:
     src = _profile_dir(profile_name)
     if not src.is_dir():
@@ -74,6 +91,10 @@ def ensure_profiles_layout() -> None:
 
     if not ACTIVE_FILE.exists():
         _write_active_name("default")
+
+    for path in PROFILES_DIR.iterdir():
+        if path.is_dir():
+            _ensure_profile_files(path)
 
     active = _read_active_name()
     if not _profile_dir(active).is_dir():

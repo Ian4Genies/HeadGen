@@ -1,6 +1,16 @@
 /** Per-file section layout — full-width for lists & complex editors. */
 
 export const FILE_LAYOUTS = {
+  featureFlags: {
+    sections: [
+      {
+        keys: ["wedgeProjection"],
+        cols: 1,
+        title: "Eye pipeline",
+        hint: "Off = HD eyes only (no wedges, projectors, or eye bake). Written to the scene when Variation Pipeline runs — downstream operators read the scene, not this file.",
+      },
+    ],
+  },
   runner: {
     sections: [
       { keys: ["frame_count", "seed"], cols: 2 },

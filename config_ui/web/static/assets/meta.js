@@ -7,6 +7,7 @@ export const MANIFEST_LIST_KEYS = {
 };
 
 export const LABELS = {
+  wedgeProjection: "Eye wedge projection",
   frame_count: "Frame count",
   seed: "RNG seed",
   paths: "Paths",

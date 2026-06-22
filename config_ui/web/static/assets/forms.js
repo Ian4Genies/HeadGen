@@ -103,6 +103,7 @@ export class ConfigForm {
     for (const sec of layout.sections) {
       const section = el("section", "section section-full");
       if (sec.title) section.appendChild(el("h3", "section-title", sec.title));
+      if (sec.hint) section.appendChild(el("p", "chip-hint", sec.hint));
       const body = el("div", sec.full ? "section-body" : `field-grid cols-${sec.cols ?? 2}`);
       for (const k of sec.keys) {
         if (!(k in this.#data)) continue;

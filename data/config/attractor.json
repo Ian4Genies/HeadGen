@@ -4,7 +4,7 @@
   "attractive_heads_dir": "head-attractive",
   "min_attractors": 1,
   "max_attractors": 3,
-  "max_influence":0.2,
+  "max_influence": 0.1,
   "distance_weights": {
     "MouthBind.scale.y": 1.5,
     "MouthBind.scale.x": 1.5,
@@ -14,11 +14,8 @@
     "nose_female_varGp01H": 1.5,
     "nose_male_varGp01E": 1.5,
     "nose_male_varGp01D": 1.5,
-
     "JawBind.scale.x": 1.5,
     "JawBind.rotation.x": 1.5
-
-
   },
   "exclude_params": []
 }

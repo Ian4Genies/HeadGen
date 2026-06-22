@@ -99,6 +99,9 @@ export function mountDriversEditor({ data, onChange }) {
   const selected = new Set();
   let lastClickIndex = -1;
   let filterText = "";
+  let findText = "";
+  let replaceText = "";
+  let replaceScope = "all";
 
   const push = () => onChange(deepClone(state));
 
@@ -182,6 +185,83 @@ export function mountDriversEditor({ data, onChange }) {
     }
   };
 
+  const frField = (label, value, placeholder, onSet) => {
+    const wrap = el("div", "drivers-fr-field");
+    wrap.appendChild(el("span", "drivers-fr-label", label));
+    const row = el("div", "drivers-fr-input-row");
+    const inp = el("input", "input tiny drivers-find");
+    inp.value = value;
+    inp.placeholder = placeholder;
+    inp.oninput = () => {
+      onSet(inp.value);
+      clear.disabled = !inp.value;
+    };
+    const clear = el("button", "btn icon tiny drivers-fr-clear", "×");
+    clear.type = "button";
+    clear.title = `Clear ${label.toLowerCase()}`;
+    clear.disabled = !value;
+    clear.onclick = () => {
+      onSet("");
+      render();
+    };
+    row.append(inp, clear);
+    wrap.appendChild(row);
+    return wrap;
+  };
+
+  const renderFindReplaceBar = (selCount) => {
+    const bar = el("div", "drivers-fr-bar");
+    const replBtn = el("button", "btn ghost tiny", "Replace in selected");
+    replBtn.type = "button";
+    replBtn.disabled = selCount === 0 || !findText;
+    replBtn.title = selCount === 0 ? "Select drivers first" : "Apply find/replace to selected rows";
+    replBtn.onclick = () => applyFindReplace(selected, findText, replaceText, replaceScope);
+
+    const clearBoth = el("button", "btn ghost tiny", "Clear find/replace");
+    clearBoth.type = "button";
+    clearBoth.disabled = !findText && !replaceText;
+    clearBoth.onclick = () => {
+      findText = "";
+      replaceText = "";
+      render();
+    };
+
+    const syncFrActions = () => {
+      replBtn.disabled = selCount === 0 || !findText;
+      clearBoth.disabled = !findText && !replaceText;
+    };
+
+    const findWrap = frField("Find", findText, "Find text…", (v) => {
+      findText = v;
+      syncFrActions();
+    });
+    const replaceWrap = frField("Replace", replaceText, "Replace with…", (v) => {
+      replaceText = v;
+      syncFrActions();
+    });
+
+    const scopeWrap = el("div", "drivers-fr-field");
+    scopeWrap.appendChild(el("span", "drivers-fr-label", "Scope"));
+    const scopeSel = el("select", "input tiny");
+    for (const [val, lab] of [
+      ["all", "All fields"],
+      ["target", "Target only"],
+      ["source", "Source only"],
+    ]) {
+      const opt = el("option", "", lab);
+      opt.value = val;
+      if (replaceScope === val) opt.selected = true;
+      scopeSel.appendChild(opt);
+    }
+    scopeSel.onchange = () => {
+      replaceScope = scopeSel.value;
+    };
+    scopeWrap.appendChild(scopeSel);
+
+    bar.append(findWrap, replaceWrap, scopeWrap, replBtn, clearBoth);
+    return bar;
+  };
+
   function render() {
     root.innerHTML = "";
     syncSelection();
@@ -235,6 +315,7 @@ export function mountDriversEditor({ data, onChange }) {
 
     toolbar.append(search, expandAll, collapseAll, selectVisible, clearSel);
     root.appendChild(toolbar);
+    root.appendChild(renderFindReplaceBar(selected.size));
 
     if (selected.size > 0) {
       const bulk = el("div", "drivers-bulk-bar");
@@ -265,25 +346,7 @@ export function mountDriversEditor({ data, onChange }) {
         render();
       };
 
-      const findIn = el("input", "input tiny drivers-find");
-      findIn.placeholder = "Find";
-      const replIn = el("input", "input tiny drivers-find");
-      replIn.placeholder = "Replace";
-      const scopeSel = el("select", "input tiny");
-      for (const [val, lab] of [
-        ["all", "All fields"],
-        ["target", "Target only"],
-        ["source", "Source only"],
-      ]) {
-        const opt = el("option", "", lab);
-        opt.value = val;
-        scopeSel.appendChild(opt);
-      }
-      const replBtn = el("button", "btn ghost tiny", "Replace in selected");
-      replBtn.type = "button";
-      replBtn.onclick = () => applyFindReplace(selected, findIn.value, replIn.value, scopeSel.value);
-
-      bulk.append(dupBtn, delBtn, expSel, colSel, findIn, replIn, scopeSel, replBtn);
+      bulk.append(dupBtn, delBtn, expSel, colSel);
       root.appendChild(bulk);
     }
 

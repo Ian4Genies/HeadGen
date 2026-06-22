@@ -14,7 +14,7 @@ import { mountManifestList, mountRegistryPicker } from "./manifest-list.js";
 import { mountGroupedManifestList, mountShapePicker } from "./grouped-list.js";
 import { mountClampEditor, mountJointOverrideEditor } from "./joint-override-editor.js";
 import { mountChaosJointsEditor } from "./chaos-joints-editor.js";
-import { mountDriversEditor } from "./drivers-editor.js?v=2";
+import { mountDriversEditor } from "./drivers-editor.js?v=3";
 import { FILE_LAYOUTS } from "./file-layouts.js";
 
 function deepClone(v) {

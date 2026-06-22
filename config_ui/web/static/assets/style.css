@@ -1015,6 +1015,55 @@ select:focus {
   border: 1px solid rgba(139, 92, 246, 0.25);
 }
 
+.drivers-fr-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.65rem;
+  align-items: flex-end;
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.65rem;
+  background: rgba(0, 0, 0, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.drivers-fr-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.drivers-fr-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.drivers-fr-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.drivers-fr-clear {
+  width: 1.35rem;
+  height: 1.35rem;
+  min-width: 1.35rem;
+  padding: 0;
+  font-size: 0.75rem;
+  opacity: 0.55;
+}
+
+.drivers-fr-clear:disabled {
+  opacity: 0.2;
+  cursor: default;
+}
+
+.drivers-fr-clear:not(:disabled):hover {
+  opacity: 1;
+}
+
 .bulk-count {
   font-size: 0.75rem;
   font-weight: 600;

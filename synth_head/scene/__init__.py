@@ -13,7 +13,7 @@ from .snapshot import (
     apply_bone_transforms,
     apply_shape_key_values,
 )
-from .mesh import clean_head_mesh
+from .mesh import clean_head_mesh_wedge, Clean_head_mesh_Simple
 from .projection import apply_bake_settings, bake_eye_side, bake_wedge_side, point_image_sequence_node
 from .texture_swap import (
     get_sequence_node,
@@ -43,7 +43,8 @@ __all__ = [
     "read_shape_key_values",
     "apply_bone_transforms",
     "apply_shape_key_values",
-    "clean_head_mesh",
+    "clean_head_mesh_wedge",
+    "Clean_head_mesh_Simple",
     "apply_bake_settings",
     "bake_eye_side",
     "bake_wedge_side",

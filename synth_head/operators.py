@@ -8,7 +8,7 @@ import bpy
 from pathlib import Path
 
 from .core.math import clamp
-from .core.ref_keys import MESH, BODY_GEO, ARMATURE, HEAD_MAT, L_EYE, R_EYE, EYEBROWS, EYELASHES, EYE_MAT, EYE_WEDGE_R, EYE_WEDGE_L, EYE_WEDGE_R_BAKE, EYE_WEDGE_L_BAKE, HD_EYE_R, HD_EYE_L, R_PROJECTOR, L_PROJECTOR
+from .core.ref_keys import MESH, BODY_GEO, ARMATURE, HEAD_MAT, L_EYE, R_EYE, EYEBROWS, EYELASHES, EYE_MAT, EYE_WEDGE_R, EYE_WEDGE_L, EYE_WEDGE_R_BAKE, EYE_WEDGE_L_BAKE, HD_EYE_R, HD_EYE_L, R_PROJECTOR, L_PROJECTOR, WEDGE_PROJECTION
 from .core.variation import (
     generate_chaos_transforms,
     generate_single_frame_transforms,
@@ -16,7 +16,7 @@ from .core.variation import (
     generate_bone_property_values_all_frames,
 )
 from .scene.fbx_import import import_fbx_and_classify
-from .scene.refs import get_ref, set_ref, get_material_ref, set_material_ref
+from .scene.refs import get_ref, set_ref, get_material_ref, set_material_ref, set_flag, get_flag
 from .core.blendshapes import (
     generate_blendshape_weights,
     generate_single_frame_blendshape_weights,
@@ -37,7 +37,7 @@ from .scene.chaos_anim import (
 )
 from .scene.armature import add_object_to_armature, remove_orphan_armatures, remove_non_canonical_armatures, attach_constrained_object_to_armature
 from .scene.drivers import build_drivers
-from .scene.blend_append import append_material_from_blend, append_object_from_blend, append_gen13_and_classify, append_eye_wedge_bake
+from .scene.blend_append import append_material_from_blend, append_object_from_blend, append_gen13_and_classify, append_eye_wedge_bake, append_HD_eyes_only
 from .scene.materials import (
     assign_exclusive_material,
     randomize_head_material_color,
@@ -51,7 +51,7 @@ from .scene.materials import (
 )
 from .scene.modifiers import add_smooth_corrective
 from .scene.reset import reset_frame
-from .scene.mesh import clean_head_mesh, copy_modifiers_to_wedges
+from .scene.mesh import clean_head_mesh_wedge, Clean_head_mesh_Simple, copy_modifiers_to_wedges, cut_and_sew, join_and_merge
 from .scene.snapshot import (
     read_bone_transforms,
     read_shape_key_values,
@@ -61,7 +61,7 @@ from .scene.snapshot import (
     read_bone_custom_props,
     apply_bone_custom_prop_values,
 )
-from .scene.export_bake import scope_bake_environment, bake_head_materials
+from .scene.export_bake import scope_bake_environment, bake_head_materials, bake_object_material
 from .scene.projection import apply_bake_settings, bake_eye_side, bake_wedge_side, point_image_sequence_node
 from .scene.export_glb import staging_scene, rewrite_head_material_slots, stamp_frame_names, export_glb
 from .core.export import frame_glb_name, frame_dir_name, frame_png_name, eye_bake_seq_png_name
@@ -144,10 +144,14 @@ def _debug_config(cfg: PipelineConfig) -> None:
     p(f"  include_eyes:                  {cfg.export.include_eyes}")
     p(f"  include_brows:                 {cfg.export.include_brows}")
     p(f"  include_lashes:                {cfg.export.include_lashes}")
+    p(f"  include_hd_eyes:               {cfg.export.include_hd_eyes}")
     p(f"  bake_wedge_texture_direct:     {cfg.export.bake_wedge_texture_direct}")
     p(f"  copy_eye_projection:           {cfg.export.copy_eye_projection}")
     p(f"  bake_brow_texture_direct:      {cfg.export.bake_brow_texture_direct}")
     p(f"  bake_lash_texture_direct:      {cfg.export.bake_lash_texture_direct}")
+    p(f"  bake_hd_eye_texture_direct:    {cfg.export.bake_hd_eye_texture_direct}")
+    p(f"  hd_eye_material_name:          {cfg.export.hd_eye_material_name}")
+    p(f"  hd_eye_bake_resolution:        {cfg.export.hd_eye_bake_resolution}")
 
     p(f"--- CHAOS JOINTS ({len(cfg.chaos_joint_names)}) ---")
     p(f"  names:          {sorted(cfg.chaos_joint_names)}")
@@ -341,6 +345,13 @@ class SYNTHHEAD_PG_PipelineRefs(bpy.types.PropertyGroup):
         type=bpy.types.Object,
         poll=lambda self, obj: obj.type == 'MESH',
     )
+    # Feature flags — written once by VariationPipeline, read by all downstream operators
+    wedge_projection: bpy.props.BoolProperty(
+        name="Wedge Projection",
+        default=False,
+    )
+
+
 class SYNTHHEAD_OT_hello(bpy.types.Operator):
     """Smoke-test operator to verify the addon loads"""
 
@@ -438,6 +449,8 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
 
     def execute(self, context):
         cfg = _get_config()
+        set_flag(context, WEDGE_PROJECTION, cfg.feature_flags.wedge_projection)
+
         # --- 1. IMPORT & VALIDATE ---
         # head_geo_obj, body_geo_obj, armature_obj, L_eye_obj, R_eye_obj, eyebrows_obj, eyelashes_obj = import_fbx_and_classify(
         #     context, cfg.runner.fbx_path,
@@ -508,48 +521,66 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         assign_exclusive_material(L_eye_obj, eye_mat)
         assign_exclusive_material(R_eye_obj, eye_mat)
         
-        # --- 2. CLEANUP PREP---
-        
-        eye_wedge_R_obj = append_object_from_blend(
-            cfg.cleanup.assets_blend_path, 
-            cfg.cleanup.eye_wedge_R_name)
-        
-        
-        eye_wedge_L_obj = append_object_from_blend(
-            cfg.cleanup.assets_blend_path, 
-            cfg.cleanup.eye_wedge_L_name)
+        # --- 2. Eye Setup---
+        #EYE WEDGES
+        if (cfg.feature_flags.wedge_projection):
+            eye_wedge_R_obj = append_object_from_blend(
+                cfg.cleanup.assets_blend_path, 
+                cfg.cleanup.eye_wedge_R_name)
+            
+            
+            eye_wedge_L_obj = append_object_from_blend(
+                cfg.cleanup.assets_blend_path, 
+                cfg.cleanup.eye_wedge_L_name)
 
-        add_object_to_armature(eye_wedge_R_obj, armature_obj)
-        add_object_to_armature(eye_wedge_L_obj, armature_obj)
-       
-        set_ref(context, EYE_WEDGE_R, eye_wedge_R_obj)
-        set_ref(context, EYE_WEDGE_L, eye_wedge_L_obj)
-
-        eye_wedge_R_bake, eye_wedge_L_bake, hd_eye_R, hd_eye_L, R_projector, L_projector = append_eye_wedge_bake(
-            cfg.projection.assets_blend_path,
-            cfg.projection.eye_wedge_R_bake_name,
-            cfg.projection.eye_wedge_L_bake_name,
-            cfg.projection.hd_eye_R_name,
-            cfg.projection.hd_eye_L_name,
-            cfg.projection.R_projector_name,
-            cfg.projection.L_projector_name)
+            add_object_to_armature(eye_wedge_R_obj, armature_obj)
+            add_object_to_armature(eye_wedge_L_obj, armature_obj)
         
-        set_ref(context, EYE_WEDGE_R_BAKE, eye_wedge_R_bake)
-        set_ref(context, EYE_WEDGE_L_BAKE, eye_wedge_L_bake)
-        set_ref(context, HD_EYE_R, hd_eye_R)
-        set_ref(context, HD_EYE_L, hd_eye_L)
-        set_ref(context, R_PROJECTOR, R_projector)
-        set_ref(context, L_PROJECTOR, L_projector)
+            set_ref(context, EYE_WEDGE_R, eye_wedge_R_obj)
+            set_ref(context, EYE_WEDGE_L, eye_wedge_L_obj)
 
-        add_object_to_armature(eye_wedge_R_bake, armature_obj)
-        add_object_to_armature(eye_wedge_L_bake, armature_obj)
-        add_object_to_armature(hd_eye_R, armature_obj)
-        add_object_to_armature(hd_eye_L, armature_obj)
-        attach_constrained_object_to_armature(hd_eye_R, armature_obj)
-        attach_constrained_object_to_armature(hd_eye_L, armature_obj)
-        add_object_to_armature(R_projector, armature_obj)
-        add_object_to_armature(L_projector, armature_obj)
-        remove_non_canonical_armatures(armature_obj)
+            eye_wedge_R_bake, eye_wedge_L_bake, hd_eye_R, hd_eye_L, R_projector, L_projector = append_eye_wedge_bake(
+                cfg.projection.assets_blend_path,
+                cfg.projection.eye_wedge_R_bake_name,
+                cfg.projection.eye_wedge_L_bake_name,
+                cfg.projection.hd_eye_R_name,
+                cfg.projection.hd_eye_L_name,
+                cfg.projection.R_projector_name,
+                cfg.projection.L_projector_name)
+            
+            set_ref(context, EYE_WEDGE_R_BAKE, eye_wedge_R_bake)
+            set_ref(context, EYE_WEDGE_L_BAKE, eye_wedge_L_bake)
+            set_ref(context, HD_EYE_R, hd_eye_R)
+            set_ref(context, HD_EYE_L, hd_eye_L)
+            set_ref(context, R_PROJECTOR, R_projector)
+            set_ref(context, L_PROJECTOR, L_projector)
+
+            add_object_to_armature(eye_wedge_R_bake, armature_obj)
+            add_object_to_armature(eye_wedge_L_bake, armature_obj)
+            add_object_to_armature(hd_eye_R, armature_obj)
+            add_object_to_armature(hd_eye_L, armature_obj)
+            attach_constrained_object_to_armature(hd_eye_R, armature_obj)
+            attach_constrained_object_to_armature(hd_eye_L, armature_obj)
+            add_object_to_armature(R_projector, armature_obj)
+            add_object_to_armature(L_projector, armature_obj)
+            remove_non_canonical_armatures(armature_obj)
+
+        #HD EYES ONLY
+        else:
+            hd_eye_R, hd_eye_L = append_HD_eyes_only(
+                cfg.projection.assets_blend_path,
+                cfg.projection.hd_eye_R_name,
+                cfg.projection.hd_eye_L_name)
+            set_ref(context, HD_EYE_R, hd_eye_R)
+            set_ref(context, HD_EYE_L, hd_eye_L)
+
+            add_object_to_armature(hd_eye_R, armature_obj)
+            add_object_to_armature(hd_eye_L, armature_obj)
+            attach_constrained_object_to_armature(hd_eye_R, armature_obj)
+            attach_constrained_object_to_armature(hd_eye_L, armature_obj)
+            remove_non_canonical_armatures(armature_obj)
+            assign_exclusive_material(hd_eye_R, eye_mat)
+            assign_exclusive_material(hd_eye_L, eye_mat)
 
         # --- 2b. RIG SETUP — rebuild drivers from config ---
         build_drivers(armature_obj, cfg.drivers)
@@ -642,29 +673,40 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         lip_rng = _random.Random(cfg.runner.seed + 4 if cfg.runner.seed is not None else None)
         for frame in range(1, fc + 1):
             context.scene.frame_set(frame)
-            reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eyebrows_obj, eyelashes_obj], frame)
+            if (cfg.feature_flags.wedge_projection):
+                reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eyebrows_obj, eyelashes_obj], frame)
+            else:
+                reset_frame(chaos_joints, [head_mesh, hd_eye_R, hd_eye_L, eyebrows_obj, eyelashes_obj], frame)
+            
             #Core Head Parts
             _apply_transforms_to_bones(chaos_joints, constrained_transforms[frame], frame)
             _apply_weights_to_shape_keys(head_mesh, constrained_bs[frame], frame)
             #Eye Wedge Parts
-            _apply_weights_to_shape_keys(eye_wedge_R_obj, constrained_bs[frame], frame)
-            _apply_weights_to_shape_keys(eye_wedge_L_obj, constrained_bs[frame], frame)
-            _apply_weights_to_shape_keys(eye_wedge_R_bake, constrained_bs[frame], frame)
-            _apply_weights_to_shape_keys(eye_wedge_L_bake, constrained_bs[frame], frame)
-            _apply_weights_to_shape_keys(R_projector, constrained_bs[frame], frame)
-            _apply_weights_to_shape_keys(L_projector, constrained_bs[frame], frame)
+            if (cfg.feature_flags.wedge_projection):
+                _apply_weights_to_shape_keys(eye_wedge_R_obj, constrained_bs[frame], frame)
+                _apply_weights_to_shape_keys(eye_wedge_L_obj, constrained_bs[frame], frame)
+                _apply_weights_to_shape_keys(eye_wedge_R_bake, constrained_bs[frame], frame)
+                _apply_weights_to_shape_keys(eye_wedge_L_bake, constrained_bs[frame], frame)
+                _apply_weights_to_shape_keys(R_projector, constrained_bs[frame], frame)
+                _apply_weights_to_shape_keys(L_projector, constrained_bs[frame], frame)
+            
+
             #Eyebrows and Eyelashes
             _apply_weights_to_shape_keys(eyebrows_obj, constrained_bs[frame], frame)
             _apply_weights_to_shape_keys(eyelashes_obj, constrained_bs[frame], frame)
-            #Bone custom properties (iris/pupil) — routed to chaos bone via drivers
+            #Bone custom properties (iris/pupil) — routed to blendshapes via driver system
             apply_bone_property_values(armature, constrained_bs[frame], cfg.variation.bone_properties, frame)
             #Skin / Body Color
             colors = attractive_colors[frame]
             rng_color = (color_rng.random(), color_rng.random(), color_rng.random(), 1.0)
             randomize_head_material_color(head_mesh, rng_color, frame)
             #add color to eye wedge bake meshes
-            assign_eye_color(eye_wedge_R_bake, cfg.projection.eye_wedge_R_bake_name, cfg.projection.eye_color_name, rng_color, frame)
-            assign_eye_color(eye_wedge_L_bake, cfg.projection.eye_wedge_L_bake_name, cfg.projection.eye_color_name, rng_color, frame)
+            if (cfg.feature_flags.wedge_projection):
+                assign_eye_color(eye_wedge_R_bake, cfg.projection.eye_wedge_R_bake_name, cfg.projection.eye_color_name, rng_color, frame)
+                assign_eye_color(eye_wedge_L_bake, cfg.projection.eye_wedge_L_bake_name, cfg.projection.eye_color_name, rng_color, frame)
+            else:
+                assign_eye_color(hd_eye_R, eye_mat.name, cfg.projection.eye_color_name, rng_color, frame)
+                assign_eye_color(hd_eye_L, eye_mat.name, cfg.projection.eye_color_name, rng_color, frame)
             attr_color = colors.body
             if attr_color is not None:
                 final_skin_color = _blend_colors(attr_color, rng_color, cfg.materials.final_color_randomness)
@@ -710,22 +752,26 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         #add_smooth_corrective(head_mesh, cfg.modifiers)
 
 
-
+        
         eyebrows_obj.hide_viewport = True
         eyelashes_obj.hide_viewport = True
-        #eye_wedge_R_obj.hide_viewport = True
-        #eye_wedge_L_obj.hide_viewport = True
-        #eye_wedge_R_bake.hide_set(True)
-        #eye_wedge_L_bake.hide_set(True)
-        eye_wedge_L_obj.hide_set(True)
-        eye_wedge_R_obj.hide_set(True)
 
-        R_projector.hide_viewport = True
-        L_projector.hide_viewport = True
-        hd_eye_R.hide_viewport = True
-        hd_eye_L.hide_viewport = True
+        if (cfg.feature_flags.wedge_projection):
+            #eye_wedge_R_obj.hide_viewport = True
+            #eye_wedge_L_obj.hide_viewport = True
+            #eye_wedge_R_bake.hide_set(True)
+            #eye_wedge_L_bake.hide_set(True)
+            eye_wedge_L_obj.hide_set(True)
+            eye_wedge_R_obj.hide_set(True)
+
+            R_projector.hide_viewport = True
+            L_projector.hide_viewport = True
+            hd_eye_R.hide_viewport = True
+            hd_eye_L.hide_viewport = True
+
         L_eye_obj.hide_viewport = True
         R_eye_obj.hide_viewport = True
+        
 
 
         Path(cfg.runner.save_variation_blend_path).parent.mkdir(parents=True, exist_ok=True)
@@ -742,6 +788,9 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
+        cfg = _get_config()
+        wedge_projection = get_flag(context, WEDGE_PROJECTION)
+
         armature = get_ref(context, ARMATURE)
         if not armature:
             self.report({"ERROR"}, "No armature stored — run Variation Pipeline first")
@@ -752,30 +801,37 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
             self.report({"ERROR"}, "No mesh stored — run Variation Pipeline first")
             return {"CANCELLED"}
 
-        eye_wedge_R_obj = get_ref(context, EYE_WEDGE_R)
-        if not eye_wedge_R_obj:
-            self.report({"ERROR"}, "No eye wedge R mesh stored — run Variation Pipeline first")
-            return {"CANCELLED"}
-        eye_wedge_L_obj = get_ref(context, EYE_WEDGE_L)
-        if not eye_wedge_L_obj:
-            self.report({"ERROR"}, "No eye wedge L mesh stored — run Variation Pipeline first")
-            return {"CANCELLED"}
-        eye_wedge_R_bake = get_ref(context, EYE_WEDGE_R_BAKE)
-        if not eye_wedge_R_bake:
-            self.report({"ERROR"}, "No eye wedge R bake mesh stored — run Variation Pipeline first")
-            return {"CANCELLED"}
-        eye_wedge_L_bake = get_ref(context, EYE_WEDGE_L_BAKE)
-        if not eye_wedge_L_bake:
-            self.report({"ERROR"}, "No eye wedge L bake mesh stored — run Variation Pipeline first")
-            return {"CANCELLED"}
-        R_projector = get_ref(context, R_PROJECTOR)
-        if not R_projector:
-            self.report({"ERROR"}, "No R projector mesh stored — run Variation Pipeline first")
-            return {"CANCELLED"}
-        L_projector = get_ref(context, L_PROJECTOR)
-        if not L_projector:
-            self.report({"ERROR"}, "No L projector mesh stored — run Variation Pipeline first")
-            return {"CANCELLED"}
+        if wedge_projection:
+            eye_wedge_R_obj = get_ref(context, EYE_WEDGE_R)
+            if not eye_wedge_R_obj:
+                self.report({"ERROR"}, "No eye wedge R mesh stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+            eye_wedge_L_obj = get_ref(context, EYE_WEDGE_L)
+            if not eye_wedge_L_obj:
+                self.report({"ERROR"}, "No eye wedge L mesh stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+            eye_wedge_R_bake = get_ref(context, EYE_WEDGE_R_BAKE)
+            if not eye_wedge_R_bake:
+                self.report({"ERROR"}, "No eye wedge R bake mesh stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+            eye_wedge_L_bake = get_ref(context, EYE_WEDGE_L_BAKE)
+            if not eye_wedge_L_bake:
+                self.report({"ERROR"}, "No eye wedge L bake mesh stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+            R_projector = get_ref(context, R_PROJECTOR)
+            if not R_projector:
+                self.report({"ERROR"}, "No R projector mesh stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+            L_projector = get_ref(context, L_PROJECTOR)
+            if not L_projector:
+                self.report({"ERROR"}, "No L projector mesh stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+        else:
+            eye_mat = get_material_ref(context, EYE_MAT)
+            if not eye_mat:
+                self.report({"ERROR"}, "No eye material stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+
         hd_eye_R = get_ref(context, HD_EYE_R)
         if not hd_eye_R:
             self.report({"ERROR"}, "No HD eye R stored — run Variation Pipeline first")
@@ -784,6 +840,7 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         if not hd_eye_L:
             self.report({"ERROR"}, "No HD eye L stored — run Variation Pipeline first")
             return {"CANCELLED"}
+
         eyebrows_obj = get_ref(context, EYEBROWS)
         if not eyebrows_obj:
             self.report({"ERROR"}, "No eyebrows mesh stored — run Variation Pipeline first")
@@ -797,7 +854,8 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
             self.report({"ERROR"}, "No body mesh stored — run Variation Pipeline first")
             return {"CANCELLED"}
 
-        cfg = _get_config()
+
+
 
         chaos_joints = collect_chaos_joints(armature, cfg.chaos_joint_names)
         if not chaos_joints:
@@ -834,24 +892,34 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
 
         frame = context.scene.frame_current
 
-        reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eyebrows_obj, eyelashes_obj], frame)
+        if wedge_projection:
+            reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eyebrows_obj, eyelashes_obj], frame)
+        else:
+            reset_frame(chaos_joints, [head_mesh, hd_eye_R, hd_eye_L, eyebrows_obj, eyelashes_obj], frame)
         _apply_transforms_to_bones(chaos_joints, transforms, frame)
         _apply_weights_to_shape_keys(head_mesh, bs_weights, frame)
-        _apply_weights_to_shape_keys(eye_wedge_R_obj, bs_weights, frame)
-        _apply_weights_to_shape_keys(eye_wedge_L_obj, bs_weights, frame)
-        _apply_weights_to_shape_keys(eye_wedge_R_bake, bs_weights, frame)
-        _apply_weights_to_shape_keys(eye_wedge_L_bake, bs_weights, frame)
-        _apply_weights_to_shape_keys(R_projector, bs_weights, frame)
-        _apply_weights_to_shape_keys(L_projector, bs_weights, frame)
+        if wedge_projection:
+            _apply_weights_to_shape_keys(eye_wedge_R_obj, bs_weights, frame)
+            _apply_weights_to_shape_keys(eye_wedge_L_obj, bs_weights, frame)
+            _apply_weights_to_shape_keys(eye_wedge_R_bake, bs_weights, frame)
+            _apply_weights_to_shape_keys(eye_wedge_L_bake, bs_weights, frame)
+            _apply_weights_to_shape_keys(R_projector, bs_weights, frame)
+            _apply_weights_to_shape_keys(L_projector, bs_weights, frame)
         _apply_weights_to_shape_keys(eyebrows_obj, bs_weights, frame)
         _apply_weights_to_shape_keys(eyelashes_obj, bs_weights, frame)
+
+        #See properties in chaos_joints.json and drivers in drivers.json for linkedges
         apply_bone_property_values(armature, bs_weights, cfg.variation.bone_properties, frame)
 
         #Skin / Body Color
         rng_color = (attractor_rng.random(), attractor_rng.random(), attractor_rng.random(), 1.0)
         randomize_head_material_color(head_mesh, rng_color, frame)
-        assign_eye_color(eye_wedge_R_bake, cfg.projection.eye_wedge_R_bake_name, cfg.projection.eye_color_name, rng_color, frame)
-        assign_eye_color(eye_wedge_L_bake, cfg.projection.eye_wedge_L_bake_name, cfg.projection.eye_color_name, rng_color, frame)
+        if wedge_projection:
+            assign_eye_color(eye_wedge_R_bake, cfg.projection.eye_wedge_R_bake_name, cfg.projection.eye_color_name, rng_color, frame)
+            assign_eye_color(eye_wedge_L_bake, cfg.projection.eye_wedge_L_bake_name, cfg.projection.eye_color_name, rng_color, frame)
+        else:
+            assign_eye_color(hd_eye_R, eye_mat.name, cfg.projection.eye_color_name, rng_color, frame)
+            assign_eye_color(hd_eye_L, eye_mat.name, cfg.projection.eye_color_name, rng_color, frame)
         attr_color = colors.body
         if attr_color is not None:
             final_skin_color = _blend_colors(attr_color, rng_color, cfg.materials.final_color_randomness)
@@ -900,18 +968,26 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
 
 def _guard_rerandomize_refs(operator, context) -> bool:
     """Return True when all refs required for selective rerandomize are present."""
+    wedge_projection = get_flag(context, WEDGE_PROJECTION)
+
     checks = [
         (ARMATURE, "No armature stored — run Variation Pipeline first"),
         (MESH, "No mesh stored — run Variation Pipeline first"),
-        (EYE_WEDGE_R, "No eye wedge R mesh stored — run Variation Pipeline first"),
-        (EYE_WEDGE_L, "No eye wedge L mesh stored — run Variation Pipeline first"),
-        (EYE_WEDGE_R_BAKE, "No eye wedge R bake mesh stored — run Variation Pipeline first"),
-        (EYE_WEDGE_L_BAKE, "No eye wedge L bake mesh stored — run Variation Pipeline first"),
-        (R_PROJECTOR, "No R projector mesh stored — run Variation Pipeline first"),
-        (L_PROJECTOR, "No L projector mesh stored — run Variation Pipeline first"),
+        (HD_EYE_R, "No HD eye R stored — run Variation Pipeline first"),
+        (HD_EYE_L, "No HD eye L stored — run Variation Pipeline first"),
         (EYEBROWS, "No eyebrows mesh stored — run Variation Pipeline first"),
         (EYELASHES, "No eyelashes mesh stored — run Variation Pipeline first"),
     ]
+    if wedge_projection:
+        checks += [
+            (EYE_WEDGE_R, "No eye wedge R mesh stored — run Variation Pipeline first"),
+            (EYE_WEDGE_L, "No eye wedge L mesh stored — run Variation Pipeline first"),
+            (EYE_WEDGE_R_BAKE, "No eye wedge R bake mesh stored — run Variation Pipeline first"),
+            (EYE_WEDGE_L_BAKE, "No eye wedge L bake mesh stored — run Variation Pipeline first"),
+            (R_PROJECTOR, "No R projector mesh stored — run Variation Pipeline first"),
+            (L_PROJECTOR, "No L projector mesh stored — run Variation Pipeline first"),
+        ]
+
     for ref_key, message in checks:
         if not get_ref(context, ref_key):
             operator.report({"ERROR"}, message)
@@ -1154,6 +1230,8 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
         return {"RUNNING_MODAL"}
 
     def execute(self, context):
+        wedge_projection = get_flag(context, WEDGE_PROJECTION)
+
         armature = get_ref(context, ARMATURE)
         if not armature:
             self.report({"ERROR"}, "No armature stored — run Variation Pipeline first")
@@ -1164,30 +1242,6 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
             self.report({"ERROR"}, "No mesh stored — run Variation Pipeline first")
             return {"CANCELLED"}
 
-        eye_wedge_R_obj = get_ref(context, EYE_WEDGE_R)
-        if not eye_wedge_R_obj:
-            self.report({"ERROR"}, "No eye wedge R mesh stored — run Variation Pipeline first")
-            return {"CANCELLED"}
-        eye_wedge_L_obj = get_ref(context, EYE_WEDGE_L)
-        if not eye_wedge_L_obj:
-            self.report({"ERROR"}, "No eye wedge L mesh stored — run Variation Pipeline first")
-            return {"CANCELLED"}
-        eye_wedge_R_bake = get_ref(context, EYE_WEDGE_R_BAKE)
-        if not eye_wedge_R_bake:
-            self.report({"ERROR"}, "No eye wedge R bake mesh stored — run Variation Pipeline first")
-            return {"CANCELLED"}
-        eye_wedge_L_bake = get_ref(context, EYE_WEDGE_L_BAKE)
-        if not eye_wedge_L_bake:
-            self.report({"ERROR"}, "No eye wedge L bake mesh stored — run Variation Pipeline first")
-            return {"CANCELLED"}
-        R_projector = get_ref(context, R_PROJECTOR)
-        if not R_projector:
-            self.report({"ERROR"}, "No R projector mesh stored — run Variation Pipeline first")
-            return {"CANCELLED"}
-        L_projector = get_ref(context, L_PROJECTOR)
-        if not L_projector:
-            self.report({"ERROR"}, "No L projector mesh stored — run Variation Pipeline first")
-            return {"CANCELLED"}
         hd_eye_R = get_ref(context, HD_EYE_R)
         if not hd_eye_R:
             self.report({"ERROR"}, "No HD eye R stored — run Variation Pipeline first")
@@ -1196,6 +1250,38 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
         if not hd_eye_L:
             self.report({"ERROR"}, "No HD eye L stored — run Variation Pipeline first")
             return {"CANCELLED"}
+
+        if wedge_projection:
+            eye_wedge_R_obj = get_ref(context, EYE_WEDGE_R)
+            if not eye_wedge_R_obj:
+                self.report({"ERROR"}, "No eye wedge R mesh stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+            eye_wedge_L_obj = get_ref(context, EYE_WEDGE_L)
+            if not eye_wedge_L_obj:
+                self.report({"ERROR"}, "No eye wedge L mesh stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+            eye_wedge_R_bake = get_ref(context, EYE_WEDGE_R_BAKE)
+            if not eye_wedge_R_bake:
+                self.report({"ERROR"}, "No eye wedge R bake mesh stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+            eye_wedge_L_bake = get_ref(context, EYE_WEDGE_L_BAKE)
+            if not eye_wedge_L_bake:
+                self.report({"ERROR"}, "No eye wedge L bake mesh stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+            R_projector = get_ref(context, R_PROJECTOR)
+            if not R_projector:
+                self.report({"ERROR"}, "No R projector mesh stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+            L_projector = get_ref(context, L_PROJECTOR)
+            if not L_projector:
+                self.report({"ERROR"}, "No L projector mesh stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+        else:
+            eye_mat = get_material_ref(context, EYE_MAT)
+            if not eye_mat:
+                self.report({"ERROR"}, "No eye material stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+
         eyebrows_obj = get_ref(context, EYEBROWS)
         if not eyebrows_obj:
             self.report({"ERROR"}, "No eyebrows mesh stored — run Variation Pipeline first")
@@ -1211,19 +1297,23 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
 
         chaos_joints = collect_chaos_joints(armature, cfg.chaos_joint_names)
 
-        reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eye_wedge_R_bake, eye_wedge_L_bake, R_projector, L_projector, eyebrows_obj, eyelashes_obj], frame)
+        if wedge_projection:
+            reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eye_wedge_R_bake, eye_wedge_L_bake, R_projector, L_projector, hd_eye_R, hd_eye_L, eyebrows_obj, eyelashes_obj], frame)
+        else:
+            reset_frame(chaos_joints, [head_mesh, hd_eye_R, hd_eye_L, eyebrows_obj, eyelashes_obj], frame)
         apply_bone_transforms(armature, snapshot.get("chaos_joints", {}), frame)
 
         all_shapes: dict[str, float] = {}
         all_shapes.update(snapshot.get("variation_shapes", {}))
         all_shapes.update(snapshot.get("expression_shapes", {}))
         apply_shape_key_values(head_mesh, all_shapes, frame)
-        apply_shape_key_values(eye_wedge_R_obj, all_shapes, frame)
-        apply_shape_key_values(eye_wedge_L_obj, all_shapes, frame)
-        apply_shape_key_values(eye_wedge_R_bake, all_shapes, frame)
-        apply_shape_key_values(eye_wedge_L_bake, all_shapes, frame)
-        apply_shape_key_values(R_projector, all_shapes, frame)
-        apply_shape_key_values(L_projector, all_shapes, frame)
+        if wedge_projection:
+            apply_shape_key_values(eye_wedge_R_obj, all_shapes, frame)
+            apply_shape_key_values(eye_wedge_L_obj, all_shapes, frame)
+            apply_shape_key_values(eye_wedge_R_bake, all_shapes, frame)
+            apply_shape_key_values(eye_wedge_L_bake, all_shapes, frame)
+            apply_shape_key_values(R_projector, all_shapes, frame)
+            apply_shape_key_values(L_projector, all_shapes, frame)
         apply_shape_key_values(eyebrows_obj, all_shapes, frame)
         apply_shape_key_values(eyelashes_obj, all_shapes, frame)
         apply_bone_custom_prop_values(armature, snapshot.get("bone_properties", {}), cfg.variation.bone_properties, frame)
@@ -1231,8 +1321,12 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
         skin_color = snapshot.get("skin_color")
         if skin_color is not None:
             apply_material_color(head_mesh, skin_color, frame)
-            assign_eye_color(eye_wedge_R_bake, cfg.projection.eye_wedge_R_bake_name, cfg.projection.eye_color_name, skin_color, frame)
-            assign_eye_color(eye_wedge_L_bake, cfg.projection.eye_wedge_L_bake_name, cfg.projection.eye_color_name, skin_color, frame)
+            if wedge_projection:
+                assign_eye_color(eye_wedge_R_bake, cfg.projection.eye_wedge_R_bake_name, cfg.projection.eye_color_name, skin_color, frame)
+                assign_eye_color(eye_wedge_L_bake, cfg.projection.eye_wedge_L_bake_name, cfg.projection.eye_color_name, skin_color, frame)
+            else:
+                assign_eye_color(hd_eye_R, eye_mat.name, cfg.projection.eye_color_name, skin_color, frame)
+                assign_eye_color(hd_eye_L, eye_mat.name, cfg.projection.eye_color_name, skin_color, frame)
 
         hair_color = snapshot.get("hair_color")
         if hair_color:
@@ -1281,42 +1375,46 @@ class SYNTHHEAD_OT_CleanMesh(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
+        wedge_projection = get_flag(context, WEDGE_PROJECTION)
+        cfg = _get_config()
+
         head_mesh = get_ref(context, MESH)
         if not head_mesh:
             self.report({"ERROR"}, "No mesh stored — run Variation Pipeline first")
             return {"CANCELLED"}
 
-        wedge_R = get_ref(context, EYE_WEDGE_R)
-        if not wedge_R:
-            self.report({"ERROR"}, "No eye wedge R stored — run Variation Pipeline first")
-            return {"CANCELLED"}
-
-        wedge_L = get_ref(context, EYE_WEDGE_L)
-        if not wedge_L:
-            self.report({"ERROR"}, "No eye wedge L stored — run Variation Pipeline first")
-            return {"CANCELLED"}
+        if wedge_projection:
+            wedge_R = get_ref(context, EYE_WEDGE_R)
+            if not wedge_R:
+                self.report({"ERROR"}, "No eye wedge R stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+            wedge_L = get_ref(context, EYE_WEDGE_L)
+            if not wedge_L:
+                self.report({"ERROR"}, "No eye wedge L stored — run Variation Pipeline first")
+                return {"CANCELLED"}
 
         body = get_ref(context, BODY_GEO)
         if not body:
             self.report({"ERROR"}, "No body geo stored — run Variation Pipeline first")
             return {"CANCELLED"}
 
-        cfg = _get_config()
-        copy_modifiers_to_wedges(head_mesh, wedge_R, wedge_L)
+        if wedge_projection:
+            copy_modifiers_to_wedges(head_mesh, wedge_R, wedge_L)
+            clean_head_mesh_wedge(head_mesh, wedge_R, wedge_L, body, cfg.cleanup)
+        else:
+            Clean_head_mesh_Simple(head_mesh, body, cfg.cleanup)
 
-        clean_head_mesh(head_mesh, wedge_R, wedge_L, body, cfg.cleanup)
-
-        set_ref(context, MESH, wedge_R)
-        # Clear refs for the objects that were deleted by clean_head_mesh
-        set_ref(context, EYE_WEDGE_R, None)
-        set_ref(context, EYE_WEDGE_L, None)
-        set_ref(context, BODY_GEO, None)
- 
-        # Swap material order — move slot 1 up to slot 0 on the combined object
-        if len(wedge_R.material_slots) >= 2:
-            wedge_R.active_material_index = 1
-            with context.temp_override(object=wedge_R):
-                bpy.ops.object.material_slot_move(direction='UP')
+        if wedge_projection:
+            set_ref(context, MESH, wedge_R)
+            set_ref(context, EYE_WEDGE_R, None)
+            set_ref(context, EYE_WEDGE_L, None)
+            set_ref(context, BODY_GEO, None)
+            if len(wedge_R.material_slots) >= 2:
+                wedge_R.active_material_index = 1
+                with context.temp_override(object=wedge_R):
+                    bpy.ops.object.material_slot_move(direction='UP')
+        else:
+            set_ref(context, BODY_GEO, None)
 
         self.report({"INFO"}, "Mesh cleaned: lips sewn, mouth bag removed, wedges and body merged")
         Path(cfg.runner.save_water_tight_blend_path).parent.mkdir(parents=True, exist_ok=True)
@@ -1327,18 +1425,20 @@ class SYNTHHEAD_OT_CleanMesh(bpy.types.Operator):
 def _gather_export_refs(context) -> types.SimpleNamespace:
     """Collect all source-scene refs that the export pipeline needs.
 
-    Returns a namespace with: head_geo, L_eye, R_eye, eyebrows, eyelashes.
-    Missing refs come through as None — staging_scene handles them based on
-    the include_* flags in ExportConfig.  body_geo is deliberately omitted:
-    it was sewn into head_geo during Clean Mesh and no longer exists as a
-    standalone object.
+    Returns a namespace with: head_geo, L_eye, R_eye, eyebrows, eyelashes,
+    hd_eye_R, hd_eye_L.  Missing refs come through as None — staging_scene
+    handles them based on the include_* flags in ExportConfig.  body_geo is
+    deliberately omitted: it was sewn into head_geo during Clean Mesh.
     """
     return types.SimpleNamespace(
         head_geo=get_ref(context, MESH),
+        body_geo=get_ref(context, BODY_GEO),
         L_eye=get_ref(context, L_EYE),
         R_eye=get_ref(context, R_EYE),
         eyebrows=get_ref(context, EYEBROWS),
         eyelashes=get_ref(context, EYELASHES),
+        hd_eye_R=get_ref(context, HD_EYE_R),
+        hd_eye_L=get_ref(context, HD_EYE_L),
     )
 
 
@@ -1415,6 +1515,7 @@ class SYNTHHEAD_OT_ExportPipeline(bpy.types.Operator):
 
     def execute(self, context):
         cfg = _get_config()
+        wedge_projection = get_flag(context, WEDGE_PROJECTION)
         refs = _gather_export_refs(context)
 
         if refs.head_geo is None:
@@ -1433,6 +1534,14 @@ class SYNTHHEAD_OT_ExportPipeline(bpy.types.Operator):
 
         self.report({"INFO"}, f"Export pipeline: frames {start}..{end} → {out_dir}")
 
+        if refs.body_geo is not None:
+            join_and_merge(
+                [refs.head_geo, refs.body_geo],
+                refs.head_geo,
+                merge_distance=cfg.cleanup.join_merge_distance,
+            )
+            set_ref(context, BODY_GEO, None)
+
         with scope_bake_environment(refs.head_geo, cfg.export) as bake_ctx:
             for frame in range(start, end + 1):
                 context.scene.frame_set(frame)
@@ -1450,7 +1559,7 @@ class SYNTHHEAD_OT_ExportPipeline(bpy.types.Operator):
                     margin=cfg.export.bake_margin,
                 )
 
-                if cfg.export.copy_eye_projection:
+                if wedge_projection and cfg.export.copy_eye_projection:
                     seq_R = Path(cfg.projection.baked_sequence_R_path)
                     seq_L = Path(cfg.projection.baked_sequence_L_path)
                     for side, seq_dir, suffix in (
@@ -1465,7 +1574,35 @@ class SYNTHHEAD_OT_ExportPipeline(bpy.types.Operator):
                         else:
                             print(f"[SynthHead][Export] WARNING: eye bake not found: {src}")
 
+                if not wedge_projection and cfg.export.bake_hd_eye_texture_direct:
+                    for obj, suffix in (
+                        (refs.hd_eye_R, "R_hd_eye"),
+                        (refs.hd_eye_L, "L_hd_eye"),
+                    ):
+                        if obj is not None:
+                            p = bake_object_material(
+                                obj,
+                                cfg.export.hd_eye_material_name,
+                                suffix,
+                                cfg.export.hd_eye_bake_resolution,
+                                frame_dir,
+                                cfg.export.bake_samples,
+                                cfg.export.bake_margin,
+                            )
+                            if p is not None:
+                                png_paths[suffix] = p
+
                 with staging_scene(refs, cfg.export) as stage:
+                    if cfg.export.clean_head_on_export:
+                        cut_and_sew(
+                            cfg.cleanup.mouth_bag_group,
+                            stage.head_geo,
+                            cfg.cleanup.mouth_sew_indices,
+                            merge_distance=cfg.cleanup.lip_sew_merge_distance,
+                            remove_mouth_bag=cfg.cleanup.remove_mouth_bag,
+                            snap_lips=cfg.cleanup.snap_lips,
+                            sew_lips=cfg.cleanup.sew_lips,
+                        )
                     rewrite_head_material_slots(stage.head_geo, png_paths, cfg.export)
                     stamp_frame_names(stage.objects, frame)
                     export_glb(

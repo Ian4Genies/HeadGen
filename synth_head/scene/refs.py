@@ -38,6 +38,28 @@ def get_ref(context: bpy.types.Context, key: str) -> bpy.types.Object | None:
     return getattr(refs, key)
 
 
+def set_flag(context: bpy.types.Context, key: str, value: bool) -> None:
+    """Store a boolean *value* under *key* in the pipeline reference group.
+
+    Raises KeyError if *key* does not match a declared BoolProperty.
+    """
+    refs = context.scene.synth_head
+    if not hasattr(refs, key):
+        raise KeyError(f"Unknown pipeline flag key: {key!r}")
+    setattr(refs, key, value)
+
+
+def get_flag(context: bpy.types.Context, key: str) -> bool:
+    """Return the boolean stored under *key*, or False if unset.
+
+    Raises KeyError if *key* does not match a declared BoolProperty.
+    """
+    refs = context.scene.synth_head
+    if not hasattr(refs, key):
+        raise KeyError(f"Unknown pipeline flag key: {key!r}")
+    return bool(getattr(refs, key))
+
+
 def set_material_ref(context: bpy.types.Context, key: str, mat: bpy.types.Material) -> None:
     """Store a Material *mat* under *key* in the pipeline reference group.
 

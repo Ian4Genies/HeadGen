@@ -325,3 +325,90 @@ def bake_head_materials(
         png_paths[suffix] = png_path
 
     return png_paths
+
+
+def bake_object_material(
+    obj: bpy.types.Object,
+    material_name: str,
+    suffix: str,
+    resolution: int,
+    frame_dir: Path,
+    samples: int,
+    margin: int,
+) -> "Path | None":
+    """Bake the named material on *obj* directly and write a PNG artifact.
+
+    Assumes the render engine is already set to CYCLES by the caller
+    (e.g. inside a ``scope_bake_environment`` context).  Sets up a temporary
+    Image Texture node as the bake target, fires a single-object diffuse bake,
+    saves the PNG, then removes every temporary datablock.
+
+    Args:
+        obj:           Source object whose material will be baked.
+        material_name: Name of the material slot to bake (must exist on *obj*).
+        suffix:        PNG filename suffix (e.g. ``"R_hd_eye"``).
+        resolution:    Bake image width/height in pixels.
+        frame_dir:     Destination directory for this frame's artifacts.
+        samples:       Cycles sample count.
+        margin:        UV edge padding in pixels.
+
+    Returns:
+        The written PNG path, or None if the material was not found on *obj*.
+    """
+    material = _find_material_on_object(obj, material_name)
+    if material is None:
+        print(
+            f"[Export][bake] WARNING: material '{material_name}' not found "
+            f"on '{obj.name}' — skipping bake target '{suffix}'"
+        )
+        return None
+
+    scene = bpy.context.scene
+    try:
+        scene.cycles.samples = int(samples)
+    except Exception:
+        pass
+
+    img = bpy.data.images.new(
+        name=f"ExportBake_{suffix}",
+        width=int(resolution),
+        height=int(resolution),
+        alpha=False,
+        float_buffer=False,
+    )
+    img.colorspace_settings.name = "sRGB"
+
+    nt = material.node_tree
+    prev_active = nt.nodes.active
+    prev_active_name = prev_active.name if prev_active else None
+    node = _add_image_texture_node(material, img)
+
+    try:
+        bpy.ops.object.select_all(action="DESELECT")
+        obj.select_set(True)
+        bpy.context.view_layer.objects.active = obj
+
+        bpy.ops.object.bake(
+            type="DIFFUSE",
+            pass_filter={"COLOR"},
+            use_selected_to_active=False,
+            margin=int(margin),
+        )
+
+        png_path = Path(frame_dir) / frame_png_name(suffix)
+        img.filepath_raw = str(png_path)
+        img.file_format = "PNG"
+        img.save()
+        return png_path
+
+    finally:
+        try:
+            nt.nodes.remove(node)
+        except Exception:
+            pass
+        if prev_active_name and prev_active_name in nt.nodes:
+            nt.nodes.active = nt.nodes[prev_active_name]
+        try:
+            bpy.data.images.remove(img, do_unlink=True)
+        except Exception:
+            pass

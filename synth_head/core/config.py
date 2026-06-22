@@ -86,6 +86,9 @@ class CleanupConfig:
     eye_wedge_L_name: str = ""
     mouth_bag_group: str = ""
     mouth_sew_indices: dict[str, int] = field(default_factory=dict)
+    remove_mouth_bag: bool = True
+    sew_lips: bool = True
+    snap_lips: bool = True
     join_merge_distance: float = 0.001
     lip_sew_merge_distance: float = 1e-6
     seam_weld_distance: float = 1e-5
@@ -99,6 +102,9 @@ class CleanupConfig:
             eye_wedge_L_name=d.get("eye_wedge_L_name", ""),
             mouth_bag_group=d.get("mouth_bag_group", ""),
             mouth_sew_indices=d.get("mouth_sew_indices", {}),
+            remove_mouth_bag=bool(d.get("remove_mouth_bag", True)),
+            sew_lips=bool(d.get("sew_lips", True)),
+            snap_lips=bool(d.get("snap_lips", True)),
             join_merge_distance=d.get("join_merge_distance", 0.001),
             lip_sew_merge_distance=d.get("lip_sew_merge_distance", 1e-6),
             seam_weld_distance=d.get("seam_weld_distance", 1e-5),
@@ -111,6 +117,9 @@ class CleanupConfig:
             eye_wedge_L_name=self.eye_wedge_L_name,
             mouth_bag_group=self.mouth_bag_group,
             mouth_sew_indices=self.mouth_sew_indices,
+            remove_mouth_bag=self.remove_mouth_bag,
+            sew_lips=self.sew_lips,
+            snap_lips=self.snap_lips,
             join_merge_distance=self.join_merge_distance,
             lip_sew_merge_distance=self.lip_sew_merge_distance,
             seam_weld_distance=self.seam_weld_distance,
@@ -281,15 +290,22 @@ class ExportConfig:
     head_bake_material_name: str = "head_mat"
     eye_wedge_R_material_name: str = "eye_mat.001"
     eye_wedge_L_material_name: str = "eye_mat.002"
+    hd_eye_material_name: str = "eye_mat"
 
     include_eyes: bool = True
     include_brows: bool = False
     include_lashes: bool = False
+    include_hd_eyes: bool = False
 
     bake_wedge_texture_direct: bool = False
     copy_eye_projection: bool = True
     bake_brow_texture_direct: bool = False
     bake_lash_texture_direct: bool = False
+    bake_hd_eye_texture_direct: bool = False
+
+    hd_eye_bake_resolution: int = 512
+
+    clean_head_on_export: bool = False
 
     @classmethod
     def from_dict(cls, d: dict) -> "ExportConfig":
@@ -311,13 +327,18 @@ class ExportConfig:
             head_bake_material_name=str(d.get("head_bake_material_name", "head_mat")),
             eye_wedge_R_material_name=str(d.get("eye_wedge_R_material_name", "eye_mat.001")),
             eye_wedge_L_material_name=str(d.get("eye_wedge_L_material_name", "eye_mat.002")),
+            hd_eye_material_name=str(d.get("hd_eye_material_name", "eye_mat")),
             include_eyes=bool(d.get("include_eyes", True)),
             include_brows=bool(d.get("include_brows", False)),
             include_lashes=bool(d.get("include_lashes", False)),
+            include_hd_eyes=bool(d.get("include_hd_eyes", False)),
             bake_wedge_texture_direct=bool(d.get("bake_wedge_texture_direct", True)),
             copy_eye_projection=bool(d.get("copy_eye_projection", False)),
             bake_brow_texture_direct=bool(d.get("bake_brow_texture_direct", False)),
             bake_lash_texture_direct=bool(d.get("bake_lash_texture_direct", False)),
+            bake_hd_eye_texture_direct=bool(d.get("bake_hd_eye_texture_direct", False)),
+            hd_eye_bake_resolution=int(d.get("hd_eye_bake_resolution", 512)),
+            clean_head_on_export=bool(d.get("clean_head_on_export", False)),
         )
 
 
@@ -388,6 +409,17 @@ class DriversConfig:
 
 
 @dataclass
+class FeatureFlagsConfig:
+    wedge_projection: bool = True
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "FeatureFlagsConfig":
+        return cls(
+            wedge_projection=bool(d.get("wedgeProjection", True)),
+        )
+
+
+@dataclass
 class PipelineConfig:
     runner: RunnerConfig = field(default_factory=RunnerConfig)
     cleanup: CleanupConfig = field(default_factory=CleanupConfig)
@@ -402,6 +434,7 @@ class PipelineConfig:
     texture_swap: TextureSwapConfig = field(default_factory=TextureSwapConfig)
     drivers: DriversConfig = field(default_factory=DriversConfig)
     rerandomize: RerandomizeConfig = field(default_factory=RerandomizeConfig)
+    feature_flags: FeatureFlagsConfig = field(default_factory=FeatureFlagsConfig)
     chaos_joint_names: frozenset[str] = field(default_factory=lambda: frozenset(CHAOS_JOINT_NAMES))
     config_dir: Path = field(default_factory=lambda: Path("."))
 
@@ -529,6 +562,13 @@ def load_config(config_dir: str | Path, project_root: str | Path | None = None) 
     else:
         rerandomize = RerandomizeConfig()
 
+    # --- feature flags ---
+    flags_path = d / "featureFlags.json"
+    if flags_path.exists():
+        feature_flags = FeatureFlagsConfig.from_dict(_load_json(flags_path))
+    else:
+        feature_flags = FeatureFlagsConfig()
+
     return PipelineConfig(
         runner=runner,
         cleanup=cleanup,
@@ -543,6 +583,7 @@ def load_config(config_dir: str | Path, project_root: str | Path | None = None) 
         texture_swap=texture_swap,
         drivers=drivers,
         rerandomize=rerandomize,
+        feature_flags=feature_flags,
         chaos_joint_names=joint_names,
         config_dir=d,
     )

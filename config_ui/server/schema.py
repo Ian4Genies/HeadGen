@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from .config_defaults import DEFAULT_CONFIG_FILES, deep_merge_missing
+
 CONFIG_FILES: list[dict[str, str]] = [
     {"id": "featureFlags", "label": "Feature Flags", "description": "Pipeline mode toggles — written to scene on Variation Pipeline run"},
     {"id": "runner", "label": "Runner", "description": "Frame count, seed, and file paths"},
@@ -20,7 +22,3 @@ CONFIG_FILES: list[dict[str, str]] = [
 ]
 
 CONFIG_FILE_IDS = {entry["id"] for entry in CONFIG_FILES}
-
-DEFAULT_CONFIG_FILES: dict[str, dict] = {
-    "featureFlags": {"wedgeProjection": True},
-}

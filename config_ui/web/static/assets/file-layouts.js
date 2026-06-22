@@ -78,6 +78,17 @@ export const FILE_LAYOUTS = {
     sections: [
       { keys: ["paths"], full: true },
       { keys: ["eye_wedge_R_name", "eye_wedge_L_name", "mouth_bag_group"], cols: 3 },
+      {
+        keys: ["remove_mouth_bag", "sew_lips", "snap_lips"],
+        cols: 3,
+        title: "Mouth operations",
+        hint: "Snap moves lip pairs to midpoint; sew welds them. Bag removal runs before snap/sew.",
+      },
+      {
+        keys: ["join_merge_distance", "lip_sew_merge_distance", "seam_weld_distance"],
+        cols: 3,
+        title: "Merge distances",
+      },
       { keys: ["mouth_sew_indices"], full: true },
     ],
   },
@@ -122,8 +133,8 @@ export const FILE_LAYOUTS = {
         cols: 3,
       },
       {
-        keys: ["include_eyes", "include_brows", "include_lashes"],
-        cols: 3,
+        keys: ["include_eyes", "include_brows", "include_lashes", "include_hd_eyes"],
+        cols: 4,
         title: "Include parts",
       },
       {
@@ -134,7 +145,17 @@ export const FILE_LAYOUTS = {
           "bake_lash_texture_direct",
         ],
         cols: 2,
-        title: "Bake options",
+        title: "Wedge / overlay bake",
+      },
+      {
+        keys: ["bake_hd_eye_texture_direct", "clean_head_on_export"],
+        cols: 2,
+        title: "HD eye export",
+      },
+      {
+        keys: ["hd_eye_material_name", "hd_eye_bake_resolution"],
+        cols: 2,
+        title: "HD eye bake",
       },
     ],
   },

@@ -1,21 +1,26 @@
 {
-  "head_bake_resolution":      2048,
+  "head_bake_resolution": 2048,
   "eye_wedge_bake_resolution": 512,
-  "bake_samples":              4,
-  "bake_margin":               8,
-  "glb_format":                "GLB",
-  "frame_range":               [1,20],
-
-  "head_bake_material_name":     "head_mat",
-  "eye_wedge_R_material_name":   "eye_wedge_R",
-  "eye_wedge_L_material_name":   "eye_wedge_L",
-
-  "include_eyes":  false,
+  "bake_samples": 4,
+  "bake_margin": 8,
+  "glb_format": "GLB",
+  "frame_range": [
+    1,
+    20
+  ],
+  "head_bake_material_name": "head_mat",
+  "eye_wedge_R_material_name": "eye_wedge_R",
+  "eye_wedge_L_material_name": "eye_wedge_L",
+  "include_eyes": false,
   "include_brows": false,
   "include_lashes": false,
-
   "bake_wedge_texture_direct": false,
-  "copy_eye_projection": true,
-  "bake_brow_texture_direct":  false,
-  "bake_lash_texture_direct":  false
+  "copy_eye_projection": false,
+  "bake_brow_texture_direct": false,
+  "bake_lash_texture_direct": false,
+  "include_hd_eyes": true,
+  "bake_hd_eye_texture_direct": true,
+  "hd_eye_material_name": "eye_mat",
+  "hd_eye_bake_resolution": 512,
+  "clean_head_on_export": true
 }

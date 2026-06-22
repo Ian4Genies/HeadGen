@@ -9,7 +9,8 @@ from pathlib import Path
 
 from synth_head.core.config import load_config
 
-from .schema import CONFIG_FILE_IDS, DEFAULT_CONFIG_FILES
+from .schema import CONFIG_FILE_IDS
+from .config_defaults import DEFAULT_CONFIG_FILES, deep_merge_missing
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 PROFILES_DIR = PROJECT_ROOT / "data" / "profiles"
@@ -55,16 +56,25 @@ def _ensure_profile_files(profile_path: Path) -> None:
     profile_path.mkdir(parents=True, exist_ok=True)
     for file_id in CONFIG_FILE_IDS:
         dest = profile_path / f"{file_id}.json"
-        if dest.exists():
+        if not dest.exists():
+            live = LIVE_CONFIG_DIR / f"{file_id}.json"
+            if live.exists():
+                shutil.copy2(live, dest)
+            elif file_id in DEFAULT_CONFIG_FILES:
+                dest.write_text(
+                    json.dumps(DEFAULT_CONFIG_FILES[file_id], indent=2) + "\n",
+                    encoding="utf-8",
+                )
+            else:
+                continue
+
+        defaults = DEFAULT_CONFIG_FILES.get(file_id)
+        if defaults is None:
             continue
-        live = LIVE_CONFIG_DIR / f"{file_id}.json"
-        if live.exists():
-            shutil.copy2(live, dest)
-        elif file_id in DEFAULT_CONFIG_FILES:
-            dest.write_text(
-                json.dumps(DEFAULT_CONFIG_FILES[file_id], indent=2) + "\n",
-                encoding="utf-8",
-            )
+        data = json.loads(dest.read_text(encoding="utf-8"))
+        merged, changed = deep_merge_missing(data, defaults)
+        if changed:
+            dest.write_text(json.dumps(merged, indent=2) + "\n", encoding="utf-8")
 
 
 def _sync_to_live(profile_name: str) -> None:

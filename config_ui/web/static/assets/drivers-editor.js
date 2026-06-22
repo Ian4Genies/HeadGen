@@ -191,11 +191,7 @@ export function mountDriversEditor({ data, onChange }) {
     const heading = el("section", "section section-full drivers-heading");
     heading.appendChild(el("h3", "section-title", "Driver relationships"));
     heading.appendChild(
-      el(
-        "p",
-        "chip-hint",
-        "Bulk tools enabled — look for the filter bar, row checkboxes, and Duplicate block.",
-      ),
+      el("p", "chip-hint", "Shift+click to range-select · Duplicate block copies a set in one step"),
     );
     root.appendChild(heading);
 
@@ -298,10 +294,9 @@ export function mountDriversEditor({ data, onChange }) {
 
     for (const idx of visible) {
       const item = drivers[idx];
-      const card = el("div", "rule-card driver-card" + (selected.has(idx) ? " selected" : ""));
-      if (collapsed.has(idx)) card.classList.add("collapsed");
+      const card = el("div", "driver-card" + (selected.has(idx) ? " selected" : "") + (collapsed.has(idx) ? " collapsed" : " expanded"));
 
-      const head = el("div", "card-head driver-card-head");
+      const head = el("div", "driver-card-head");
       const chk = el("input", "driver-select");
       chk.type = "checkbox";
       chk.checked = selected.has(idx);
@@ -313,9 +308,11 @@ export function mountDriversEditor({ data, onChange }) {
         render();
       };
 
-      const toggle = el("button", "btn icon driver-toggle", collapsed.has(idx) ? "▸" : "▾");
+      const toggle = el("button", "btn icon driver-toggle", "");
       toggle.type = "button";
-      toggle.title = "Expand / collapse";
+      toggle.title = collapsed.has(idx) ? "Expand" : "Collapse";
+      toggle.setAttribute("aria-expanded", collapsed.has(idx) ? "false" : "true");
+      toggle.textContent = collapsed.has(idx) ? "▸" : "▾";
       toggle.onclick = (e) => {
         e.stopPropagation();
         if (collapsed.has(idx)) collapsed.delete(idx);

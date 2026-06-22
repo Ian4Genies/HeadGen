@@ -89,9 +89,9 @@ class CleanupConfig:
     remove_mouth_bag: bool = True
     sew_lips: bool = True
     snap_lips: bool = True
-    join_merge_distance: float = 0.001
-    lip_sew_merge_distance: float = 1e-6
-    seam_weld_distance: float = 1e-5
+    join_merge_distance: float = 1e-7
+    lip_sew_merge_distance: float = 1e-8
+    seam_weld_distance: float = 1e-7
 
     @classmethod
     def from_dict(cls, d: dict) -> "CleanupConfig":
@@ -105,9 +105,9 @@ class CleanupConfig:
             remove_mouth_bag=bool(d.get("remove_mouth_bag", True)),
             sew_lips=bool(d.get("sew_lips", True)),
             snap_lips=bool(d.get("snap_lips", True)),
-            join_merge_distance=d.get("join_merge_distance", 0.001),
-            lip_sew_merge_distance=d.get("lip_sew_merge_distance", 1e-6),
-            seam_weld_distance=d.get("seam_weld_distance", 1e-5),
+            join_merge_distance=d.get("join_merge_distance", 1e-7),
+            lip_sew_merge_distance=d.get("lip_sew_merge_distance", 1e-8),
+            seam_weld_distance=d.get("seam_weld_distance", 1e-7),
         )
 
     def resolve(self, base: Path) -> "CleanupConfig":

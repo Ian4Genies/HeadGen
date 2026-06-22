@@ -14,9 +14,9 @@ DEFAULT_CONFIG_FILES: dict[str, dict[str, Any]] = {
         "remove_mouth_bag": True,
         "sew_lips": True,
         "snap_lips": True,
-        "join_merge_distance": 0.001,
-        "lip_sew_merge_distance": 1e-6,
-        "seam_weld_distance": 1e-5,
+        "join_merge_distance": 1e-7,
+        "lip_sew_merge_distance": 1e-8,
+        "seam_weld_distance": 1e-7,
     },
     "export": {
         "include_hd_eyes": False,

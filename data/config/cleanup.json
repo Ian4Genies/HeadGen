@@ -23,7 +23,7 @@
   "remove_mouth_bag": true,
   "sew_lips": false,
   "snap_lips": true,
-  "join_merge_distance": 0.001,
-  "lip_sew_merge_distance": 1e-06,
-  "seam_weld_distance": 1e-05
+  "join_merge_distance": 1e-07,
+  "lip_sew_merge_distance": 1e-08,
+  "seam_weld_distance": 1e-07
 }

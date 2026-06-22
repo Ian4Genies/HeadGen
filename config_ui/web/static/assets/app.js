@@ -1,4 +1,4 @@
-import { mountForm } from "./forms.js";
+import { mountForm } from "./forms.js?v=2";
 
 const $ = (sel) => document.querySelector(sel);
 

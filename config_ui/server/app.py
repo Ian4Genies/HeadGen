@@ -9,12 +9,17 @@ from typing import Any
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import Response
 from pydantic import BaseModel, Field
 
 from . import manifests as mf
 from . import profiles as prof
 from .chaos_schema import chaos_joints_schema
 from .schema import CONFIG_FILES
+
+_web_static = Path(__file__).resolve().parent.parent / "web" / "static"
 
 app = FastAPI(title="Synth Head Config", version="1.0.0")
 
@@ -24,6 +29,19 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+class _NoCacheUiMiddleware(BaseHTTPMiddleware):
+    """Avoid stale ES module cache for the static form editor."""
+
+    async def dispatch(self, request: Request, call_next) -> Response:
+        response = await call_next(request)
+        if request.url.path == "/" or request.url.path.startswith("/assets/"):
+            response.headers["Cache-Control"] = "no-cache, must-revalidate"
+        return response
+
+
+app.add_middleware(_NoCacheUiMiddleware)
 
 
 class ProfileCreate(BaseModel):
@@ -57,7 +75,18 @@ def get_chaos_joints_schema() -> dict:
 
 @app.get("/api/schema")
 def get_schema() -> dict:
-    return {"files": CONFIG_FILES}
+    return {"files": CONFIG_FILES, "ui_version": 2}
+
+
+@app.get("/api/ui-health")
+def ui_health() -> dict:
+    assets = _web_static / "assets"
+    return {
+        "ui_version": 2,
+        "static_root": str(_web_static),
+        "drivers_editor": (assets / "drivers-editor.js").exists(),
+        "forms_has_mount": "mountDriversEditor" in (assets / "forms.js").read_text(encoding="utf-8"),
+    }
 
 
 @app.get("/api/profiles")
@@ -161,7 +190,6 @@ def get_registry(name: str) -> dict:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
-_web_static = Path(__file__).resolve().parent.parent / "web" / "static"
 if _web_static.is_dir():
     app.mount("/assets", StaticFiles(directory=_web_static / "assets"), name="assets")
 

@@ -985,10 +985,98 @@ select:focus {
   gap: 0.35rem;
 }
 
-.chaos-editor {
+.chaos-editor,
+.drivers-editor {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+}
+
+.drivers-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.drivers-search {
+  flex: 1 1 220px;
+  min-width: 180px;
+}
+
+.drivers-bulk-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.65rem;
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+}
+
+.bulk-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #c4b5fd;
+  margin-right: 0.25rem;
+}
+
+.drivers-find {
+  width: 7rem;
+}
+
+.drivers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.driver-card.selected {
+  border-color: rgba(139, 92, 246, 0.45);
+  box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.25);
+}
+
+.driver-card.collapsed .driver-body {
+  display: none;
+}
+
+.driver-card-head {
+  cursor: pointer;
+  margin-bottom: 0;
+  user-select: none;
+}
+
+.driver-card:not(.collapsed) .driver-card-head {
+  margin-bottom: 0.65rem;
+}
+
+.driver-select {
+  width: 0.95rem;
+  height: 0.95rem;
+  accent-color: #8b5cf6;
+}
+
+.driver-toggle {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.35rem;
+  min-width: 1.5rem;
+}
+
+.driver-title {
+  flex: 1;
+  font-size: 0.78rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drivers-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
 }
 
 .joint-lists {

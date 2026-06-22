@@ -1443,6 +1443,21 @@ class SYNTHHEAD_OT_CleanMesh(bpy.types.Operator):
         return {"FINISHED"}
 
 
+def _ref_or_scene_object(
+    context,
+    key: str,
+    scene_name: str,
+) -> bpy.types.Object | None:
+    """Return a pipeline ref, falling back to a scene object by name."""
+    obj = get_ref(context, key)
+    if obj is not None:
+        return obj
+    obj = bpy.data.objects.get(scene_name)
+    if obj is not None:
+        print(f"[Export] WARNING: {key!r} ref unset — using scene object {scene_name!r}")
+    return obj
+
+
 def _gather_export_refs(context) -> types.SimpleNamespace:
     """Collect all source-scene refs that the export pipeline needs.
 
@@ -1461,8 +1476,8 @@ def _gather_export_refs(context) -> types.SimpleNamespace:
         eyelashes=get_ref(context, EYELASHES),
         hd_eye_R=get_ref(context, HD_EYE_R),
         hd_eye_L=get_ref(context, HD_EYE_L),
-        eye_boolean_L=get_ref(context, EYE_BOOLEAN_L),
-        eye_boolean_R=get_ref(context, EYE_BOOLEAN_R),
+        eye_boolean_L=_ref_or_scene_object(context, EYE_BOOLEAN_L, "eye_L_boolean"),
+        eye_boolean_R=_ref_or_scene_object(context, EYE_BOOLEAN_R, "eye_R_boolean"),
     )
 
 

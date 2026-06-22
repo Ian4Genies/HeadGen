@@ -39,6 +39,8 @@ _STAGING_COLLECTION_NAME = "ExportStaging"
 # any information that isn't already captured in the baked PNG, so we strip them
 # by toggling show_viewport=False just long enough to freeze the proxy mesh.
 _EXPORT_EXCLUDE_MOD_TYPES: frozenset[str] = frozenset({"SUBSURF", "MULTIRES", "NODES"})
+# Boolean cutters are often geometry-nodes-driven; keep NODES in the eval mesh.
+_BOOLEAN_CUTTER_EXCLUDE_MOD_TYPES: frozenset[str] = frozenset({"SUBSURF", "MULTIRES"})
 
 
 # ---------------------------------------------------------------------------
@@ -151,10 +153,15 @@ def staging_scene(
     created_objects: list[bpy.types.Object] = []
     created_meshes: list[bpy.types.Mesh] = []
 
-    def _freeze(src_obj: bpy.types.Object | None, label: str) -> bpy.types.Object | None:
+    def _freeze(
+        src_obj: bpy.types.Object | None,
+        label: str,
+        *,
+        exclude_modifier_types: frozenset[str] = _EXPORT_EXCLUDE_MOD_TYPES,
+    ) -> bpy.types.Object | None:
         if src_obj is None:
             return None
-        obj = _freeze_object(src_obj, label, depsgraph, collection, _EXPORT_EXCLUDE_MOD_TYPES)
+        obj = _freeze_object(src_obj, label, depsgraph, collection, exclude_modifier_types)
         created_objects.append(obj)
         created_meshes.append(obj.data)
         return obj
@@ -186,11 +193,20 @@ def staging_scene(
 
         boolean_cutters: list[bpy.types.Object] = []
         if export_cfg.include_boolean_cutters:
-            for src, lbl in ((getattr(refs, "eye_boolean_L", None), "eye_boolean_L"),
-                             (getattr(refs, "eye_boolean_R", None), "eye_boolean_R")):
-                frozen = _freeze(src, lbl)
+            for src, lbl in (
+                (getattr(refs, "eye_boolean_L", None), "eye_L_boolean"),
+                (getattr(refs, "eye_boolean_R", None), "eye_R_boolean"),
+            ):
+                frozen = _freeze(
+                    src,
+                    lbl,
+                    exclude_modifier_types=_BOOLEAN_CUTTER_EXCLUDE_MOD_TYPES,
+                )
                 if frozen is not None:
-                    boolean_cutters.append(frozen)
+                    if len(frozen.data.vertices) == 0:
+                        print(f"[Export][stage] WARNING: {lbl} frozen mesh has 0 verts — skipping")
+                    else:
+                        boolean_cutters.append(frozen)
                 elif src is None:
                     print(f"[Export][stage] WARNING: include_boolean_cutters=True but {lbl} ref is unset — skipping")
 

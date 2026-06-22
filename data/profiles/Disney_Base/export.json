@@ -6,7 +6,7 @@
   "glb_format": "GLB",
   "frame_range": [
     1,
-    10
+    5
   ],
   "head_bake_material_name": "head_mat",
   "eye_wedge_R_material_name": "eye_wedge_R",
@@ -19,6 +19,7 @@
   "bake_brow_texture_direct": false,
   "bake_lash_texture_direct": false,
   "include_hd_eyes": true,
+  "include_boolean_cutters": true,
   "bake_hd_eye_texture_direct": true,
   "hd_eye_material_name": "eye_mat",
   "hd_eye_bake_resolution": 512,

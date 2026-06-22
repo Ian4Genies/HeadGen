@@ -13,6 +13,7 @@
   "include_eyes":  false,
   "include_brows": false,
   "include_lashes": false,
+  "include_boolean_cutters": true,
 
   "bake_wedge_texture_direct": false,
   "copy_eye_projection": true,

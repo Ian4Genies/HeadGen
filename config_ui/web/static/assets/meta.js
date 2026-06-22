@@ -116,6 +116,7 @@ export const LABELS = {
   include_brows: "Include brows",
   include_lashes: "Include lashes",
   include_hd_eyes: "Include HD eyes",
+  include_boolean_cutters: "Include boolean cutters",
   bake_wedge_texture_direct: "Bake wedge texture direct",
   copy_eye_projection: "Copy eye projection",
   bake_brow_texture_direct: "Bake brow texture direct",

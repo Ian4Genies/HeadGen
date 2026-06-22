@@ -19,6 +19,7 @@
   "bake_brow_texture_direct": false,
   "bake_lash_texture_direct": false,
   "include_hd_eyes": true,
+  "include_boolean_cutters": true,
   "bake_hd_eye_texture_direct": true,
   "hd_eye_material_name": "eye_mat",
   "hd_eye_bake_resolution": 512,

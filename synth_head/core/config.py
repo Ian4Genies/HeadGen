@@ -296,6 +296,7 @@ class ExportConfig:
     include_brows: bool = False
     include_lashes: bool = False
     include_hd_eyes: bool = False
+    include_boolean_cutters: bool = True
 
     bake_wedge_texture_direct: bool = False
     copy_eye_projection: bool = True
@@ -332,6 +333,7 @@ class ExportConfig:
             include_brows=bool(d.get("include_brows", False)),
             include_lashes=bool(d.get("include_lashes", False)),
             include_hd_eyes=bool(d.get("include_hd_eyes", False)),
+            include_boolean_cutters=bool(d.get("include_boolean_cutters", True)),
             bake_wedge_texture_direct=bool(d.get("bake_wedge_texture_direct", True)),
             copy_eye_projection=bool(d.get("copy_eye_projection", False)),
             bake_brow_texture_direct=bool(d.get("bake_brow_texture_direct", False)),

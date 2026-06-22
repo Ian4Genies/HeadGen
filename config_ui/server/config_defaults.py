@@ -20,6 +20,7 @@ DEFAULT_CONFIG_FILES: dict[str, dict[str, Any]] = {
     },
     "export": {
         "include_hd_eyes": False,
+        "include_boolean_cutters": True,
         "bake_hd_eye_texture_direct": False,
         "hd_eye_material_name": "eye_mat",
         "hd_eye_bake_resolution": 512,

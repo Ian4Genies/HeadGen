@@ -131,6 +131,62 @@
         "bone": "LeftEyeSocketBind",
         "property": "var_pupil_grow"
       }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_african_f_0022",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0022",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_african_f_0022",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0022",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_f_0022",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0022",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_f_0022",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0022",
+        "shape_key": true
+      }
     }
   ]
 }

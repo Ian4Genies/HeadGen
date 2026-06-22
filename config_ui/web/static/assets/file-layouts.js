@@ -133,8 +133,8 @@ export const FILE_LAYOUTS = {
         cols: 3,
       },
       {
-        keys: ["include_eyes", "include_brows", "include_lashes", "include_hd_eyes"],
-        cols: 4,
+        keys: ["include_eyes", "include_brows", "include_lashes", "include_hd_eyes", "include_boolean_cutters"],
+        cols: 5,
         title: "Include parts",
       },
       {

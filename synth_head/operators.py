@@ -145,6 +145,7 @@ def _debug_config(cfg: PipelineConfig) -> None:
     p(f"  include_brows:                 {cfg.export.include_brows}")
     p(f"  include_lashes:                {cfg.export.include_lashes}")
     p(f"  include_hd_eyes:               {cfg.export.include_hd_eyes}")
+    p(f"  include_boolean_cutters:       {cfg.export.include_boolean_cutters}")
     p(f"  bake_wedge_texture_direct:     {cfg.export.bake_wedge_texture_direct}")
     p(f"  copy_eye_projection:           {cfg.export.copy_eye_projection}")
     p(f"  bake_brow_texture_direct:      {cfg.export.bake_brow_texture_direct}")
@@ -1446,9 +1447,10 @@ def _gather_export_refs(context) -> types.SimpleNamespace:
     """Collect all source-scene refs that the export pipeline needs.
 
     Returns a namespace with: head_geo, L_eye, R_eye, eyebrows, eyelashes,
-    hd_eye_R, hd_eye_L.  Missing refs come through as None — staging_scene
-    handles them based on the include_* flags in ExportConfig.  body_geo is
-    deliberately omitted: it was sewn into head_geo during Clean Mesh.
+    hd_eye_R, hd_eye_L, eye_boolean_L, eye_boolean_R.  Missing refs come
+    through as None — staging_scene handles them based on the include_* flags
+    in ExportConfig.  body_geo is deliberately omitted: it was sewn into
+    head_geo during Clean Mesh.
     """
     return types.SimpleNamespace(
         head_geo=get_ref(context, MESH),
@@ -1459,6 +1461,8 @@ def _gather_export_refs(context) -> types.SimpleNamespace:
         eyelashes=get_ref(context, EYELASHES),
         hd_eye_R=get_ref(context, HD_EYE_R),
         hd_eye_L=get_ref(context, HD_EYE_L),
+        eye_boolean_L=get_ref(context, EYE_BOOLEAN_L),
+        eye_boolean_R=get_ref(context, EYE_BOOLEAN_R),
     )
 
 

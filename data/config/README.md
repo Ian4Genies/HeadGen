@@ -698,6 +698,8 @@ Settings for the **Export Pipeline** operator (Pipeline 03), which runs after Cl
 | `include_eyes` | bool | If `true`, the L and R eye meshes are frozen and exported as separate objects inside the GLB. No texture bake — their existing materials travel through unchanged. |
 | `include_brows` | bool | If `true`, the eyebrows mesh is frozen and exported as a separate object. |
 | `include_lashes` | bool | If `true`, the eyelashes mesh is frozen and exported as a separate object. |
+| `include_hd_eyes` | bool | If `true`, the HD eye target meshes are frozen and exported as separate objects. Optional diffuse bake via `bake_hd_eye_texture_direct`. |
+| `include_boolean_cutters` | bool | If `true`, `eye_L_boolean` and `eye_R_boolean` are frozen and exported as separate objects. No texture bake — materials travel through unchanged. Default `true`. |
 
 ### Per-frame output layout
 

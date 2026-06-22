@@ -135,6 +135,7 @@ def staging_scene(
     - ``head_geo``: frozen head object (always present).
     - ``eyes``: list of frozen eye objects (0-2 entries).
     - ``hd_eyes``: list of frozen HD eye objects (0-2 entries).
+    - ``boolean_cutters``: list of frozen eye boolean cutter objects (0-2 entries).
     - ``brows``: list of frozen eyebrow objects (0-1 entries).
     - ``lashes``: list of frozen eyelash objects (0-1 entries).
     - ``objects``: flat list of every staged object, suitable for GLB export.
@@ -183,6 +184,16 @@ def staging_scene(
                 elif src is None:
                     print(f"[Export][stage] WARNING: include_hd_eyes=True but {lbl} ref is unset — skipping")
 
+        boolean_cutters: list[bpy.types.Object] = []
+        if export_cfg.include_boolean_cutters:
+            for src, lbl in ((getattr(refs, "eye_boolean_L", None), "eye_boolean_L"),
+                             (getattr(refs, "eye_boolean_R", None), "eye_boolean_R")):
+                frozen = _freeze(src, lbl)
+                if frozen is not None:
+                    boolean_cutters.append(frozen)
+                elif src is None:
+                    print(f"[Export][stage] WARNING: include_boolean_cutters=True but {lbl} ref is unset — skipping")
+
         brows: list[bpy.types.Object] = []
         if export_cfg.include_brows:
             frozen = _freeze(refs.eyebrows, "eyebrows")
@@ -199,12 +210,13 @@ def staging_scene(
             else:
                 print("[Export][stage] WARNING: include_lashes=True but eyelashes ref is unset — skipping")
 
-        objects = [head_geo, *eyes, *hd_eyes, *brows, *lashes]
+        objects = [head_geo, *eyes, *hd_eyes, *boolean_cutters, *brows, *lashes]
 
         yield types.SimpleNamespace(
             head_geo=head_geo,
             eyes=eyes,
             hd_eyes=hd_eyes,
+            boolean_cutters=boolean_cutters,
             brows=brows,
             lashes=lashes,
             objects=objects,

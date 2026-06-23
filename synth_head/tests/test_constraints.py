@@ -520,6 +520,22 @@ class TestCrossProportionClamp:
         result = apply_relational_rules(flat, rules)
         assert result["eye_clamp"] == pytest.approx(1.0)
 
+    def test_mirrors_clamp_to_right_partner(self):
+        flat = {
+            "LeftEyeSocketBind.scale.x": 1.2,
+            "RightEyeSocketBind.scale.x": 1.2,
+            "NoseBind.scale.x": 0.9,
+        }
+        rules = [{
+            "type": "cross_proportion_clamp",
+            "if": {"param": "LeftEyeSocketBind.scale.x", "above": 1.05},
+            "and": {"param": "NoseBind.scale.x", "below": 1},
+            "then_clamp": {"param": "LeftEyeSocketBind.scale.x", "max": 1.05},
+        }]
+        result = apply_relational_rules(flat, rules)
+        assert result["LeftEyeSocketBind.scale.x"] == pytest.approx(1.05)
+        assert result["RightEyeSocketBind.scale.x"] == pytest.approx(1.05)
+
     def test_validation_indexes_cross_proportion_keys(self):
         """validate_rules should include all params referenced in cross_proportion_clamp."""
         rules = ConstraintRules(relational_rules=[{

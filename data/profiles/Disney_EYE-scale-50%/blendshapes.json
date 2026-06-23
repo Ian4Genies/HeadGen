@@ -37,7 +37,7 @@
     "nose_male_varGp01K"
   ],
   "max_var_shapes": 2,
-  "max_variation": 0.5,
+  "max_variation": 0.3,
   "variation_overrides": {},
   "expression_shapes": [
     "BROW_LOWERER_L",

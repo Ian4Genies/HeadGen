@@ -284,6 +284,29 @@ def _apply_product_clamp(flat: dict[str, float], rule: dict) -> None:
     flat[a_key] = max_product / b
 
 
+def _mirror_joint_param_key(key: str) -> str | None:
+    """Return the Left↔Right partner key, or None if not a paired joint param."""
+    joint, _, rest = key.partition(".")
+    if not rest:
+        return None
+    if joint.startswith("Left"):
+        return f"Right{joint[4:]}.{rest}"
+    if joint.startswith("Right"):
+        return f"Left{joint[5:]}.{rest}"
+    return None
+
+
+def _apply_clamp_spec(flat: dict[str, float], target: str, spec: dict) -> None:
+    if target not in flat:
+        return
+    v = flat[target]
+    if "min" in spec:
+        v = v if v >= spec["min"] else spec["min"]
+    if "max" in spec:
+        v = v if v <= spec["max"] else spec["max"]
+    flat[target] = v
+
+
 def _apply_cross_proportion_clamp(flat: dict[str, float], rule: dict) -> None:
     """Clamp a target when two independent conditions are simultaneously true.
 
@@ -322,12 +345,10 @@ def _apply_cross_proportion_clamp(flat: dict[str, float], rule: dict) -> None:
     if target not in flat:
         return
 
-    v = flat[target]
-    if "min" in then_clamp:
-        v = v if v >= then_clamp["min"] else then_clamp["min"]
-    if "max" in then_clamp:
-        v = v if v <= then_clamp["max"] else then_clamp["max"]
-    flat[target] = v
+    _apply_clamp_spec(flat, target, then_clamp)
+    mirror = _mirror_joint_param_key(target)
+    if mirror is not None and mirror in flat:
+        _apply_clamp_spec(flat, mirror, then_clamp)
 
 
 def _apply_sandwich_clamp(flat: dict[str, float], rule: dict) -> None:

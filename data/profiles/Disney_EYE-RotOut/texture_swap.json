@@ -1,0 +1,39 @@
+{
+    "channels": {
+        "brow": {
+            "pool_path":     "input-pipeline/texture/brow",
+            "sequence_path": "output-pipeline/brow_sequence",
+            "node_name":     "brow-sequence",
+            "percentage":    1.0,
+            "enabled":       true
+        },
+        "lash": {
+            "pool_path":     "input-pipeline/texture/lash",
+            "sequence_path": "output-pipeline/lash_sequence",
+            "node_name":     "lash-sequence",
+            "percentage":    0.9,
+            "enabled":       true
+        },
+        "lip": {
+            "pool_path":     "input-pipeline/texture/lip",
+            "sequence_path": "output-pipeline/lip_sequence",
+            "node_name":     "lip-sequence",
+            "percentage":    1.0,
+            "enabled":       true
+        },
+        "beard": {
+            "pool_path":     "input-pipeline/texture/beard",
+            "sequence_path": "output-pipeline/beard_sequence",
+            "node_name":     "beard-sequence",
+            "percentage":    0.8,
+            "enabled":       true
+        },
+        "nose": {
+            "pool_path":     "input-pipeline/texture/nose",
+            "sequence_path": "output-pipeline/nose_sequence",
+            "node_name":     "nose-sequence",
+            "percentage":    1.0,
+            "enabled":       false
+        }
+    }
+}

@@ -207,11 +207,19 @@ def build_registry(profile_name: str) -> dict:
     bs = prof.read_config_file(profile_name, "blendshapes")
 
     joints = cj.get("joint_names", [])
+    joint_set = set(joints)
     channels = ("location", "rotation", "scale")
     axes = ("x", "y", "z")
 
+    def _skip_mirrored_right(joint: str) -> bool:
+        if not joint.startswith("Right"):
+            return False
+        return ("Left" + joint[5:]) in joint_set
+
     joint_params: list[str] = []
     for joint in joints:
+        if _skip_mirrored_right(joint):
+            continue
         for ch in channels:
             joint_params.append(f"{joint}.{ch}")
             for ax in axes:

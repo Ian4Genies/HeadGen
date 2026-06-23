@@ -4,8 +4,6 @@
   "reapply_constraints": true,
   "targets": [
     "LeftEyeSocketBind.scale.x",
-    "LeftEyeSocketBind.scale.y",
-    "RightEyeSocketBind.scale.y",
-    "RightEyeSocketBind.scale.x"
+    "LeftEyeSocketBind.scale.y"
   ]
 }

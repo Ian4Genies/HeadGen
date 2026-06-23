@@ -1,0 +1,11 @@
+{
+  "smooth_corrective": {
+    "factor":           0.6,
+    "iterations":       5,
+    "scale":            1.0,
+    "smooth_type":      "SIMPLE",
+    "use_only_smooth":  false,
+    "use_pin_boundary": false,
+    "rest_source":      "ORCO"
+  }
+}

@@ -117,9 +117,25 @@ export async function mountManifestList({
   return root;
 }
 
+function mirrorJointParam(key) {
+  const parts = key.split(".");
+  if (parts.length < 2) return null;
+  const joint = parts[0];
+  if (joint.startsWith("Left")) return ["Right" + joint.slice(4), ...parts.slice(1)].join(".");
+  return null;
+}
+
+function isRedundantMirrorTarget(key, active) {
+  const parts = key.split(".");
+  if (parts.length < 2 || !parts[0].startsWith("Right")) return false;
+  const left = ["Left" + parts[0].slice(5), ...parts.slice(1)].join(".");
+  return active.includes(left);
+}
+
 export async function mountRegistryPicker({ profile, activeItems, onChange }) {
   const root = el("div", "manifest-list");
   let active = [...activeItems];
+  let filterText = "";
   let registry = { rerandomize_suggestions: [] };
   try {
     const res = await fetch(`/api/profiles/${encodeURIComponent(profile)}/registry`);
@@ -129,61 +145,95 @@ export async function mountRegistryPicker({ profile, activeItems, onChange }) {
   }
 
   const suggestions = registry.rerandomize_suggestions ?? [];
-  const sync = (next) => {
-    active = next;
-    onChange([...active]);
-    render();
+
+  root.appendChild(
+    el(
+      "p",
+      "chip-hint",
+      "Left* joint flat keys mirror to Right* automatically (scale identical; location X and rotation Y/Z negated).",
+    ),
+  );
+  const subtitle = el("p", "manifest-subtitle", "");
+  root.appendChild(subtitle);
+  const activeBox = el("div", "chips active-chips");
+  root.appendChild(activeBox);
+
+  const search = el("input", "input search");
+  search.placeholder = "Search params, shapes, properties…";
+  root.appendChild(search);
+
+  const pool = el("div", "chips catalog-chips");
+  root.appendChild(pool);
+
+  const addRow = el("div", "add-row");
+  const customInp = el("input", "input mono");
+  customInp.placeholder = "Custom target (supports wildcards)";
+  const addBtn = el("button", "btn ghost", "Add");
+  addBtn.type = "button";
+  addRow.append(customInp, addBtn);
+  root.appendChild(addRow);
+
+  const drawPool = () => {
+    pool.innerHTML = "";
+    const q = filterText.trim().toLowerCase();
+    const inactive = suggestions.filter((s) => !active.includes(s));
+    const filtered = inactive.filter((s) => s.toLowerCase().includes(q));
+    if (!filtered.length) {
+      pool.appendChild(el("span", "muted small", q ? "No matches" : "All suggestions active"));
+      return;
+    }
+    for (const s of filtered.slice(0, 120)) {
+      const btn = el("button", "chip catalog-chip mono", `+ ${s}`);
+      btn.type = "button";
+      btn.onclick = () => {
+        const mirror = mirrorJointParam(s);
+        let next = [...active, s];
+        if (mirror) next = next.filter((x) => x !== mirror);
+        sync(next);
+      };
+      pool.appendChild(btn);
+    }
   };
 
-  const render = () => {
-    root.innerHTML = "";
-    root.appendChild(el("p", "manifest-subtitle", `Active targets (${active.length})`));
-    const activeBox = el("div", "chips active-chips");
+  const renderActive = () => {
+    subtitle.textContent = `Active targets (${active.length})`;
+    activeBox.innerHTML = "";
     for (const id of active) {
-      const chip = el("span", "chip active-chip mono", id);
+      const chip = el("span", "chip active-chip mono" + (isRedundantMirrorTarget(id, active) ? " redundant-mirror" : ""), id);
+      const mirror = mirrorJointParam(id);
+      if (mirror) {
+        chip.appendChild(el("span", "mirror-badge", ` → ${mirror}`));
+      } else if (isRedundantMirrorTarget(id, active)) {
+        chip.appendChild(el("span", "mirror-badge redundant", " redundant with Left*"));
+      }
       const rm = el("button", "chip-x", "×");
       rm.type = "button";
       rm.onclick = () => sync(active.filter((x) => x !== id));
       chip.appendChild(rm);
       activeBox.appendChild(chip);
     }
-    root.appendChild(activeBox);
-
-    const search = el("input", "input search");
-    search.placeholder = "Search params, shapes, properties…";
-    root.appendChild(search);
-
-    const pool = el("div", "chips catalog-chips");
-    const draw = (q = "") => {
-      pool.innerHTML = "";
-      const inactive = suggestions.filter((s) => !active.includes(s));
-      const filtered = inactive.filter((s) => s.toLowerCase().includes(q.toLowerCase()));
-      for (const s of filtered.slice(0, 120)) {
-        const btn = el("button", "chip catalog-chip mono", `+ ${s}`);
-        btn.type = "button";
-        btn.onclick = () => sync([...active, s]);
-        pool.appendChild(btn);
-      }
-    };
-    search.oninput = () => draw(search.value.trim());
-    draw();
-    root.appendChild(pool);
-
-    const addRow = el("div", "add-row");
-    const inp = el("input", "input mono");
-    inp.placeholder = "Custom target (supports wildcards)";
-    const btn = el("button", "btn ghost", "Add");
-    btn.type = "button";
-    btn.onclick = () => {
-      const v = inp.value.trim();
-      if (!v || active.includes(v)) return;
-      sync([...active, v]);
-      inp.value = "";
-    };
-    addRow.append(inp, btn);
-    root.appendChild(addRow);
   };
 
-  render();
+  const sync = (next) => {
+    active = next;
+    onChange([...active]);
+    renderActive();
+    drawPool();
+  };
+
+  search.oninput = () => {
+    filterText = search.value;
+    drawPool();
+  };
+
+  addBtn.onclick = () => {
+    const v = customInp.value.trim();
+    if (!v || active.includes(v)) return;
+    sync([...active, v]);
+    customInp.value = "";
+  };
+
+  renderActive();
+  drawPool();
   return root;
 }

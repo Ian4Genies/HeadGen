@@ -112,8 +112,8 @@
     "LeftEyeSocketBind.rotation.x": 0,
     "LeftEyeSocketBind.rotation.y": 0,
     "LeftEyeSocketBind.rotation.z": {
-      "min": -10,
-      "max": 10
+      "min": -6,
+      "max": 6
     },
     "NeckBind.scale.x": {
       "min": -0.2,

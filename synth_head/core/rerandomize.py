@@ -87,6 +87,14 @@ def build_param_registry(cfg: "PipelineConfig") -> tuple[dict[str, ParamKind], l
     for joint in cfg.chaos_joint_names:
         for key in expand_joint_keys(joint):
             registry[key] = "joint"
+    for joint in cfg.chaos_joint_names:
+        if not joint.startswith("Left"):
+            continue
+        partner = _mirror_partner_joint_name(joint)
+        if partner is None or partner in cfg.chaos_joint_names:
+            continue
+        for key in expand_joint_keys(partner):
+            registry[key] = "joint"
 
     return registry, warnings
 
@@ -206,8 +214,108 @@ def resolve_targets(
     return resolved, errors
 
 
+def _mirror_partner_joint_name(joint: str) -> str | None:
+    if joint.startswith("Left"):
+        return "Right" + joint[4:]
+    if joint.startswith("Right"):
+        return "Left" + joint[5:]
+    return None
+
+
+def is_joint_flat_key(key: str) -> bool:
+    return _joint_flat_key_parts(key) is not None
+
+
+def _expand_mirror_joint_keys(keys: set[str]) -> set[str]:
+    """Ensure L/R partner flat keys are included for apply."""
+    expanded = set(keys)
+    for key in keys:
+        parts = _joint_flat_key_parts(key)
+        if parts is None:
+            continue
+        joint, channel, axis = parts
+        partner = _mirror_partner_joint_name(joint)
+        if partner is not None:
+            expanded.add(f"{partner}.{channel}.{axis}")
+    return expanded
+
+
+def _joint_flat_key_parts(key: str) -> tuple[str, str, str] | None:
+    parts = key.split(".")
+    if len(parts) != 3:
+        return None
+    joint, channel, axis = parts
+    if channel not in _JOINT_CHANNELS or axis not in _JOINT_AXES:
+        return None
+    return joint, channel, axis
+
+
+def _canonical_left_joint_key(key: str) -> str:
+    """Paired joints sample from Left* ranges; Right* targets map to Left*."""
+    parts = _joint_flat_key_parts(key)
+    if parts is None:
+        return key
+    joint, channel, axis = parts
+    if joint.startswith("Right"):
+        joint = "Left" + joint[5:]
+    return f"{joint}.{channel}.{axis}"
+
+
+def _right_value_from_left_key(left_key: str, left_value: float) -> float:
+    """Mirror a Left* flat value to its Right* partner (variation symmetry rules)."""
+    parts = _joint_flat_key_parts(left_key)
+    if parts is None:
+        return left_value
+    _, channel, axis = parts
+    if channel == "location" and axis == "x":
+        return -left_value
+    if channel == "rotation" and axis in ("y", "z"):
+        return -left_value
+    return left_value
+
+
+def _apply_paired_joint_sample(
+    patched: dict[str, float],
+    left_key: str,
+    value: float,
+) -> set[str]:
+    """Write Left* sample and mirrored Right* partner; return keys touched."""
+    parts = _joint_flat_key_parts(left_key)
+    if parts is None:
+        patched[left_key] = value
+        return {left_key}
+    joint, channel, axis = parts
+    partner = _mirror_partner_joint_name(joint)
+    if partner is None:
+        patched[left_key] = value
+        return {left_key}
+    right_key = f"{partner}.{channel}.{axis}"
+    patched[left_key] = value
+    patched[right_key] = _right_value_from_left_key(left_key, value)
+    return {left_key, right_key}
+
+
+def _sample_joint_targets_with_symmetry(
+    patched: dict[str, float],
+    joint_target_keys: list[str],
+    rng: random.Random,
+    cfg: "PipelineConfig",
+) -> set[str]:
+    """Re-sample joint flat keys, mirroring L/R pairs like variation generation."""
+    written: set[str] = set()
+    canon_keys: set[str] = set()
+    for key in joint_target_keys:
+        canon_keys.add(_canonical_left_joint_key(key))
+
+    for left_key in sorted(canon_keys):
+        value = sample_value(left_key, rng, cfg)
+        written |= _apply_paired_joint_sample(patched, left_key, value)
+    return written
+
+
 def param_range(key: str, cfg: "PipelineConfig") -> tuple[float, float]:
     """Return ``(min, max)`` sampling range for a single flat parameter key."""
+    key = _canonical_left_joint_key(key)
     mins, maxs = build_range_vectors([key], cfg.variation, cfg.blendshapes)
     return float(mins[0]), float(maxs[0])
 
@@ -262,9 +370,17 @@ def rerandomize_flat(
     patched = dict(flat)
     target_keys: set[str] = set()
 
+    joint_targets = [t.key for t in resolved_targets if t.kind == "joint"]
     for target in resolved_targets:
+        if target.kind == "joint":
+            continue
         patched[target.key] = sample_value(target.key, rng, cfg)
         target_keys.add(target.key)
+
+    if joint_targets:
+        target_keys |= _sample_joint_targets_with_symmetry(
+            patched, joint_targets, rng, cfg,
+        )
 
     if cfg.rerandomize.reapply_constraints:
         result = constrain(patched, cfg.constraints)
@@ -274,4 +390,5 @@ def rerandomize_flat(
         result = patched
         apply_keys = set(target_keys)
 
+    apply_keys = _expand_mirror_joint_keys(apply_keys)
     return result, apply_keys

@@ -165,7 +165,12 @@ export const FILE_LAYOUTS = {
   rerandomize: {
     sections: [
       { keys: ["enabled", "seed", "reapply_constraints"], cols: 3 },
-      { keys: ["targets"], full: true, title: "Targets" },
+      {
+        keys: ["targets"],
+        full: true,
+        title: "Targets",
+        hint: "Left* joint params auto-mirror to Right* at runtime — add LeftEyeSocketBind.scale.x, not both sides.",
+      },
     ],
   },
 };

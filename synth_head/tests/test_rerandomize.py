@@ -139,6 +139,79 @@ class TestRerandomizeFlat:
 
         assert apply_keys == {"NoseBind.scale.x"}
 
+    def test_paired_joint_scale_matches_left_and_right(self, cfg: PipelineConfig):
+        flat = {
+            "LeftEyeSocketBind.scale.x": 1.0,
+            "RightEyeSocketBind.scale.x": 1.0,
+            "LeftEyeSocketBind.scale.y": 1.0,
+            "RightEyeSocketBind.scale.y": 1.0,
+        }
+        targets = [
+            ResolvedTarget(key="LeftEyeSocketBind.scale.x", kind="joint"),
+            ResolvedTarget(key="RightEyeSocketBind.scale.x", kind="joint"),
+            ResolvedTarget(key="LeftEyeSocketBind.scale.y", kind="joint"),
+            ResolvedTarget(key="RightEyeSocketBind.scale.y", kind="joint"),
+        ]
+        new_flat, apply_keys = rerandomize_flat(
+            flat, targets, random.Random(7), cfg,
+        )
+        assert new_flat["LeftEyeSocketBind.scale.x"] == pytest.approx(
+            new_flat["RightEyeSocketBind.scale.x"],
+        )
+        assert new_flat["LeftEyeSocketBind.scale.y"] == pytest.approx(
+            new_flat["RightEyeSocketBind.scale.y"],
+        )
+        assert "LeftEyeSocketBind.scale.x" in apply_keys
+        assert "RightEyeSocketBind.scale.x" in apply_keys
+
+    def test_paired_joint_left_only_target_mirrors_right(self, cfg: PipelineConfig):
+        cfg.rerandomize.reapply_constraints = False
+        flat = {
+            "LeftEyeSocketBind.scale.x": 1.0,
+            "RightEyeSocketBind.scale.x": 1.0,
+        }
+        targets = [ResolvedTarget(key="LeftEyeSocketBind.scale.x", kind="joint")]
+        new_flat, apply_keys = rerandomize_flat(
+            flat, targets, random.Random(3), cfg,
+        )
+        assert new_flat["LeftEyeSocketBind.scale.x"] == pytest.approx(
+            new_flat["RightEyeSocketBind.scale.x"],
+        )
+        assert "RightEyeSocketBind.scale.x" in apply_keys
+
+    def test_mirrors_right_when_partner_not_in_chaos_joint_names(self, cfg: PipelineConfig):
+        from dataclasses import replace
+
+        cfg = replace(
+            cfg,
+            chaos_joint_names=frozenset({"LeftEyeSocketBind", "JawBind"}),
+        )
+        cfg.rerandomize.reapply_constraints = False
+        flat = {
+            "LeftEyeSocketBind.scale.x": 1.0,
+            "RightEyeSocketBind.scale.x": 0.9,
+        }
+        targets = [ResolvedTarget(key="LeftEyeSocketBind.scale.x", kind="joint")]
+        new_flat, apply_keys = rerandomize_flat(
+            flat, targets, random.Random(5), cfg,
+        )
+        assert new_flat["LeftEyeSocketBind.scale.x"] == pytest.approx(
+            new_flat["RightEyeSocketBind.scale.x"],
+        )
+        assert "RightEyeSocketBind.scale.x" in apply_keys
+
+    def test_paired_joint_location_x_mirrors_sign(self, cfg: PipelineConfig):
+        cfg.rerandomize.reapply_constraints = False
+        flat = {
+            "LeftEyeSocketBind.location.x": 0.0,
+            "RightEyeSocketBind.location.x": 0.0,
+        }
+        targets = [ResolvedTarget(key="LeftEyeSocketBind.location.x", kind="joint")]
+        new_flat, _ = rerandomize_flat(flat, targets, random.Random(11), cfg)
+        assert new_flat["LeftEyeSocketBind.location.x"] == pytest.approx(
+            -new_flat["RightEyeSocketBind.location.x"],
+        )
+
     def test_constrain_can_expand_nose_scale_apply_keys(self, cfg: PipelineConfig):
         flat = {
             "NoseBind.scale.x": 0.5,

@@ -54,7 +54,7 @@ def _apply_transforms_to_bones(
 
 
 def apply_partial_joint_keys(
-    chaos_joints: list[bpy.types.PoseBone],
+    armature: bpy.types.Object,
     flat: dict[str, float],
     joint_keys: set[str],
     frame: int,
@@ -76,7 +76,7 @@ def apply_partial_joint_keys(
         channels = by_bone.setdefault(bone_name, {})
         channels.setdefault(channel, set()).add(axis)
 
-    bone_map = {bone.name: bone for bone in chaos_joints}
+    bone_map = {bone.name: bone for bone in armature.pose.bones}
 
     for bone_name, channels in by_bone.items():
         bone = bone_map.get(bone_name)

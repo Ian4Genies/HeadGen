@@ -12,13 +12,12 @@ import bpy
 from ..core.config import PipelineConfig
 from ..core.constraints import flatten_params
 from ..core.math import quaternion_to_euler_degrees
-from ..core.rerandomize import build_param_registry
+from ..core.rerandomize import build_param_registry, is_joint_flat_key
 from ..core.variation import ChaosTransform
 from .blendshapes import _apply_weights_to_shape_keys
 from .chaos_anim import (
     apply_bone_property_values,
     apply_partial_joint_keys,
-    collect_chaos_joints,
 )
 from .refs import get_ref
 from ..core.ref_keys import (
@@ -129,7 +128,7 @@ def apply_rerandomized_frame(
 
     registry, _ = build_param_registry(cfg)
 
-    joint_keys = {k for k in apply_keys if registry.get(k) == "joint"}
+    joint_keys = {k for k in apply_keys if is_joint_flat_key(k)}
     blendshape_keys = {k for k in apply_keys if registry.get(k) == "blendshape"}
     property_keys = {k for k in apply_keys if registry.get(k) == "bone_property"}
 
@@ -141,13 +140,11 @@ def apply_rerandomized_frame(
         context.view_layer.objects.active = armature
 
         if joint_keys:
-            chaos_joints = collect_chaos_joints(armature, cfg.chaos_joint_names)
-            if chaos_joints:
-                if armature.mode != "POSE":
-                    bpy.ops.object.mode_set(mode="POSE")
-                apply_partial_joint_keys(chaos_joints, flat, joint_keys, frame)
-                if armature.mode != "OBJECT":
-                    bpy.ops.object.mode_set(mode="OBJECT")
+            if armature.mode != "POSE":
+                bpy.ops.object.mode_set(mode="POSE")
+            apply_partial_joint_keys(armature, flat, joint_keys, frame)
+            if armature.mode != "OBJECT":
+                bpy.ops.object.mode_set(mode="OBJECT")
 
         if blendshape_keys:
             weights = {k: flat[k] for k in blendshape_keys if k in flat}

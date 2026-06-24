@@ -70,8 +70,8 @@
       "max": 0.1
     },
     "NoseBind.scale.z": {
-      "min": -0.2,
-      "max": 0.2
+      "min": 0,
+      "max": 0.1
     },
     "NoseBind.location.x": 0,
     "NoseBind.location.y": 0.2,

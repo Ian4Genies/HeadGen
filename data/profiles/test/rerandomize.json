@@ -1,9 +1,0 @@
-{
-  "enabled": true,
-  "seed": null,
-  "reapply_constraints": true,
-  "targets": [
-    "NoseBind.rotation.x",
-    "NoseBind.scale.x"
-  ]
-}

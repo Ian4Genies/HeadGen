@@ -139,7 +139,7 @@ export default function App() {
       setNewProfileName("");
       setShowNewProfile(false);
       await refreshProfiles();
-      notify("ok", `Created profile "${name}"`);
+      notify("ok", `Active profile: ${name} (synced to data/config)`);
     } catch (err) {
       notify("err", err instanceof Error ? err.message : "Create failed");
     }

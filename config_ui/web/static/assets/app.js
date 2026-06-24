@@ -166,7 +166,8 @@ async function boot() {
       $("#new-profile-name").value = "";
       $("#new-profile-bar").classList.add("hidden");
       await refreshProfiles();
-      toast("ok", `Created profile "${name}"`);
+      await loadFile();
+      toast("ok", `Active profile: ${name} (synced to data/config)`);
     } catch (err) {
       toast("err", err.message);
     }

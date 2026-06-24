@@ -168,6 +168,7 @@ def create_profile(name: str, source: str | None = None) -> None:
         _copy_json_tree(LIVE_CONFIG_DIR, dest)
     else:
         dest.mkdir(parents=True)
+    activate_profile(name)
 
 
 def delete_profile(name: str) -> None:

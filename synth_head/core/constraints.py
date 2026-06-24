@@ -143,6 +143,37 @@ def _rule_muted(rule: dict) -> bool:
     return bool(rule.get("muted"))
 
 
+def rule_is_muted(rule: dict) -> bool:
+    """True when a relational rule or hard clamp is marked muted in JSON."""
+    return _rule_muted(rule)
+
+
+def relational_rule_write_keys(rule: dict) -> set[str]:
+    """Flat keys this rule may write (primary targets only)."""
+    keys: set[str] = set()
+    if target := rule.get("target"):
+        keys.add(target)
+    then_clamp = rule.get("then_clamp", {})
+    if param := then_clamp.get("param"):
+        keys.add(param)
+    return keys
+
+
+def exclusively_muted_targets(rules: ConstraintRules) -> set[str]:
+    """Keys written only by muted relational rules (no active rule also writes them)."""
+    muted: set[str] = set()
+    active: set[str] = set()
+    for rule in rules.relational_rules:
+        bucket = muted if _rule_muted(rule) else active
+        bucket.update(relational_rule_write_keys(rule))
+    return muted - active
+
+
+def exclusively_muted_hard_clamps(rules: ConstraintRules) -> set[str]:
+    """Hard-clamp keys where the clamp entry itself is muted."""
+    return {key for key, cr in rules.hard_clamps.items() if cr.muted}
+
+
 def apply_hard_clamps(
     flat: dict[str, float],
     clamps: dict[str, ClampRange],

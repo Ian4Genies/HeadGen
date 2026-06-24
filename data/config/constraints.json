@@ -115,8 +115,7 @@
         }
       ],
       "combine": "min",
-      "max_bias": 1,
-      "muted": true
+      "max_bias": 1
     },
     {
       "title": "Suppress male nostril shape for downturned noses",
@@ -137,8 +136,7 @@
         }
       ],
       "combine": "min",
-      "max_bias": 1,
-      "muted": true
+      "max_bias": 1
     },
     {
       "title": "Suppress male nostril shape for wide noses",
@@ -159,8 +157,7 @@
         }
       ],
       "combine": "min",
-      "max_bias": 1,
-      "muted": true
+      "max_bias": 1
     },
     {
       "title": "Cap nose Y scale when downturned",
@@ -192,8 +189,7 @@
       "then_clamp": {
         "param": "NoseBind.rotation.x",
         "max": 2
-      },
-      "muted": true
+      }
     },
     {
       "title": "Suppress female nostril shape for upturned narrow noses",
@@ -225,8 +221,7 @@
         }
       ],
       "combine": "min",
-      "max_bias": 1,
-      "muted": true
+      "max_bias": 1
     },
     {
       "title": "Cap eye socket width when nose is narrow",

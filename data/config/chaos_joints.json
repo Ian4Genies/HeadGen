@@ -18,8 +18,8 @@
     "FaceBind.rotation": 0,
     "FaceBind.scale": 0.02,
     "JawBind.scale.x": {
-      "min": -0.2,
-      "max": 0
+      "min": -0.1,
+      "max": 0.1
     },
     "JawBind.scale.y": {
       "min": 0,
@@ -62,23 +62,23 @@
     "MouthInnerBind.location.z": 0,
     "MouthInnerBind.rotation": 0,
     "NoseBind.scale.x": {
-      "min": -0.4,
-      "max": -0.1
+      "min": -0.3,
+      "max": 0
     },
     "NoseBind.scale.y": {
       "min": -0.1,
       "max": 0.1
     },
     "NoseBind.scale.z": {
-      "min": 0.2,
-      "max": 0.4
+      "min": 0,
+      "max": 0.3
     },
     "NoseBind.location.x": 0,
     "NoseBind.location.y": 0.2,
     "NoseBind.location.z": 0,
     "NoseBind.rotation.x": {
-      "min": -10,
-      "max": -5
+      "min": -4,
+      "max": 2
     },
     "NoseBind.rotation.y": 0,
     "NoseBind.rotation.z": 0,
@@ -112,8 +112,8 @@
     "LeftEyeSocketBind.rotation.x": 0,
     "LeftEyeSocketBind.rotation.y": 0,
     "LeftEyeSocketBind.rotation.z": {
-      "min": -6,
-      "max": 6
+      "min": 3,
+      "max": 14
     },
     "NeckBind.scale.x": {
       "min": -0.2,

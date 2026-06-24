@@ -66,19 +66,19 @@
       "max": -0.1
     },
     "NoseBind.scale.y": {
-      "min": -0.1,
+      "min": 0,
       "max": 0.1
     },
     "NoseBind.scale.z": {
-      "min": 0.2,
-      "max": 0.4
+      "min": -0.2,
+      "max": 0.2
     },
     "NoseBind.location.x": 0,
     "NoseBind.location.y": 0.2,
     "NoseBind.location.z": 0,
     "NoseBind.rotation.x": {
-      "min": -10,
-      "max": -5
+      "min": -6,
+      "max": 0
     },
     "NoseBind.rotation.y": 0,
     "NoseBind.rotation.z": 0,

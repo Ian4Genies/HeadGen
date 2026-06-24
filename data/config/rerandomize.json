@@ -3,12 +3,10 @@
   "seed": null,
   "reapply_constraints": true,
   "targets": [
-    "JAW_RETREAT",
-    "JAW_THRUST",
-    "JawBind.location.y",
-    "JawBind.location.z",
-    "JawBind.rotation.x",
-    "JawBind.scale.x",
-    "JawBind.scale.y"
+    "LeftEyeSocketBind.rotation.z",
+    "LeftEyeSocketBind.location.x",
+    "LeftEyeSocketBind.location.y",
+    "LeftEyeSocketBind.scale.x",
+    "LeftEyeSocketBind.scale.y"
   ]
 }

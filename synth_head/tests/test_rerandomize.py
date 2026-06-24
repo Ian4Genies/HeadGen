@@ -237,6 +237,66 @@ class TestExpandConstraintPeers:
         peers = expand_constraint_peers({"var_iris_shrink"}, rules)
         assert peers == {"var_iris_shrink", "var_iris_grow"}
 
+    def test_muted_winner_take_all_not_expanded(self):
+        rules = ConstraintRules.from_dict({
+            "relational_rules": [{
+                "type": "winner_take_all",
+                "params": ["var_iris_grow", "var_iris_shrink"],
+                "muted": True,
+            }],
+        })
+        peers = expand_constraint_peers({"var_iris_shrink"}, rules)
+        assert peers == {"var_iris_shrink"}
+
+
+class TestMutedConstraintsOnRerandomize:
+    def test_muted_conditional_bias_does_not_raise_target(self, cfg: PipelineConfig):
+        cfg.constraints = ConstraintRules(relational_rules=[{
+            "type": "conditional_bias",
+            "direction": "raise",
+            "target": "nose_male_varGp01G",
+            "muted": True,
+            "drivers": [
+                {"param": "NoseBind.rotation.x", "range": [0, -8], "map": [0, 1]},
+                {"param": "NoseBind.scale.x", "range": [1, 0.7], "map": [0, 1]},
+            ],
+            "combine": "min",
+            "max_bias": 1,
+        }])
+        cfg.blendshapes.independent_shapes = {
+            "nose_male_varGp01G": {"min": 0, "max": 0, "mirror_sides": False},
+        }
+        flat = {
+            "NoseBind.rotation.x": -10.0,
+            "NoseBind.scale.x": 0.6,
+            "nose_male_varGp01G": 0.0,
+        }
+        targets = [ResolvedTarget(key="NoseBind.rotation.x", kind="joint")]
+        result, apply_keys = rerandomize_flat(flat, targets, random.Random(0), cfg)
+        assert result["nose_male_varGp01G"] == pytest.approx(0.0)
+        assert "nose_male_varGp01G" in apply_keys
+
+    def test_stale_target_reset_when_all_rules_muted(self, cfg: PipelineConfig):
+        cfg.constraints = ConstraintRules(relational_rules=[{
+            "type": "conditional_bias",
+            "direction": "raise",
+            "target": "nose_male_varGp01G",
+            "muted": True,
+            "drivers": [{"param": "NoseBind.rotation.x", "range": [0, -8], "map": [0, 1]}],
+            "max_bias": 1,
+        }])
+        cfg.blendshapes.independent_shapes = {
+            "nose_male_varGp01G": {"min": 0, "max": 0, "mirror_sides": False},
+        }
+        flat = {
+            "NoseBind.rotation.x": -10.0,
+            "nose_male_varGp01G": 0.92,
+        }
+        targets = [ResolvedTarget(key="NoseBind.rotation.x", kind="joint")]
+        result, apply_keys = rerandomize_flat(flat, targets, random.Random(0), cfg)
+        assert result["nose_male_varGp01G"] == pytest.approx(0.0)
+        assert "nose_male_varGp01G" in apply_keys
+
 
 class TestSampleValue:
     def test_value_within_range(self, cfg: PipelineConfig):

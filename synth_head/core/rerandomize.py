@@ -14,7 +14,13 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 from .attractor import build_range_vectors
-from .constraints import constrain, expand_joint_keys
+from .constraints import (
+    constrain,
+    expand_joint_keys,
+    exclusively_muted_hard_clamps,
+    exclusively_muted_targets,
+    rule_is_muted,
+)
 
 ParamKind = Literal["joint", "bone_property", "blendshape"]
 
@@ -334,12 +340,54 @@ def expand_constraint_peers(
     """Include relational-rule peers (e.g. winner_take_all pairs) in the apply set."""
     peers = set(target_keys)
     for rule in rules.relational_rules:
+        if rule_is_muted(rule):
+            continue
         if rule.get("type") != "winner_take_all":
             continue
         params = rule.get("params", [])
         if any(p in target_keys for p in params):
             peers.update(params)
     return peers
+
+
+def _fixed_independent_value(key: str, independent_shapes: dict) -> float | None:
+    """Return the fixed value for an independent shape with min == max, else None."""
+    spec = independent_shapes.get(key)
+    if not spec:
+        return None
+    lo = float(spec.get("min", 0.0))
+    hi = float(spec.get("max", 1.0))
+    if hi <= lo:
+        return lo
+    return None
+
+
+def _sync_exclusively_muted_targets(
+    result: dict[str, float],
+    cfg: "PipelineConfig",
+    target_keys: set[str],
+) -> set[str]:
+    """Refresh scene-apply keys for params only governed by muted rules.
+
+    Rerandomize reads existing keyframes into *result* before constrain runs.
+    Muted rules correctly skip, but stale values then persist unless we re-apply
+    the independent-shape fixed default (e.g. min=max=0).
+    """
+    apply_extras: set[str] = set()
+    indep = cfg.blendshapes.independent_shapes
+    refresh_keys = (
+        exclusively_muted_targets(cfg.constraints)
+        | exclusively_muted_hard_clamps(cfg.constraints)
+    )
+    for key in refresh_keys:
+        if key in target_keys:
+            continue
+        fixed = _fixed_independent_value(key, indep)
+        if fixed is None:
+            continue
+        result[key] = fixed
+        apply_extras.add(key)
+    return apply_extras
 
 
 def _keys_changed_by_constrain(
@@ -386,6 +434,7 @@ def rerandomize_flat(
         result = constrain(patched, cfg.constraints)
         apply_keys = expand_constraint_peers(target_keys, cfg.constraints)
         apply_keys |= _keys_changed_by_constrain(patched, result)
+        apply_keys |= _sync_exclusively_muted_targets(result, cfg, target_keys)
     else:
         result = patched
         apply_keys = set(target_keys)

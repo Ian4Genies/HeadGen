@@ -178,10 +178,12 @@ def _debug_config(cfg: PipelineConfig) -> None:
     p(f"--- CONSTRAINTS ---")
     p(f"  hard_clamps ({len(cfg.constraints.hard_clamps)}):")
     for k, v in cfg.constraints.hard_clamps.items():
-        p(f"    {k}: min={v.min}  max={v.max}")
+        muted = " [MUTED]" if v.muted else ""
+        p(f"    {k}: min={v.min}  max={v.max}{muted}")
     p(f"  relational_rules ({len(cfg.constraints.relational_rules)}):")
     for r in cfg.constraints.relational_rules:
-        p(f"    {r}")
+        muted = " [MUTED]" if r.get("muted") else ""
+        p(f"    {r.get('type', '?')}: {r.get('title', r.get('target', ''))}{muted}")
 
     p(f"--- MODIFIERS ---")
     p(f"  factor:           {cfg.modifiers.factor}")

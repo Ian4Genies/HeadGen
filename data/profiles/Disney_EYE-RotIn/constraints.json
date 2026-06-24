@@ -1,7 +1,7 @@
 {
   "hard_clamps": {
     "JawBind.location.y": {
-      "min": -0.15,
+      "min": -0.3,
       "max": 0.15
     },
     "JawBind.rotation.x": {

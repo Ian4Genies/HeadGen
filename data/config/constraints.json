@@ -1,7 +1,7 @@
 {
   "hard_clamps": {
     "JawBind.location.y": {
-      "min": -0.15,
+      "min": -0.3,
       "max": 0.15
     },
     "JawBind.rotation.x": {
@@ -62,14 +62,16 @@
       "type": "ratio_clamp",
       "numerator": "NoseBind.scale.z",
       "denominator": "NoseBind.scale.x",
-      "max_ratio": 1.2
+      "max_ratio": 1.6,
+      "muted": false
     },
     {
       "title": "Nose Z*X product cap (wide-tall limit)",
       "type": "product_clamp",
       "param_a": "NoseBind.scale.z",
       "param_b": "NoseBind.scale.x",
-      "max_product": 1.2
+      "max_product": 1.6,
+      "muted": false
     },
     {
       "title": "Nose Y/X ratio cap (narrow-wide limit)",
@@ -115,7 +117,8 @@
         }
       ],
       "combine": "min",
-      "max_bias": 1
+      "max_bias": 1,
+      "muted": true
     },
     {
       "title": "Suppress male nostril shape for downturned noses",
@@ -136,7 +139,8 @@
         }
       ],
       "combine": "min",
-      "max_bias": 1
+      "max_bias": 1,
+      "muted": true
     },
     {
       "title": "Suppress male nostril shape for wide noses",
@@ -157,7 +161,8 @@
         }
       ],
       "combine": "min",
-      "max_bias": 1
+      "max_bias": 1,
+      "muted": true
     },
     {
       "title": "Cap nose Y scale when downturned",
@@ -189,7 +194,8 @@
       "then_clamp": {
         "param": "NoseBind.rotation.x",
         "max": 2
-      }
+      },
+      "muted": true
     },
     {
       "title": "Suppress female nostril shape for upturned narrow noses",
@@ -221,7 +227,8 @@
         }
       ],
       "combine": "min",
-      "max_bias": 1
+      "max_bias": 1,
+      "muted": true
     },
     {
       "title": "Cap eye socket width when nose is narrow",

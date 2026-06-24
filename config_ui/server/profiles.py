@@ -172,11 +172,16 @@ def create_profile(name: str, source: str | None = None) -> None:
 
 def delete_profile(name: str) -> None:
     ensure_profiles_layout()
-    if name == _read_active_name():
-        raise ProfileError("Cannot delete the active profile")
     target = _profile_dir(name)
     if not target.is_dir():
         raise ProfileError(f"Profile not found: {name}")
+    profile_names = [p.name for p in sorted(PROFILES_DIR.iterdir()) if p.is_dir()]
+    if len(profile_names) <= 1:
+        raise ProfileError("Cannot delete the last profile")
+    if name == _read_active_name():
+        fallback = next(n for n in profile_names if n != name)
+        _write_active_name(fallback)
+        _sync_to_live(fallback)
     shutil.rmtree(target)
 
 

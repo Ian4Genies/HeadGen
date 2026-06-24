@@ -64,6 +64,8 @@ from .scene.snapshot import (
 from .scene.export_bake import scope_bake_environment, bake_head_materials, bake_object_material
 from .scene.projection import apply_bake_settings, bake_eye_side, bake_wedge_side, point_image_sequence_node
 from .scene.export_glb import staging_scene, rewrite_head_material_slots, stamp_frame_names, export_glb
+from .scene.export_pipeline import export_pipeline_generator
+from .scene.progress_overlay import SYNTHHEAD_PG_ExportProgress, overlay_refresh, progress_props
 from .core.export import frame_glb_name, frame_dir_name, frame_png_name, eye_bake_seq_png_name
 from .core.snapshot import build_snapshot, save_snapshot, load_snapshot
 from .core.config import load_config, PipelineConfig
@@ -1552,7 +1554,13 @@ class SYNTHHEAD_OT_ExportPipeline(bpy.types.Operator):
     )
     bl_options = {"REGISTER"}
 
-    def execute(self, context):
+    _timer = None
+    _gen = None
+    _frame_start: int = 0
+    _frame_end: int = 0
+    _out_dir: Path | None = None
+
+    def invoke(self, context, event):
         cfg = _get_config()
         wedge_projection = get_flag(context, WEDGE_PROJECTION)
         refs = _gather_export_refs(context)
@@ -1570,96 +1578,68 @@ class SYNTHHEAD_OT_ExportPipeline(bpy.types.Operator):
 
         fr = cfg.export.frame_range or (1, cfg.runner.frame_count)
         start, end = int(fr[0]), int(fr[1])
+        self._frame_start = start
+        self._frame_end = end
+        self._out_dir = out_dir
 
         self.report({"INFO"}, f"Export pipeline: frames {start}..{end} → {out_dir}")
 
-        if refs.body_geo is not None:
-            join_and_merge(
-                [refs.head_geo, refs.body_geo],
-                refs.head_geo,
-                merge_distance=cfg.cleanup.join_merge_distance,
-            )
-            set_ref(context, BODY_GEO, None)
+        self._gen = export_pipeline_generator(
+            context,
+            cfg,
+            refs,
+            wedge_projection=wedge_projection,
+            out_dir=out_dir,
+            start=start,
+            end=end,
+            write_snapshot=_write_export_snapshot,
+        )
 
-        with scope_bake_environment(refs.head_geo, cfg.export) as bake_ctx:
-            for frame in range(start, end + 1):
-                context.scene.frame_set(frame)
+        try:
+            next(self._gen)
+        except StopIteration:
+            self.report({"INFO"}, f"Exported {end - start + 1} frames → {out_dir}")
+            return {"FINISHED"}
 
-                # Every artifact for this frame (GLB, snapshot, PNGs) lives
-                # in the same per-frame folder.
-                frame_dir = out_dir / frame_dir_name(frame)
-                frame_dir.mkdir(parents=True, exist_ok=True)
+        wm = context.window_manager
+        progress_props(context).cancel_requested = False
+        self._timer = wm.event_timer_add(0.001, window=context.window)
+        wm.modal_handler_add(self)
+        return {"RUNNING_MODAL"}
 
-                png_paths = bake_head_materials(
-                    refs.head_geo,
-                    bake_ctx,
-                    frame_dir=frame_dir,
-                    samples=cfg.export.bake_samples,
-                    margin=cfg.export.bake_margin,
-                )
+    def modal(self, context, event):
+        pg = context.window_manager.synth_head_export_progress
 
-                if wedge_projection and cfg.export.copy_eye_projection:
-                    seq_R = Path(cfg.projection.baked_sequence_R_path)
-                    seq_L = Path(cfg.projection.baked_sequence_L_path)
-                    for side, seq_dir, suffix in (
-                        ("R", seq_R, "R_eye_wedge"),
-                        ("L", seq_L, "L_eye_wedge"),
-                    ):
-                        src = seq_dir / eye_bake_seq_png_name(frame, side)
-                        dst = frame_dir / frame_png_name(suffix)
-                        if src.exists():
-                            shutil.copy2(src, dst)
-                            png_paths[suffix] = dst
-                        else:
-                            print(f"[SynthHead][Export] WARNING: eye bake not found: {src}")
+        if event.type == "ESC" and event.value == "PRESS":
+            pg.cancel_requested = True
+            pg.phase = "Cancelling after current step…"
+            overlay_refresh(context)
+            return {"RUNNING_MODAL"}
 
-                if not wedge_projection and cfg.export.bake_hd_eye_texture_direct:
-                    for obj, suffix in (
-                        (refs.hd_eye_R, "R_hd_eye"),
-                        (refs.hd_eye_L, "L_hd_eye"),
-                    ):
-                        if obj is not None:
-                            p = bake_object_material(
-                                obj,
-                                cfg.export.hd_eye_material_name,
-                                suffix,
-                                cfg.export.hd_eye_bake_resolution,
-                                frame_dir,
-                                cfg.export.bake_samples,
-                                cfg.export.bake_margin,
-                            )
-                            if p is not None:
-                                png_paths[suffix] = p
+        if event.type != "TIMER":
+            return {"PASS_THROUGH"}
 
-                with staging_scene(refs, cfg.export) as stage:
-                    if cfg.export.clean_head_on_export:
-                        cut_and_sew(
-                            cfg.cleanup.mouth_bag_group,
-                            stage.head_geo,
-                            cfg.cleanup.mouth_sew_indices,
-                            merge_distance=cfg.cleanup.lip_sew_merge_distance,
-                            remove_mouth_bag=cfg.cleanup.remove_mouth_bag,
-                            snap_lips=cfg.cleanup.snap_lips,
-                            sew_lips=cfg.cleanup.sew_lips,
-                        )
-                    rewrite_head_material_slots(stage.head_geo, png_paths, cfg.export)
-                    stamp_frame_names(stage.objects, frame)
-                    export_glb(
-                        stage.objects,
-                        frame_dir / frame_glb_name(frame),
-                        format=cfg.export.glb_format,
-                    )
-                
-                _write_export_snapshot(context, cfg, frame_dir, frame, label="final")
+        try:
+            next(self._gen)
+        except StopIteration:
+            self._stop_timer(context)
+            if pg.cancel_requested:
+                self.report({"WARNING"}, "Export cancelled")
+                return {"CANCELLED"}
+            n = self._frame_end - self._frame_start + 1
+            self.report({"INFO"}, f"Exported {n} frames → {self._out_dir}")
+            return {"FINISHED"}
 
-                print(f"[SynthHead][Export] frame {frame}/{end} done")
+        overlay_refresh(context)
+        return {"RUNNING_MODAL"}
 
-        if cfg.runner.save_export_blend_path:
-            Path(cfg.runner.save_export_blend_path).parent.mkdir(parents=True, exist_ok=True)
-            bpy.ops.wm.save_as_mainfile(filepath=cfg.runner.save_export_blend_path)
+    def _stop_timer(self, context) -> None:
+        if self._timer is not None:
+            context.window_manager.event_timer_remove(self._timer)
+            self._timer = None
 
-        self.report({"INFO"}, f"Exported {end - start + 1} frames → {out_dir}")
-        return {"FINISHED"}
+    def execute(self, context):
+        return self.invoke(context, None)
 
 
 class SYNTHHEAD_OT_LoadEyeBakeSettings(bpy.types.Operator):
@@ -1853,6 +1833,7 @@ def _draw_menu(self, _context):
 
 CLASSES = [
     SYNTHHEAD_PG_PipelineRefs,
+    SYNTHHEAD_PG_ExportProgress,
     SYNTHHEAD_OT_hello,
     SYNTHHEAD_OT_ping,
     SYNTHHEAD_OT_BatchConversion,

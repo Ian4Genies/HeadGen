@@ -24,6 +24,9 @@ if "bpy" in locals():
     from .scene import export_glb as scene_export_glb
     from .scene import projection as scene_projection
     from .scene import texture_swap as scene_texture_swap
+    from .scene import progress as scene_progress
+    from .scene import progress_overlay as scene_progress_overlay
+    from .scene import export_pipeline as scene_export_pipeline
 
     from .scene import rerandomize as scene_rerandomize
 
@@ -56,6 +59,9 @@ if "bpy" in locals():
     importlib.reload(scene_export_glb)
     importlib.reload(scene_projection)
     importlib.reload(scene_texture_swap)
+    importlib.reload(scene_progress_overlay)
+    importlib.reload(scene_export_pipeline)
+    importlib.reload(scene_progress)
     importlib.reload(scene_rerandomize)
     importlib.reload(scene)
     importlib.reload(operators)
@@ -88,11 +94,15 @@ def register():
     bpy.types.Scene.synth_head = bpy.props.PointerProperty(
         type=operators.SYNTHHEAD_PG_PipelineRefs,
     )
+    bpy.types.WindowManager.synth_head_export_progress = bpy.props.PointerProperty(
+        type=operators.SYNTHHEAD_PG_ExportProgress,
+    )
     bpy.types.VIEW3D_MT_object.append(operators._draw_menu)
 
 
 def unregister():
     bpy.types.VIEW3D_MT_object.remove(operators._draw_menu)
+    del bpy.types.WindowManager.synth_head_export_progress
     del bpy.types.Scene.synth_head
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)

@@ -77,8 +77,8 @@
     "NoseBind.location.y": 0.2,
     "NoseBind.location.z": 0,
     "NoseBind.rotation.x": {
-      "min": 10,
-      "max": 15
+      "min": -10,
+      "max": -5
     },
     "NoseBind.rotation.y": 0,
     "NoseBind.rotation.z": 0,

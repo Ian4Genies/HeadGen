@@ -801,6 +801,51 @@ select:focus {
   padding: 0.85rem;
 }
 
+.rule-card.is-muted {
+  opacity: 0.55;
+  border-color: rgba(251, 191, 36, 0.35);
+  background: rgba(251, 191, 36, 0.06);
+}
+
+.rule-card.is-muted strong {
+  text-decoration: line-through;
+  text-decoration-color: rgba(251, 191, 36, 0.65);
+}
+
+.mute-badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(251, 191, 36, 0.18);
+  color: #fcd34d;
+  letter-spacing: 0.06em;
+}
+
+.mute-toggle {
+  margin-left: auto;
+}
+
+.mute-toggle .switch-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.picker-item.is-muted {
+  opacity: 0.5;
+  border-style: dashed;
+  border-color: rgba(251, 191, 36, 0.45);
+}
+
+.picker-item.is-muted::after {
+  content: "muted";
+  margin-left: 0.35rem;
+  font-size: 0.62rem;
+  color: #fcd34d;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .card-head {
   display: flex;
   align-items: center;

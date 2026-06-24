@@ -115,7 +115,8 @@
         }
       ],
       "combine": "min",
-      "max_bias": 1
+      "max_bias": 1,
+      "muted": false
     },
     {
       "title": "Suppress male nostril shape for downturned noses",
@@ -136,7 +137,8 @@
         }
       ],
       "combine": "min",
-      "max_bias": 1
+      "max_bias": 1,
+      "muted": false
     },
     {
       "title": "Suppress male nostril shape for wide noses",
@@ -189,7 +191,8 @@
       "then_clamp": {
         "param": "NoseBind.rotation.x",
         "max": 2
-      }
+      },
+      "muted": true
     },
     {
       "title": "Suppress female nostril shape for upturned narrow noses",

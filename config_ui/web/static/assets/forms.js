@@ -868,7 +868,7 @@ export class ConfigForm {
   }
 
   #objectCard(path, items, index, item, kind) {
-    const card = el("div", "rule-card");
+    const card = el("div", "rule-card" + (item.muted ? " is-muted" : ""));
     const head = el("div", "card-head");
     const title =
       kind === "drivers"
@@ -876,6 +876,21 @@ export class ConfigForm {
         : item.title || `Rule ${index + 1}`;
     head.appendChild(el("strong", "", title));
     if (item.type) head.appendChild(el("span", "type-badge", item.type));
+    if (item.muted) head.appendChild(el("span", "mute-badge", "MUTED"));
+    if (kind !== "drivers") {
+      const muteLabel = el("label", "switch-row compact mute-toggle");
+      const muteChk = el("input");
+      muteChk.type = "checkbox";
+      muteChk.checked = !!item.muted;
+      muteChk.onchange = () => {
+        item.muted = muteChk.checked;
+        card.classList.toggle("is-muted", item.muted);
+        this.#set(path, [...items]);
+        this.render();
+      };
+      muteLabel.append(muteChk, el("span", "switch-ui"), el("span", "switch-label", "Muted"));
+      head.appendChild(muteLabel);
+    }
     const del = el("button", "btn icon danger", "×");
     del.type = "button";
     del.onclick = () => {
@@ -930,7 +945,7 @@ export class ConfigForm {
 
       const body = el("div", "field-grid");
       for (const [k, v] of Object.entries(item)) {
-        if (k === "title" || k === "type") continue;
+        if (k === "title" || k === "type" || k === "muted") continue;
         body.appendChild(this.#fieldWrap(k, this.#inlineValue([...path, index, k], v, k, item.type)));
       }
       card.appendChild(body);
@@ -1261,7 +1276,7 @@ function el(tag, cls = "", text = "") {
 }
 
 function emptyRule() {
-  return { title: "New rule", type: "scale_follow", target: "", source: "", factor: 0.5 };
+  return { title: "New rule", type: "scale_follow", target: "", source: "", factor: 0.5, muted: false };
 }
 
 function emptyDriver() {

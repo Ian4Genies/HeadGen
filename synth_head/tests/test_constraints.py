@@ -119,6 +119,12 @@ class TestHardClamps:
         result = apply_hard_clamps(flat, clamps)
         assert result == {"A": 0.5}
 
+    def test_muted_clamp_skipped(self):
+        flat = {"A": 2.0}
+        clamps = {"A": ClampRange(max=1.0, muted=True)}
+        result = apply_hard_clamps(flat, clamps)
+        assert result["A"] == pytest.approx(2.0)
+
 
 # ---------------------------------------------------------------------------
 # Relational rules
@@ -136,6 +142,12 @@ class TestScaleFollow:
         rules = [{"type": "scale_follow", "source": "GONE", "target": "tgt", "factor": 2.0}]
         result = apply_relational_rules(flat, rules)
         assert result["tgt"] == pytest.approx(1.0)
+
+    def test_muted_rule_skipped(self):
+        flat = {"src": 0.4, "tgt": 999.0}
+        rules = [{"type": "scale_follow", "source": "src", "target": "tgt", "factor": 0.5, "muted": True}]
+        result = apply_relational_rules(flat, rules)
+        assert result["tgt"] == pytest.approx(999.0)
 
     def test_missing_target_skipped(self):
         flat = {"src": 1.0}

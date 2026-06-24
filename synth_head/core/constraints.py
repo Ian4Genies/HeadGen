@@ -94,6 +94,7 @@ def unflatten_params(
 class ClampRange:
     min: float | None = None
     max: float | None = None
+    muted: bool = False
 
 
 @dataclass
@@ -114,6 +115,7 @@ class ConstraintRules:
             clamps[key] = ClampRange(
                 min=bounds.get("min"),
                 max=bounds.get("max"),
+                muted=bool(bounds.get("muted", False)),
             )
         return cls(
             hard_clamps=clamps,
@@ -137,13 +139,17 @@ def load_rules(path: str | Path) -> ConstraintRules:
 # Hard clamps
 # ---------------------------------------------------------------------------
 
+def _rule_muted(rule: dict) -> bool:
+    return bool(rule.get("muted"))
+
+
 def apply_hard_clamps(
     flat: dict[str, float],
     clamps: dict[str, ClampRange],
 ) -> dict[str, float]:
     """Apply per-parameter min/max clamps. Missing keys are silently skipped."""
     for key, cr in clamps.items():
-        if key not in flat:
+        if cr.muted or key not in flat:
             continue
         v = flat[key]
         if cr.min is not None:
@@ -542,6 +548,8 @@ def apply_relational_rules(
 ) -> dict[str, float]:
     """Evaluate relational rules in order. Unknown types are silently skipped."""
     for rule in rules:
+        if _rule_muted(rule):
+            continue
         handler = _RULE_HANDLERS.get(rule.get("type", ""))
         if handler is not None:
             handler(flat, rule)

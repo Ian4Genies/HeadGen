@@ -38,6 +38,7 @@ export const LABELS = {
   bone_properties: "Bone custom properties",
   hard_clamps: "Hard clamps",
   relational_rules: "Relational rules",
+  muted: "Muted",
   smooth_corrective: "Smooth corrective",
   factor: "Factor / scale weight",
   iterations: "Iterations",

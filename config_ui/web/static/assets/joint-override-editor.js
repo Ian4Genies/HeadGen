@@ -206,8 +206,22 @@ export function mountClampEditor({ clamps, paramSuggestions, onChange, title = "
       panel.appendChild(el("p", "muted small", "Pick a parameter"));
       return;
     }
-    if (!map[selected]) map[selected] = { min: -1, max: 1 };
+    if (!map[selected]) map[selected] = { min: -1, max: 1, muted: false };
     panel.appendChild(el("h4", "joint-selected mono", selected));
+    if (map[selected].muted) {
+      panel.appendChild(el("span", "mute-badge", "MUTED"));
+    }
+    const muteRow = el("label", "switch-row compact mute-toggle");
+    const muteChk = el("input");
+    muteChk.type = "checkbox";
+    muteChk.checked = !!map[selected].muted;
+    muteChk.onchange = () => {
+      map[selected] = { ...map[selected], muted: muteChk.checked };
+      onChange({ ...map });
+      render();
+    };
+    muteRow.append(muteChk, el("span", "switch-ui"), el("span", "switch-label", "Muted"));
+    panel.appendChild(muteRow);
     const row = el("div", "range-pair");
     const min = el("input", "input");
     min.type = "number";
@@ -218,7 +232,11 @@ export function mountClampEditor({ clamps, paramSuggestions, onChange, title = "
     max.step = "any";
     max.value = map[selected].max;
     const sync = () => {
-      map[selected] = { min: parseFloat(min.value) || 0, max: parseFloat(max.value) || 0 };
+      map[selected] = {
+        ...map[selected],
+        min: parseFloat(min.value) || 0,
+        max: parseFloat(max.value) || 0,
+      };
       onChange({ ...map });
     };
     min.oninput = max.oninput = sync;
@@ -253,12 +271,13 @@ export function mountClampEditor({ clamps, paramSuggestions, onChange, title = "
         btn.onclick = () => {
           selected = name;
           if (!(name in map)) {
-            map[name] = { min: -1, max: 1 };
+            map[name] = { min: -1, max: 1, muted: false };
             onChange({ ...map });
           }
           renderDetail();
           draw(search.value.trim());
         };
+        if (map[name]?.muted) btn.classList.add("is-muted");
         items.appendChild(btn);
       }
     };

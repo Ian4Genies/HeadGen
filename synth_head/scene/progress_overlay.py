@@ -8,7 +8,14 @@ import gpu
 from gpu_extras.batch import batch_for_shader
 
 _HANDLES: list[tuple[bpy.types.Space, int]] = []
-_SHADER = gpu.shader.from_builtin("UNIFORM_COLOR")
+_SHADER = None
+
+
+def _shader():
+    global _SHADER
+    if _SHADER is None:
+        _SHADER = gpu.shader.from_builtin("UNIFORM_COLOR")
+    return _SHADER
 
 
 class SYNTHHEAD_PG_ExportProgress(bpy.types.PropertyGroup):
@@ -30,13 +37,14 @@ def progress_props(context: bpy.types.Context) -> SYNTHHEAD_PG_ExportProgress:
 
 def _rect_batch(x: float, y: float, w: float, h: float):
     verts = ((x, y), (x + w, y), (x + w, y + h), (x, y + h))
-    return batch_for_shader(_SHADER, "TRI_FAN", {"pos": verts})
+    return batch_for_shader(_shader(), "TRI_FAN", {"pos": verts})
 
 
 def _fill(x: float, y: float, w: float, h: float, color: tuple[float, float, float, float]) -> None:
-    _SHADER.bind()
-    _SHADER.uniform_float("color", color)
-    _rect_batch(x, y, w, h).draw(_SHADER)
+    shader = _shader()
+    shader.bind()
+    shader.uniform_float("color", color)
+    _rect_batch(x, y, w, h).draw(shader)
 
 
 def _text(font_id: int, x: float, y: float, text: str, size: int, color: tuple[float, float, float, float]) -> None:

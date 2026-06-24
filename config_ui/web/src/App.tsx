@@ -85,7 +85,8 @@ export default function App() {
     setDirty(next !== savedText);
   };
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
+    if (!dirty || saving) return;
     setSaving(true);
     try {
       const parsed = JSON.parse(editorText) as Record<string, unknown>;
@@ -99,7 +100,18 @@ export default function App() {
     } finally {
       setSaving(false);
     }
-  };
+  }, [activeProfile, dirty, editorText, notify, refreshProfiles, saving, selectedFile]);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        void handleSave();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown, { capture: true });
+    return () => window.removeEventListener("keydown", onKeyDown, { capture: true });
+  }, [handleSave]);
 
   const handleValidate = async () => {
     try {

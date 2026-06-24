@@ -62,7 +62,7 @@
     "MouthInnerBind.location.z": 0,
     "MouthInnerBind.rotation": 0,
     "NoseBind.scale.x": {
-      "min": -0.3,
+      "min": -0.2,
       "max": -0.1
     },
     "NoseBind.scale.y": {
@@ -112,8 +112,8 @@
     "LeftEyeSocketBind.rotation.x": 0,
     "LeftEyeSocketBind.rotation.y": 0,
     "LeftEyeSocketBind.rotation.z": {
-      "min": -6,
-      "max": 6
+      "min": -5,
+      "max": 5
     },
     "NeckBind.scale.x": {
       "min": -0.2,

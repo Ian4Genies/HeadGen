@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "seed": null,
+  "reapply_constraints": true,
+  "targets": [
+    "JAW_RETREAT",
+    "JAW_THRUST",
+    "JawBind.location.y",
+    "JawBind.location.z",
+    "JawBind.rotation.x",
+    "JawBind.scale.x",
+    "JawBind.scale.y"
+  ]
+}

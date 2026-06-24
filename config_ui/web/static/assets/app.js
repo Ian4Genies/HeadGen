@@ -91,6 +91,22 @@ async function loadFile() {
   setDirty(false);
 }
 
+async function saveChanges() {
+  if (!dirty) return;
+  try {
+    await api(
+      `/api/profiles/${encodeURIComponent(activeProfile)}/config/${encodeURIComponent(selectedFile)}`,
+      { method: "PUT", body: JSON.stringify({ data: form.getData() }) },
+    );
+    form.markSaved();
+    setDirty(false);
+    toast("ok", `${selectedFile}.json saved`);
+    await refreshProfiles();
+  } catch (err) {
+    toast("err", err.message);
+  }
+}
+
 async function boot() {
   const schema = await api("/api/schema");
   files = schema.files;
@@ -117,20 +133,18 @@ async function boot() {
     }
   };
 
-  $("#btn-save").onclick = async () => {
-    try {
-      await api(
-        `/api/profiles/${encodeURIComponent(activeProfile)}/config/${encodeURIComponent(selectedFile)}`,
-        { method: "PUT", body: JSON.stringify({ data: form.getData() }) },
-      );
-      form.markSaved();
-      setDirty(false);
-      toast("ok", `${selectedFile}.json saved`);
-      await refreshProfiles();
-    } catch (err) {
-      toast("err", err.message);
-    }
-  };
+  $("#btn-save").onclick = () => void saveChanges();
+
+  document.addEventListener(
+    "keydown",
+    (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        void saveChanges();
+      }
+    },
+    { capture: true },
+  );
 
   $("#btn-validate").onclick = async () => {
     try {

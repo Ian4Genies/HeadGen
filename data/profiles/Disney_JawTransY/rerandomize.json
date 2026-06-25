@@ -9,6 +9,7 @@
     "JawBind.location.z",
     "JawBind.rotation.x",
     "JawBind.scale.x",
-    "JawBind.scale.y"
+    "JawBind.scale.y",
+    "MouthBind.location.y"
   ]
 }

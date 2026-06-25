@@ -261,6 +261,7 @@ export function mountClampEditor({ clamps, paramSuggestions, onChange, title = "
     search.placeholder = "Filter parameters…";
     list.appendChild(search);
     const items = el("div", "picker-items");
+    list.appendChild(items);
     const all = [...new Set([...Object.keys(map), ...paramSuggestions])].sort();
     const draw = (q = "") => {
       items.innerHTML = "";

@@ -15,6 +15,7 @@ import { mountGroupedManifestList, mountShapePicker } from "./grouped-list.js";
 import { mountClampEditor, mountJointOverrideEditor } from "./joint-override-editor.js";
 import { mountChaosJointsEditor } from "./chaos-joints-editor.js";
 import { mountDriversEditor } from "./drivers-editor.js?v=3";
+import { mountRelationalRulesEditor } from "./relational-rules-editor.js";
 import { FILE_LAYOUTS } from "./file-layouts.js";
 
 function deepClone(v) {
@@ -36,6 +37,10 @@ export class ConfigForm {
   #onChange;
   #profile;
   #fileId;
+  #rulesCollapsed = new Set();
+  #rulesCollapsedInit = false;
+  #rulesFilter = "";
+  #rulesMuteFilter = "all";
 
   constructor(root, data, onChange, options = {}) {
     this.#root = root;
@@ -172,6 +177,9 @@ export class ConfigForm {
     }
     if (key && isIntMapKey(key)) {
       return this.#intMap(path, value);
+    }
+    if (key === "relational_rules" && Array.isArray(value)) {
+      return this.#relationalRulesField(path, value);
     }
     if (key && isObjectArrayKey(key)) {
       return this.#objectArray(path, value, key);
@@ -845,6 +853,73 @@ export class ConfigForm {
 
   #independentShapes(path, obj) {
     return this.#independentShapesEditor(path);
+  }
+
+  #relationalRulesField(path, items) {
+    if (!this.#rulesCollapsedInit) {
+      items.forEach((_, i) => this.#rulesCollapsed.add(i));
+      this.#rulesCollapsedInit = true;
+    }
+    const host = el("div", "rules-editor-host");
+    host.appendChild(this.#mountRelationalRules(path, items, host));
+    return host;
+  }
+
+  #mountRelationalRules(path, items, host) {
+    return mountRelationalRulesEditor({
+      items,
+      collapsed: this.#rulesCollapsed,
+      filterText: this.#rulesFilter,
+      muteFilter: this.#rulesMuteFilter,
+      onItemsChange: (next) => {
+        this.#set(path, next);
+        this.render();
+      },
+      onFilterChange: (text) => {
+        this.#rulesFilter = text;
+        host.replaceChildren(this.#mountRelationalRules(path, this.#getAt(path), host));
+      },
+      onMuteFilterChange: (mode) => {
+        this.#rulesMuteFilter = mode;
+        host.replaceChildren(this.#mountRelationalRules(path, this.#getAt(path), host));
+      },
+      emptyRule,
+      renderRuleBody: (index, item, touch) => this.#renderRuleFields(path, items, index, item, touch),
+    });
+  }
+
+  #renderRuleFields(path, items, index, item, touch) {
+    const wrap = el("div", "rule-fields");
+    const titleIn = el("input", "input");
+    titleIn.value = item.title ?? "";
+    titleIn.placeholder = "Rule title";
+    titleIn.oninput = () => {
+      item.title = titleIn.value;
+      touch();
+    };
+    wrap.appendChild(this.#fieldWrap("title", titleIn));
+
+    const typeSel = el("select", "input");
+    for (const t of RULE_TYPES) {
+      const opt = el("option", "", t);
+      opt.value = t;
+      if (item.type === t) opt.selected = true;
+      typeSel.appendChild(opt);
+    }
+    typeSel.onchange = () => {
+      item.type = typeSel.value;
+      touch();
+      this.render();
+    };
+    wrap.appendChild(this.#fieldWrap("type", typeSel));
+
+    const body = el("div", "field-grid");
+    for (const [k, v] of Object.entries(item)) {
+      if (k === "title" || k === "type" || k === "muted") continue;
+      body.appendChild(this.#fieldWrap(k, this.#inlineValue([...path, index, k], v, k, item.type)));
+    }
+    wrap.appendChild(body);
+    return wrap;
   }
 
   #objectArray(path, items, kind) {

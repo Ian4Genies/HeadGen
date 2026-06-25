@@ -801,6 +801,107 @@ select:focus {
   padding: 0.85rem;
 }
 
+.rules-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rules-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.rules-toolbar .search {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.rules-toolbar .mute-filter {
+  width: auto;
+  min-width: 7.5rem;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.rules-stats {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.rules-empty {
+  padding: 0.75rem 0.35rem;
+}
+
+.rule-card.collapsed {
+  padding-bottom: 0.6rem;
+}
+
+.rule-card.collapsed .rule-card-body {
+  display: none;
+}
+
+.rule-card.collapsed .card-head {
+  margin-bottom: 0;
+}
+
+.rule-card-head {
+  cursor: pointer;
+  user-select: none;
+}
+
+.rule-card-toggle {
+  flex-shrink: 0;
+  width: 1rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.rule-card-title {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.rule-card-summary {
+  flex: 1 1 120px;
+  min-width: 0;
+  font-size: 0.68rem;
+  color: #94a3b8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rule-card.expanded .rule-card-summary {
+  display: none;
+}
+
+.rule-card.collapsed .rule-card-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rule-card-body {
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.rule-fields .field-grid {
+  margin-top: 0.35rem;
+}
+
 .rule-card.is-muted {
   opacity: 0.55;
   border-color: rgba(251, 191, 36, 0.35);

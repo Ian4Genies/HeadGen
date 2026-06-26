@@ -132,10 +132,10 @@ function isRedundantMirrorTarget(key, active) {
   return active.includes(left);
 }
 
-export async function mountRegistryPicker({ profile, activeItems, onChange }) {
+export async function mountRegistryPicker({ profile, activeItems, onChange, initialTarget }) {
   const root = el("div", "manifest-list");
   let active = [...activeItems];
-  let filterText = "";
+  let filterText = initialTarget ?? "";
   let registry = { rerandomize_suggestions: [] };
   try {
     const res = await fetch(`/api/profiles/${encodeURIComponent(profile)}/registry`);
@@ -160,6 +160,7 @@ export async function mountRegistryPicker({ profile, activeItems, onChange }) {
 
   const search = el("input", "input search");
   search.placeholder = "Search params, shapes, properties…";
+  search.value = filterText;
   root.appendChild(search);
 
   const pool = el("div", "chips catalog-chips");
@@ -199,7 +200,14 @@ export async function mountRegistryPicker({ profile, activeItems, onChange }) {
     subtitle.textContent = `Active targets (${active.length})`;
     activeBox.innerHTML = "";
     for (const id of active) {
-      const chip = el("span", "chip active-chip mono" + (isRedundantMirrorTarget(id, active) ? " redundant-mirror" : ""), id);
+      const chip = el(
+        "span",
+        "chip active-chip mono" +
+          (isRedundantMirrorTarget(id, active) ? " redundant-mirror" : "") +
+          (id === initialTarget ? " config-focus-highlight" : ""),
+        id,
+      );
+      chip.dataset.target = id;
       const mirror = mirrorJointParam(id);
       if (mirror) {
         chip.appendChild(el("span", "mirror-badge", ` → ${mirror}`));
@@ -235,5 +243,18 @@ export async function mountRegistryPicker({ profile, activeItems, onChange }) {
 
   renderActive();
   drawPool();
+  if (initialTarget) {
+    requestAnimationFrame(() => {
+      const match = activeBox.querySelector(`[data-target="${initialTarget}"]`);
+      (match ?? activeBox.querySelector(".active-chip"))?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      if (match) {
+        match.classList.add("config-focus-highlight");
+        setTimeout(() => match.classList.remove("config-focus-highlight"), 2200);
+      }
+    });
+  }
   return root;
 }

@@ -59,6 +59,8 @@ export function reindexCollapsedSet(set, removedIndex) {
   for (const i of next) set.add(i);
 }
 
+import { scrollToConfigTarget } from "./config-focus.js";
+
 export function mountRelationalRulesEditor({
   items,
   collapsed,
@@ -69,6 +71,7 @@ export function mountRelationalRulesEditor({
   onMuteFilterChange,
   renderRuleBody,
   emptyRule,
+  focusRuleIndex,
 }) {
   const root = el("div", "rules-editor");
 
@@ -78,6 +81,7 @@ export function mountRelationalRulesEditor({
     const q = filterText.trim().toLowerCase();
     return items
       .map((item, i) => {
+        if (focusRuleIndex != null && i === focusRuleIndex) return i;
         if (muteFilter === "active" && item.muted) return -1;
         if (muteFilter === "muted" && !item.muted) return -1;
         if (q && !ruleSearchText(item).includes(q)) return -1;
@@ -144,6 +148,7 @@ export function mountRelationalRulesEditor({
       "div",
       `rule-card ${isCollapsed ? "collapsed" : "expanded"}` + (item.muted ? " is-muted" : ""),
     );
+    card.dataset.ruleIndex = String(index);
 
     const head = el("div", "card-head rule-card-head");
     const chevron = el("span", "rule-card-toggle", isCollapsed ? "▸" : "▾");
@@ -220,6 +225,12 @@ export function mountRelationalRulesEditor({
     };
     list.appendChild(add);
     root.appendChild(list);
+
+    if (focusRuleIndex != null) {
+      requestAnimationFrame(() => {
+        scrollToConfigTarget(root.querySelector(`[data-rule-index="${focusRuleIndex}"]`));
+      });
+    }
   };
 
   render();
@@ -227,18 +238,28 @@ export function mountRelationalRulesEditor({
 }
 
 /** Read-only rule card for Value Trace constraints stage. */
-export function mountRuleCardReadOnly(entry, { index = 0, writes = true } = {}) {
+export function mountRuleCardReadOnly(entry, { index = 0, writes = true, onOpenInConfig } = {}) {
   const r = entry.rule ?? entry;
   const card = el(
     "div",
     `rule-card collapsed trace-rule-card${r.muted || entry.muted ? " is-muted" : ""}${writes ? "" : " read-only-ref"}`,
   );
+  card.dataset.ruleIndex = String(entry.index ?? index);
   const head = el("div", "card-head rule-card-head");
   head.appendChild(el("strong", "rule-card-title", r.title || `Rule ${index + 1}`));
   if (r.type) head.appendChild(el("span", "type-badge", r.type));
   if (r.muted || entry.muted) head.appendChild(el("span", "mute-badge", "MUTED"));
   head.appendChild(el("span", "rule-card-summary mono", ruleSummary(r)));
   if (!writes) head.appendChild(el("span", "ref-badge", "reads only"));
+  if (onOpenInConfig) {
+    const openBtn = el("button", "btn ghost tiny", "Open in Config →");
+    openBtn.type = "button";
+    openBtn.onclick = (e) => {
+      e.stopPropagation();
+      onOpenInConfig(entry);
+    };
+    head.appendChild(openBtn);
+  }
   card.appendChild(head);
   return card;
 }

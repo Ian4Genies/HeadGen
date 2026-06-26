@@ -45,11 +45,12 @@ function flattenOverrides(parsed) {
   return out;
 }
 
-export function mountJointOverrideEditor({ overrides, jointNames, globals, onChange }) {
+export function mountJointOverrideEditor({ overrides, jointNames, globals, onChange, initialJoint }) {
   const root = el("div", "joint-editor");
   let map = { ...overrides };
   let parsed = parseOverrides(map);
-  let selected = jointNames[0] ?? "";
+  let selected =
+    initialJoint && jointNames.includes(initialJoint) ? initialJoint : jointNames[0] ?? "";
 
   const sync = () => {
     map = flattenOverrides(parsed);
@@ -157,6 +158,9 @@ export function mountJointOverrideEditor({ overrides, jointNames, globals, onCha
   };
 
   render();
+  if (initialJoint) {
+    requestAnimationFrame(() => root.scrollIntoView({ behavior: "smooth", block: "center" }));
+  }
   return root;
 }
 
@@ -193,10 +197,14 @@ function makeAxisValue(val, setVal, fallback) {
   return wrap;
 }
 
-export function mountClampEditor({ clamps, paramSuggestions, onChange, title = "Clamps" }) {
+export function mountClampEditor({ clamps, paramSuggestions, onChange, title = "Clamps", initialParam }) {
   const root = el("div", "joint-editor");
   let map = { ...clamps };
-  let selected = Object.keys(map)[0] ?? paramSuggestions[0] ?? "";
+  const all = [...new Set([...Object.keys(map), ...paramSuggestions])].sort();
+  let selected =
+    initialParam && all.includes(initialParam)
+      ? initialParam
+      : Object.keys(map)[0] ?? paramSuggestions[0] ?? "";
 
   const renderDetail = () => {
     const panel = root.querySelector(".joint-matrix");
@@ -291,6 +299,12 @@ export function mountClampEditor({ clamps, paramSuggestions, onChange, title = "
   };
 
   render();
+  if (initialParam) {
+    requestAnimationFrame(() => {
+      const btn = root.querySelector(".picker-item.active");
+      btn?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }
   return root;
 }
 

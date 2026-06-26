@@ -63,10 +63,12 @@ function isMirrorJoint(name) {
   return name.startsWith("Right");
 }
 
-export function mountChaosJointsEditor({ data, onChange }) {
+export function mountChaosJointsEditor({ data, onChange, focus }) {
   const root = el("div", "chaos-editor");
   let state = deepClone(data);
   let schema = null;
+  let selectedOverrideJoint =
+    focus?.joint && (data.joint_names ?? []).includes(focus.joint) ? focus.joint : null;
 
   const push = () => onChange(deepClone(state));
 
@@ -89,10 +91,29 @@ export function mountChaosJointsEditor({ data, onChange }) {
     root.appendChild(renderJointList());
     root.appendChild(renderOverrides());
     root.appendChild(renderBoneProperties());
+    applyFocusScroll();
+  }
+
+  function applyFocusScroll() {
+    if (!focus?.section) return;
+    requestAnimationFrame(() => {
+      const sec = root.querySelector(`[data-config-section="${focus.section}"]`);
+      if (!sec) return;
+      sec.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (focus.section === "bone_properties" && focus.paramKey) {
+        const card = sec.querySelector(`[data-bone-prop="${focus.paramKey}"]`);
+        if (card) {
+          card.classList.add("config-focus-highlight");
+          setTimeout(() => card.classList.remove("config-focus-highlight"), 2200);
+          card.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }
+    });
   }
 
   function renderGlobals() {
     const sec = el("section", "section section-full");
+    sec.dataset.configSection = "globals";
     sec.appendChild(el("h3", "section-title", "Global fallbacks"));
     const grid = el("div", "field-grid cols-4");
     const defs = schema?.globals ?? {
@@ -128,6 +149,7 @@ export function mountChaosJointsEditor({ data, onChange }) {
 
   function renderJointList() {
     const sec = el("section", "section section-full");
+    sec.dataset.configSection = "joint_names";
     sec.appendChild(el("h3", "section-title", "Active joints"));
     sec.appendChild(
       el(
@@ -223,6 +245,7 @@ export function mountChaosJointsEditor({ data, onChange }) {
 
   function renderOverrides() {
     const sec = el("section", "section section-full");
+    sec.dataset.configSection = "overrides";
     sec.appendChild(el("h3", "section-title", "Per-joint overrides"));
     sec.appendChild(
       el(
@@ -235,10 +258,18 @@ export function mountChaosJointsEditor({ data, onChange }) {
     const overrides = state.overrides ?? {};
     let parsed = parseOverrides(overrides);
     const overrideJoints = [
-      ...new Set([...(state.joint_names ?? []), ...Object.keys(parsed)]),
+      ...new Set([
+        ...(state.joint_names ?? []),
+        ...Object.keys(parsed),
+        ...(focus?.joint ? [focus.joint] : []),
+      ]),
     ].sort();
 
-    let selected = overrideJoints[0] ?? "";
+    let selected =
+      selectedOverrideJoint && overrideJoints.includes(selectedOverrideJoint)
+        ? selectedOverrideJoint
+        : overrideJoints[0] ?? "";
+    selectedOverrideJoint = selected;
     const picker = el("div", "joint-picker-row");
     const sel = el("select", "input joint-select");
     for (const j of overrideJoints) {
@@ -249,6 +280,7 @@ export function mountChaosJointsEditor({ data, onChange }) {
     }
     sel.onchange = () => {
       selected = sel.value;
+      selectedOverrideJoint = selected;
       drawMatrix();
     };
     picker.appendChild(sel);
@@ -365,6 +397,7 @@ export function mountChaosJointsEditor({ data, onChange }) {
 
   function renderBoneProperties() {
     const sec = el("section", "section section-full");
+    sec.dataset.configSection = "bone_properties";
     sec.appendChild(el("h3", "section-title", "Bone custom properties"));
     sec.appendChild(
       el(
@@ -384,7 +417,9 @@ export function mountChaosJointsEditor({ data, onChange }) {
 
     const list = el("div", "bone-prop-list");
     for (const [name, spec] of Object.entries(props)) {
-      list.appendChild(bonePropCard(name, spec, props, boneTargets, defaultEntry));
+      const card = bonePropCard(name, spec, props, boneTargets, defaultEntry);
+      card.dataset.boneProp = name;
+      list.appendChild(card);
     }
     sec.appendChild(list);
 

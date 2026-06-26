@@ -17,6 +17,7 @@ import { mountChaosJointsEditor } from "./chaos-joints-editor.js";
 import { mountDriversEditor } from "./drivers-editor.js?v=3";
 import { mountRelationalRulesEditor } from "./relational-rules-editor.js";
 import { FILE_LAYOUTS } from "./file-layouts.js";
+import { scrollToConfigTarget } from "./config-focus.js";
 
 function deepClone(v) {
   return JSON.parse(JSON.stringify(v));
@@ -37,6 +38,7 @@ export class ConfigForm {
   #onChange;
   #profile;
   #fileId;
+  #focus;
   #rulesCollapsed = new Set();
   #rulesCollapsedInit = false;
   #rulesFilter = "";
@@ -49,6 +51,7 @@ export class ConfigForm {
     this.#onChange = onChange;
     this.#profile = options.profile ?? "";
     this.#fileId = options.fileId ?? "";
+    this.#focus = options.focus ?? null;
     this.render();
   }
 
@@ -88,6 +91,7 @@ export class ConfigForm {
       this.#root.appendChild(
         mountChaosJointsEditor({
           data: this.#data,
+          focus: this.#focus,
           onChange: (next) => {
             this.#data = deepClone(next);
             this.#touch();
@@ -114,12 +118,23 @@ export class ConfigForm {
     } else {
       this.#root.appendChild(this.#node(this.#data, [], null));
     }
+    this.#applyFocus();
+  }
+
+  #applyFocus() {
+    const focus = this.#focus;
+    if (!focus?.section) return;
+    requestAnimationFrame(() => {
+      const sec = this.#root.querySelector(`[data-config-section~="${focus.section}"]`);
+      scrollToConfigTarget(sec ?? this.#root.querySelector(`[data-config-section="${focus.section}"]`));
+    });
   }
 
   #renderLayout(layout) {
     const wrap = el("div", "file-layout");
     for (const sec of layout.sections) {
       const section = el("section", "section section-full");
+      section.dataset.configSection = sec.keys.join(" ");
       if (sec.title) section.appendChild(el("h3", "section-title", sec.title));
       if (sec.hint) section.appendChild(el("p", "chip-hint", sec.hint));
       const body = el("div", sec.full ? "section-body" : `field-grid cols-${sec.cols ?? 2}`);
@@ -316,6 +331,8 @@ export class ConfigForm {
 
   #jointOverridesField(path) {
     const host = el("div", "manifest-host");
+    host.dataset.configSection = "overrides";
+    const joint = this.#focus?.joint ?? null;
     host.appendChild(
       mountJointOverrideEditor({
         overrides: this.#getAt(path),
@@ -325,6 +342,7 @@ export class ConfigForm {
           rotate_max: this.#data.rotate_max,
           scale_max: this.#data.scale_max,
         },
+        initialJoint: joint,
         onChange: (map) => this.#set(path, map),
       }),
     );
@@ -333,7 +351,9 @@ export class ConfigForm {
 
   #hardClampsField(path) {
     const host = el("div", "manifest-host");
+    host.dataset.configSection = "hard_clamps";
     host.appendChild(el("span", "muted small", "Loading parameters…"));
+    const focusParam = this.#focus?.paramKey ?? null;
     fetch(`/api/profiles/${encodeURIComponent(this.#profile)}/registry`)
       .then((r) => r.json())
       .then((reg) => {
@@ -343,6 +363,7 @@ export class ConfigForm {
             paramSuggestions: reg.rerandomize_suggestions ?? [],
             onChange: (map) => this.#set(path, map),
             title: "Pick parameter → set min/max clamp",
+            initialParam: focusParam,
           }),
         );
       })
@@ -352,6 +373,7 @@ export class ConfigForm {
             clamps: this.#getAt(path),
             paramSuggestions: Object.keys(this.#getAt(path)),
             onChange: (map) => this.#set(path, map),
+            initialParam: focusParam,
           }),
         );
       });
@@ -360,11 +382,15 @@ export class ConfigForm {
 
   #shapeOverridesField(path, shapes, title) {
     const host = el("div", "manifest-host");
+    const sectionKey = path[path.length - 1];
+    host.dataset.configSection = sectionKey;
     host.appendChild(el("span", "muted small", "Loading…"));
+    const initialShape = this.#focus?.paramKey ?? null;
     mountShapePicker({
       shapes,
       activeMap: this.#getAt(path),
       title,
+      initialShape,
       onChange: (map) => this.#set(path, map),
     })
       .then((node) => host.replaceChildren(node))
@@ -376,7 +402,9 @@ export class ConfigForm {
 
   #weightOverridesField(path) {
     const host = el("div", "manifest-host");
+    host.dataset.configSection = "distance_weights";
     host.appendChild(el("span", "muted small", "Loading…"));
+    const initialShape = this.#focus?.paramKey ?? null;
     fetch(`/api/profiles/${encodeURIComponent(this.#profile)}/registry`)
       .then((r) => r.json())
       .then((reg) =>
@@ -384,6 +412,7 @@ export class ConfigForm {
           shapes: reg.rerandomize_suggestions ?? Object.keys(this.#getAt(path)),
           activeMap: this.#getAt(path),
           title: "Pick parameter → set distance weight",
+          initialShape,
           onChange: (map) => this.#set(path, map),
         }),
       )
@@ -396,12 +425,14 @@ export class ConfigForm {
 
   #registryTargetsField(path) {
     const host = el("div", "manifest-host");
+    host.dataset.configSection = "targets";
     const label =
       this.#fileId === "attractor" ? "Loading param registry…" : "Loading rerandomize registry…";
     host.appendChild(el("span", "muted small", label));
     mountRegistryPicker({
       profile: this.#profile,
       activeItems: this.#getAt(path),
+      initialTarget: this.#focus?.targetEntry ?? this.#focus?.paramKey ?? null,
       onChange: (items) => this.#set(path, items),
     })
       .then((node) => host.replaceChildren(node))
@@ -420,6 +451,8 @@ export class ConfigForm {
 
   #bonePropertiesEditor(path) {
     const box = el("div", "bone-props-editor");
+    box.dataset.configSection = "bone_properties";
+    const focusProp = this.#focus?.paramKey ?? null;
     const render = async () => {
       const props = this.#getAt(path);
       const defaults = await this.#fetchManifestDefaults("bone_properties");
@@ -427,9 +460,14 @@ export class ConfigForm {
       box.appendChild(el("p", "chip-hint", "HD eye iris/pupil props and other bone custom properties"));
       const table = el("div", "bone-table");
       for (const [name, spec] of Object.entries(props)) {
-        table.appendChild(this.#bonePropRow(path, props, name, spec));
+        const row = this.#bonePropRow(path, props, name, spec);
+        row.dataset.boneProp = name;
+        table.appendChild(row);
       }
       box.appendChild(table);
+      if (focusProp && props[focusProp]) {
+        requestAnimationFrame(() => scrollToConfigTarget(box.querySelector(`[data-bone-prop="${focusProp}"]`)));
+      }
 
       const addRow = el("div", "add-row");
       const sel = el("select", "input");
@@ -508,6 +546,8 @@ export class ConfigForm {
 
   #independentShapesEditor(path) {
     const box = el("div", "indep-editor");
+    box.dataset.configSection = "independent_shapes";
+    const focusShape = this.#focus?.paramKey ?? null;
     const render = async () => {
       const shapes = this.#getAt(path);
       const defaults = await this.#fetchManifestDefaults("independent_shapes");
@@ -516,6 +556,7 @@ export class ConfigForm {
       const table = el("div", "indep-table");
       for (const [name, cfg] of Object.entries(shapes)) {
         const row = el("div", "indep-row");
+        row.dataset.indepShape = name;
         row.appendChild(el("span", "kv-key mono", name));
         const min = el("input", "input small");
         min.type = "number";
@@ -554,6 +595,10 @@ export class ConfigForm {
         table.appendChild(row);
       }
       box.appendChild(table);
+
+      if (focusShape && shapes[focusShape]) {
+        requestAnimationFrame(() => scrollToConfigTarget(box.querySelector(`[data-indep-shape="${focusShape}"]`)));
+      }
 
       const addRow = el("div", "add-row");
       const sel = el("select", "input");
@@ -857,10 +902,18 @@ export class ConfigForm {
 
   #relationalRulesField(path, items) {
     if (!this.#rulesCollapsedInit) {
-      items.forEach((_, i) => this.#rulesCollapsed.add(i));
+      if (this.#focus?.ruleIndex != null) {
+        this.#rulesFilter = "";
+        items.forEach((_, i) => {
+          if (i !== this.#focus.ruleIndex) this.#rulesCollapsed.add(i);
+        });
+      } else {
+        items.forEach((_, i) => this.#rulesCollapsed.add(i));
+      }
       this.#rulesCollapsedInit = true;
     }
     const host = el("div", "rules-editor-host");
+    host.dataset.configSection = "relational_rules";
     host.appendChild(this.#mountRelationalRules(path, items, host));
     return host;
   }
@@ -871,6 +924,7 @@ export class ConfigForm {
       collapsed: this.#rulesCollapsed,
       filterText: this.#rulesFilter,
       muteFilter: this.#rulesMuteFilter,
+      focusRuleIndex: this.#focus?.ruleIndex ?? null,
       onItemsChange: (next) => {
         this.#set(path, next);
         this.render();

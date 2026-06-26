@@ -144,9 +144,9 @@ export async function mountGroupedManifestList({
   return root;
 }
 
-export async function mountShapePicker({ shapes, activeMap, onChange, title = "Pick shape" }) {
+export async function mountShapePicker({ shapes, activeMap, onChange, title = "Pick shape", initialShape }) {
   const root = el("div", "shape-picker");
-  let selected = "";
+  let selected = initialShape && shapes.includes(initialShape) ? initialShape : "";
   const map = { ...activeMap };
 
   const renderDetail = () => {
@@ -235,5 +235,11 @@ export async function mountShapePicker({ shapes, activeMap, onChange, title = "P
   };
 
   render();
+  if (initialShape) {
+    requestAnimationFrame(() => {
+      const btn = root.querySelector(".picker-item.active");
+      btn?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }
   return root;
 }

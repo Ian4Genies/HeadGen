@@ -3,6 +3,7 @@
 import { mountRangeField } from "./joint-override-editor.js";
 import { mountRuleCardReadOnly } from "./relational-rules-editor.js";
 import { mountTraceRibbon } from "./trace-ribbon.js";
+import { buildRuleFocus, buildStageFocus } from "./config-focus.js";
 
 const STAGE_CONSTRAINTS = "constraints";
 
@@ -360,7 +361,11 @@ export function mountTraceView(host, { profile, onDirty, onOpenConfigFile }) {
     openBtn.type = "button";
     openBtn.onclick = (e) => {
       e.stopPropagation();
-      onOpenConfigFile(stage.config_file);
+      if (stageData?.metadata) {
+        onOpenConfigFile(buildStageFocus(stage, stageData.metadata));
+      } else {
+        onOpenConfigFile({ fileId: stage.config_file });
+      }
     };
     head.appendChild(openBtn);
 
@@ -591,7 +596,13 @@ export function mountTraceView(host, { profile, onDirty, onOpenConfigFile }) {
         const sec = el("div", "trace-subsection");
         sec.appendChild(el("h4", "", `Writes (${slice.write_rules.length})`));
         for (const entry of slice.write_rules) {
-          sec.appendChild(mountRuleCardReadOnly(entry, { index: entry.index, writes: true }));
+          sec.appendChild(
+            mountRuleCardReadOnly(entry, {
+              index: entry.index,
+              writes: true,
+              onOpenInConfig: (e) => onOpenConfigFile(buildRuleFocus(e)),
+            }),
+          );
         }
         body.appendChild(sec);
       }
@@ -599,7 +610,13 @@ export function mountTraceView(host, { profile, onDirty, onOpenConfigFile }) {
         const sec = el("div", "trace-subsection");
         sec.appendChild(el("h4", "", `Referenced by (${slice.read_rules.length})`));
         for (const entry of slice.read_rules) {
-          sec.appendChild(mountRuleCardReadOnly(entry, { index: entry.index, writes: false }));
+          sec.appendChild(
+            mountRuleCardReadOnly(entry, {
+              index: entry.index,
+              writes: false,
+              onOpenInConfig: (e) => onOpenConfigFile(buildRuleFocus(e)),
+            }),
+          );
         }
         body.appendChild(sec);
       }

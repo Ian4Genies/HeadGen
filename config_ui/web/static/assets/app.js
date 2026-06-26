@@ -1,6 +1,6 @@
-import { mountForm } from "./forms.js?v=3";
+import { mountForm } from "./forms.js?v=4";
 import { mountParamPicker } from "./param-picker.js?v=1";
-import { mountTraceView } from "./trace-view.js?v=3";
+import { mountTraceView } from "./trace-view.js?v=4";
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -13,6 +13,7 @@ let workspaceMode = "config";
 let paramPicker = null;
 let traceView = null;
 let traceStaging = {};
+let pendingConfigFocus = null;
 
 async function api(path, init) {
   const res = await fetch(path, {
@@ -93,7 +94,9 @@ async function loadFile() {
     `/api/profiles/${encodeURIComponent(activeProfile)}/config/${encodeURIComponent(selectedFile)}`,
   );
   const host = $("#form-root");
-  form = mountForm(host, data, setDirty, { profile: activeProfile, fileId: selectedFile });
+  const focus = pendingConfigFocus;
+  pendingConfigFocus = null;
+  form = mountForm(host, data, setDirty, { profile: activeProfile, fileId: selectedFile, focus });
   setDirty(false);
 }
 
@@ -174,9 +177,11 @@ async function initTraceMode() {
       traceStaging = staging ?? {};
       setDirty(next);
     },
-    onOpenConfigFile: (fileId) => {
+    onOpenConfigFile: (focus) => {
+      const target = typeof focus === "string" ? { fileId: focus } : focus;
+      pendingConfigFocus = target;
+      selectedFile = target.fileId;
       workspaceMode = "config";
-      selectedFile = fileId;
       $("#mode-config").classList.add("active");
       $("#mode-trace").classList.remove("active");
       $("#sidebar-config").classList.remove("hidden");

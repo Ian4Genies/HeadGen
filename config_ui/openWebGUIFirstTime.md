@@ -50,6 +50,14 @@ The updated `open.bat` pauses on errors instead of exiting silently. Re-run it a
 | `Failed to create .venv` | Python install may be broken or too old; reinstall 3.11+. |
 | `pip install failed` | Check network/proxy; run the bat again after fixing connectivity. |
 | `Server exited with an error` | Read the traceback above the pause line in the terminal. |
+| `No module named 'bpy'` | Pull latest repo — config UI does not need Blender or `bpy`. Re-run `open.bat` to recreate deps. |
+| `No module named 'numpy'` | Re-run `open.bat` — latest `config_ui/requirements.txt` includes numpy. |
+
+## Blender vs config UI
+
+The config web UI uses only `synth_head/core/` (pure Python). **Blender and the `bpy` package are not required** to run `open.bat`.
+
+Blender is only needed for running the addon inside Blender (Blender Development extension or manual install). That is separate from the config UI setup.
 
 ## Shortcut note
 

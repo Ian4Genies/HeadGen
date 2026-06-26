@@ -66,9 +66,6 @@ if "bpy" in locals():
     importlib.reload(scene)
     importlib.reload(operators)
 
-import bpy
-from . import core, operators, scene
-
 bl_info = {
     "name": "Synth Head",
     "author": "Genies",
@@ -79,30 +76,37 @@ bl_info = {
     "category": "Mesh",
 }
 
+try:
+    import bpy
+except ImportError:
+    bpy = None  # type: ignore[misc, assignment]
 
-classes = operators.CLASSES
+if bpy is not None:
+    from . import core, operators, scene
 
-
-def register():
-    try:
-        unregister()
-    except Exception:
-        pass
-
-    for cls in classes:
-        bpy.utils.register_class(cls)
-    bpy.types.Scene.synth_head = bpy.props.PointerProperty(
-        type=operators.SYNTHHEAD_PG_PipelineRefs,
-    )
-    bpy.types.WindowManager.synth_head_export_progress = bpy.props.PointerProperty(
-        type=operators.SYNTHHEAD_PG_ExportProgress,
-    )
-    bpy.types.VIEW3D_MT_object.append(operators._draw_menu)
+    classes = operators.CLASSES
 
 
-def unregister():
-    bpy.types.VIEW3D_MT_object.remove(operators._draw_menu)
-    del bpy.types.WindowManager.synth_head_export_progress
-    del bpy.types.Scene.synth_head
-    for cls in reversed(classes):
-        bpy.utils.unregister_class(cls)
+    def register():
+        try:
+            unregister()
+        except Exception:
+            pass
+
+        for cls in classes:
+            bpy.utils.register_class(cls)
+        bpy.types.Scene.synth_head = bpy.props.PointerProperty(
+            type=operators.SYNTHHEAD_PG_PipelineRefs,
+        )
+        bpy.types.WindowManager.synth_head_export_progress = bpy.props.PointerProperty(
+            type=operators.SYNTHHEAD_PG_ExportProgress,
+        )
+        bpy.types.VIEW3D_MT_object.append(operators._draw_menu)
+
+
+    def unregister():
+        bpy.types.VIEW3D_MT_object.remove(operators._draw_menu)
+        del bpy.types.WindowManager.synth_head_export_progress
+        del bpy.types.Scene.synth_head
+        for cls in reversed(classes):
+            bpy.utils.unregister_class(cls)

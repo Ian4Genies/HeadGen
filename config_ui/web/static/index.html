@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/assets/style.css?v=6" />
+    <link rel="stylesheet" href="/assets/style.css?v=7" />
   </head>
   <body>
     <div id="app" class="app">
@@ -43,27 +43,42 @@
 
       <div class="workspace">
         <aside class="sidebar glass">
-          <p class="sidebar-title">Config files</p>
-          <nav id="file-list"></nav>
+          <div class="mode-toggle">
+            <button id="mode-config" class="mode-btn active" type="button">Config Files</button>
+            <button id="mode-trace" class="mode-btn" type="button">Value Trace</button>
+          </div>
+          <div id="sidebar-config">
+            <p class="sidebar-title">Config files</p>
+            <nav id="file-list"></nav>
+          </div>
+          <div id="sidebar-trace" class="hidden">
+            <p class="sidebar-title">Parameters</p>
+            <div id="param-picker-root"></div>
+          </div>
         </aside>
         <main class="editor-panel">
-          <div class="editor-header">
-            <div>
-              <h2 id="file-title" class="mono">runner.json</h2>
-              <p id="file-desc"></p>
+          <div id="panel-config">
+            <div class="editor-header">
+              <div>
+                <h2 id="file-title" class="mono">runner.json</h2>
+                <p id="file-desc"></p>
+              </div>
+              <div class="editor-meta">
+                <span id="dirty-badge" class="badge hidden">unsaved</span>
+                <span id="active-label" class="muted"></span>
+              </div>
             </div>
-            <div class="editor-meta">
-              <span id="dirty-badge" class="badge hidden">unsaved</span>
-              <span id="active-label" class="muted"></span>
-            </div>
+            <div id="form-root" class="form-root"></div>
           </div>
-          <div id="form-root" class="form-root"></div>
+          <div id="panel-trace" class="hidden trace-panel">
+            <div id="trace-root"></div>
+          </div>
         </main>
       </div>
     </div>
 
     <div id="toast" class="toast hidden"></div>
 
-    <script src="/assets/app.js?v=4" type="module"></script>
+    <script src="/assets/app.js?v=6" type="module"></script>
   </body>
 </html>

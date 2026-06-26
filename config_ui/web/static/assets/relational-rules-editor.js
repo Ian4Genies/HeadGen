@@ -226,4 +226,21 @@ export function mountRelationalRulesEditor({
   return root;
 }
 
+/** Read-only rule card for Value Trace constraints stage. */
+export function mountRuleCardReadOnly(entry, { index = 0, writes = true } = {}) {
+  const r = entry.rule ?? entry;
+  const card = el(
+    "div",
+    `rule-card collapsed trace-rule-card${r.muted || entry.muted ? " is-muted" : ""}${writes ? "" : " read-only-ref"}`,
+  );
+  const head = el("div", "card-head rule-card-head");
+  head.appendChild(el("strong", "rule-card-title", r.title || `Rule ${index + 1}`));
+  if (r.type) head.appendChild(el("span", "type-badge", r.type));
+  if (r.muted || entry.muted) head.appendChild(el("span", "mute-badge", "MUTED"));
+  head.appendChild(el("span", "rule-card-summary mono", ruleSummary(r)));
+  if (!writes) head.appendChild(el("span", "ref-badge", "reads only"));
+  card.appendChild(head);
+  return card;
+}
+
 export { RULE_TYPES };

@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 
 from . import manifests as mf
 from . import profiles as prof
+from . import trace as trace_api
 from .chaos_schema import chaos_joints_schema
 from .schema import CONFIG_FILES
 
@@ -60,6 +61,15 @@ class ConfigWrite(BaseModel):
 class ManifestRegister(BaseModel):
     ids: list[str] = Field(min_length=1)
     note: str = ""
+
+
+class TraceSimulate(BaseModel):
+    param_key: str
+    mode: str = "randomize_face"
+    seed: int | None = None
+    starting_value: float | None = None
+    input_flat: dict[str, float] | None = None
+    config_overrides: dict[str, dict[str, Any]] | None = None
 
 
 @app.on_event("startup")
@@ -188,6 +198,46 @@ def get_registry(name: str) -> dict:
         return mf.build_registry(name)
     except prof.ProfileError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/api/profiles/{name}/trace/catalog")
+def get_trace_catalog(name: str) -> dict:
+    try:
+        return trace_api.get_catalog(name)
+    except prof.ProfileError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except KeyError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/api/profiles/{name}/trace/{param_key:path}")
+def get_trace_param(name: str, param_key: str) -> dict:
+    try:
+        return trace_api.get_param_stages(name, param_key)
+    except prof.ProfileError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.post("/api/profiles/{name}/trace/simulate")
+def post_trace_simulate(name: str, body: TraceSimulate) -> dict:
+    try:
+        return trace_api.run_simulate(
+            name,
+            body.param_key,
+            mode=body.mode,
+            seed=body.seed,
+            starting_value=body.starting_value,
+            input_flat=body.input_flat,
+            config_overrides=body.config_overrides,
+        )
+    except prof.ProfileError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 if _web_static.is_dir():

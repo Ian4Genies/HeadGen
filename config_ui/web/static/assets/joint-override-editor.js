@@ -293,3 +293,8 @@ export function mountClampEditor({ clamps, paramSuggestions, onChange, title = "
   render();
   return root;
 }
+
+/** Single min/max or scalar field for trace inline edits. */
+export function mountRangeField(parent, val, setVal, fallback = 0.1) {
+  parent.appendChild(makeAxisValue(val, setVal, fallback));
+}

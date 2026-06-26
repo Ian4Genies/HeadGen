@@ -1,4 +1,6 @@
 import { mountForm } from "./forms.js?v=3";
+import { mountParamPicker } from "./param-picker.js?v=1";
+import { mountTraceView } from "./trace-view.js?v=3";
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -7,6 +9,10 @@ let activeProfile = "";
 let selectedFile = "runner";
 let form = null;
 let dirty = false;
+let workspaceMode = "config";
+let paramPicker = null;
+let traceView = null;
+let traceStaging = {};
 
 async function api(path, init) {
   const res = await fetch(path, {
@@ -91,20 +97,104 @@ async function loadFile() {
   setDirty(false);
 }
 
+async function saveConfigForm() {
+  await api(
+    `/api/profiles/${encodeURIComponent(activeProfile)}/config/${encodeURIComponent(selectedFile)}`,
+    { method: "PUT", body: JSON.stringify({ data: form.getData() }) },
+  );
+  form.markSaved();
+}
+
+async function saveTraceStaging() {
+  const staging = traceView?.getStaging() ?? traceStaging;
+  for (const [fileId, patch] of Object.entries(staging)) {
+    const current = await api(
+      `/api/profiles/${encodeURIComponent(activeProfile)}/config/${encodeURIComponent(fileId)}`,
+    );
+    const merged = deepOverlay(current, patch);
+    await api(
+      `/api/profiles/${encodeURIComponent(activeProfile)}/config/${encodeURIComponent(fileId)}`,
+      { method: "PUT", body: JSON.stringify({ data: merged }) },
+    );
+  }
+  traceView?.clearStaging();
+  traceStaging = {};
+}
+
+function deepOverlay(base, patch) {
+  const out = structuredClone(base);
+  for (const [k, v] of Object.entries(patch)) {
+    if (v && typeof v === "object" && !Array.isArray(v) && out[k] && typeof out[k] === "object") {
+      out[k] = deepOverlay(out[k], v);
+    } else {
+      out[k] = v;
+    }
+  }
+  return out;
+}
+
 async function saveChanges() {
   if (!dirty) return;
   try {
-    await api(
-      `/api/profiles/${encodeURIComponent(activeProfile)}/config/${encodeURIComponent(selectedFile)}`,
-      { method: "PUT", body: JSON.stringify({ data: form.getData() }) },
-    );
-    form.markSaved();
+    if (workspaceMode === "config") {
+      await saveConfigForm();
+      toast("ok", `${selectedFile}.json saved`);
+    } else {
+      await saveTraceStaging();
+      toast("ok", "Trace config changes saved");
+    }
     setDirty(false);
-    toast("ok", `${selectedFile}.json saved`);
     await refreshProfiles();
   } catch (err) {
     toast("err", err.message);
   }
+}
+
+function setWorkspaceMode(mode) {
+  if (mode === workspaceMode) return;
+  if (!confirmDiscard()) return;
+  workspaceMode = mode;
+  dirty = false;
+  setDirty(false);
+  $("#mode-config").classList.toggle("active", mode === "config");
+  $("#mode-trace").classList.toggle("active", mode === "trace");
+  $("#sidebar-config").classList.toggle("hidden", mode !== "config");
+  $("#sidebar-trace").classList.toggle("hidden", mode !== "trace");
+  $("#panel-config").classList.toggle("hidden", mode !== "config");
+  $("#panel-trace").classList.toggle("hidden", mode !== "trace");
+  if (mode === "trace") initTraceMode();
+}
+
+async function initTraceMode() {
+  const pickerHost = $("#param-picker-root");
+  const traceHost = $("#trace-root");
+  traceView = mountTraceView(traceHost, {
+    profile: activeProfile,
+    onDirty: (next, staging) => {
+      traceStaging = staging ?? {};
+      setDirty(next);
+    },
+    onOpenConfigFile: (fileId) => {
+      workspaceMode = "config";
+      selectedFile = fileId;
+      $("#mode-config").classList.add("active");
+      $("#mode-trace").classList.remove("active");
+      $("#sidebar-config").classList.remove("hidden");
+      $("#sidebar-trace").classList.add("hidden");
+      $("#panel-config").classList.remove("hidden");
+      $("#panel-trace").classList.add("hidden");
+      renderFileList();
+      void loadFile();
+    },
+  });
+  paramPicker = mountParamPicker(pickerHost, {
+    profile: activeProfile,
+    onSelect: (key) => {
+      void traceView.loadParam(key).catch((e) => toast("err", e.message));
+    },
+  });
+  await paramPicker.load();
+  paramPicker.focusSearch();
 }
 
 async function boot() {
@@ -113,6 +203,9 @@ async function boot() {
   await refreshProfiles();
   renderFileList();
   await loadFile();
+
+  $("#mode-config").onclick = () => setWorkspaceMode("config");
+  $("#mode-trace").onclick = () => setWorkspaceMode("trace");
 
   $("#profile-select").onchange = async (e) => {
     if (!confirmDiscard()) {
@@ -125,7 +218,8 @@ async function boot() {
       });
       activeProfile = e.target.value;
       await refreshProfiles();
-      await loadFile();
+      if (workspaceMode === "config") await loadFile();
+      else await initTraceMode();
       toast("ok", `Active profile: ${activeProfile} (synced to data/config)`);
     } catch (err) {
       toast("err", err.message);
@@ -180,7 +274,7 @@ async function boot() {
       $("#new-profile-name").value = "";
       $("#new-profile-bar").classList.add("hidden");
       await refreshProfiles();
-      await loadFile();
+      if (workspaceMode === "config") await loadFile();
       toast("ok", `Active profile: ${name} (synced to data/config)`);
     } catch (err) {
       toast("err", err.message);
@@ -212,7 +306,7 @@ async function boot() {
         method: "DELETE",
       });
       await refreshProfiles();
-      await loadFile();
+      if (workspaceMode === "config") await loadFile();
       toast("ok", "Profile deleted");
     } catch (err) {
       toast("err", err.message);

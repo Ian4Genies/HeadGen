@@ -1,0 +1,37 @@
+---
+description: Keep Value Trace visualizer in sync with pipeline execution order when randomization code changes.
+globs: synth_head/core/{variation,blendshapes,constraints,attractor,rerandomize,pipeline_trace}.py,synth_head/operators.py,config_ui/server/trace.py,config_ui/web/static/assets/trace-view.js
+alwaysApply: false
+---
+
+# Pipeline Trace Sync
+
+Before concluding how a flat param gets its final value, check the Value Trace visualizer contract in `synth_head/core/pipeline_trace.py`.
+
+## Canonical execution order
+
+**Randomize Face / Variation Pipeline:** generate → flatten → attract (optional) → constrain → unflatten/apply
+
+**Rerandomize Selected:** read flat → resample targets → constrain (if `reapply_constraints`) → partial apply — **no attractor**
+
+## Single source of truth
+
+- `collect_param_stages()`, `run_full_randomize_face()`, and `simulate_pipeline()` live in `pipeline_trace.py`
+- Simulation always generates **all** flat params before constrain — trace UI displays one key from that full snapshot
+- Config UI trace API and `trace-view.js` must **delegate** to this module — never duplicate stage order or simulation logic in JS
+
+## When changing execution
+
+Adding/removing/reordering a stage, new flat-param config, new rule type, or new generation path:
+
+1. Update `pipeline_trace.py` stage list and simulate path
+2. Update `synth_head/tests/test_pipeline_trace.py` for at least one affected param
+3. Spot-check Value Trace UI: pick affected param, confirm stage cards + simulate match Randomize Face
+
+## When changing config schema only
+
+Update `collect_param_stages()` filtered slices if the key appears in a trace stage; simulate unchanged unless math changed.
+
+## Drift rule
+
+If `operators.py` randomization and `simulate_pipeline()` disagree, **fix `pipeline_trace.py`** — the visualizer must match runtime.

@@ -4,28 +4,28 @@ overview: Add a new "Value Trace" workspace mode to the existing config UI that 
 todos:
   - id: core-trace
     content: "Add synth_head/core/pipeline_trace.py: catalog, stage collection, rule filtering, full-pipeline simulate"
-    status: pending
+    status: completed
   - id: core-tests
     content: Add synth_head/tests/test_pipeline_trace.py covering stage collection and simulate for joint/shape/property
-    status: pending
+    status: completed
   - id: api-trace
     content: Add config_ui/server/trace.py + register GET catalog, GET param stages, POST simulate in app.py
-    status: pending
+    status: completed
   - id: ui-mode
     content: Add Value Trace mode toggle + param picker sidebar in index.html/app.js without changing existing config file menus
-    status: pending
+    status: completed
   - id: ui-trace-view
     content: "Build trace-view.js: progressive-disclosure stage cards, sticky pipeline ribbon with per-step values, inline edits, simulate integration"
-    status: pending
+    status: completed
   - id: widget-reuse
     content: Extract minimal range/rule field helpers from joint-override-editor and relational-rules-editor for trace inline editing
-    status: pending
+    status: completed
   - id: styles
     content: "Trace UX polish: pipeline ribbon, value badges, delta coloring, collapsible density, param picker — match existing glass/dark aesthetic"
-    status: pending
+    status: completed
   - id: cursor-rule
-    content: "Add .cursor/rules/pipeline-trace-sync.mdc — require pipeline_trace.py + trace UI stay in sync with actual execution order when pipeline code changes"
-    status: pending
+    content: Add .cursor/rules/pipeline-trace-sync.mdc — require pipeline_trace.py + trace UI stay in sync with actual execution order when pipeline code changes
+    status: completed
 isProject: false
 ---
 

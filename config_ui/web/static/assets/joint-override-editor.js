@@ -45,12 +45,29 @@ function flattenOverrides(parsed) {
   return out;
 }
 
-export function mountJointOverrideEditor({ overrides, jointNames, globals, onChange, initialJoint }) {
+export function mountJointOverrideEditor({
+  overrides,
+  jointNames,
+  globals,
+  onChange,
+  initialJoint,
+  uiStore,
+}) {
   const root = el("div", "joint-editor");
   let map = { ...overrides };
   let parsed = parseOverrides(map);
   let selected =
-    initialJoint && jointNames.includes(initialJoint) ? initialJoint : jointNames[0] ?? "";
+    (initialJoint && jointNames.includes(initialJoint) ? initialJoint : null) ??
+    (uiStore?.get("selectedJoint") && jointNames.includes(uiStore.get("selectedJoint"))
+      ? uiStore.get("selectedJoint")
+      : null) ??
+    jointNames[0] ??
+    "";
+
+  const persistJoint = (joint) => {
+    selected = joint;
+    uiStore?.set({ selectedJoint: joint });
+  };
 
   const sync = () => {
     map = flattenOverrides(parsed);
@@ -137,16 +154,18 @@ export function mountJointOverrideEditor({ overrides, jointNames, globals, onCha
       sel.appendChild(opt);
     }
     sel.onchange = () => {
-      selected = sel.value;
+      persistJoint(sel.value);
       renderMatrix();
     };
     const search = el("input", "input");
     search.placeholder = "Jump to joint…";
+    search.value = uiStore?.get("jointSearch") ?? "";
     search.oninput = () => {
+      uiStore?.set({ jointSearch: search.value });
       const q = search.value.trim().toLowerCase();
       const hit = jointNames.find((j) => j.toLowerCase().includes(q));
       if (hit) {
-        selected = hit;
+        persistJoint(hit);
         sel.value = hit;
         renderMatrix();
       }
@@ -158,9 +177,6 @@ export function mountJointOverrideEditor({ overrides, jointNames, globals, onCha
   };
 
   render();
-  if (initialJoint) {
-    requestAnimationFrame(() => root.scrollIntoView({ behavior: "smooth", block: "center" }));
-  }
   return root;
 }
 
@@ -197,14 +213,30 @@ function makeAxisValue(val, setVal, fallback) {
   return wrap;
 }
 
-export function mountClampEditor({ clamps, paramSuggestions, onChange, title = "Clamps", initialParam }) {
+export function mountClampEditor({
+  clamps,
+  paramSuggestions,
+  onChange,
+  title = "Clamps",
+  initialParam,
+  uiStore,
+}) {
   const root = el("div", "joint-editor");
   let map = { ...clamps };
   const all = [...new Set([...Object.keys(map), ...paramSuggestions])].sort();
   let selected =
-    initialParam && all.includes(initialParam)
-      ? initialParam
-      : Object.keys(map)[0] ?? paramSuggestions[0] ?? "";
+    (initialParam && all.includes(initialParam) ? initialParam : null) ??
+    (uiStore?.get("selectedParam") && all.includes(uiStore.get("selectedParam"))
+      ? uiStore.get("selectedParam")
+      : null) ??
+    Object.keys(map)[0] ??
+    paramSuggestions[0] ??
+    "";
+
+  const persistParam = (name) => {
+    selected = name;
+    uiStore?.set({ selectedParam: name });
+  };
 
   const renderDetail = () => {
     const panel = root.querySelector(".joint-matrix");
@@ -267,6 +299,7 @@ export function mountClampEditor({ clamps, paramSuggestions, onChange, title = "
     const list = el("div", "picker-list");
     const search = el("input", "input search");
     search.placeholder = "Filter parameters…";
+    search.value = uiStore?.get("pickerSearch") ?? "";
     list.appendChild(search);
     const items = el("div", "picker-items");
     list.appendChild(items);
@@ -278,7 +311,7 @@ export function mountClampEditor({ clamps, paramSuggestions, onChange, title = "
         btn.type = "button";
         if (name in map) btn.classList.add("has-cap");
         btn.onclick = () => {
-          selected = name;
+          persistParam(name);
           if (!(name in map)) {
             map[name] = { min: -1, max: 1, muted: false };
             onChange({ ...map });
@@ -290,8 +323,11 @@ export function mountClampEditor({ clamps, paramSuggestions, onChange, title = "
         items.appendChild(btn);
       }
     };
-    search.oninput = () => draw(search.value.trim());
-    draw();
+    search.oninput = () => {
+      uiStore?.set({ pickerSearch: search.value });
+      draw(search.value.trim());
+    };
+    draw(search.value.trim());
     picker.appendChild(list);
     picker.appendChild(el("div", "joint-matrix"));
     root.appendChild(picker);
@@ -299,12 +335,6 @@ export function mountClampEditor({ clamps, paramSuggestions, onChange, title = "
   };
 
   render();
-  if (initialParam) {
-    requestAnimationFrame(() => {
-      const btn = root.querySelector(".picker-item.active");
-      btn?.scrollIntoView({ behavior: "smooth", block: "center" });
-    });
-  }
   return root;
 }
 

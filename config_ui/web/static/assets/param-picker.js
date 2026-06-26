@@ -1,5 +1,7 @@
 /** Searchable grouped parameter picker for Value Trace. */
 
+import { restoreScroll } from "./view-state.js";
+
 const RECENT_KEY = "sh_trace_recent";
 const GROUP_LABELS = {
   joint: "Joint axes",
@@ -155,6 +157,18 @@ export function mountParamPicker(container, { profile, selectedKey = "", onSelec
     },
     focusSearch() {
       search.focus();
+    },
+    exportViewState() {
+      return { selectedKey, filter, focusIndex, listScrollTop: listHost.scrollTop };
+    },
+    restoreState(state) {
+      if (!state) return;
+      selectedKey = state.selectedKey ?? selectedKey;
+      filter = state.filter ?? "";
+      focusIndex = state.focusIndex ?? 0;
+      search.value = filter;
+      render();
+      restoreScroll(listHost, state.listScrollTop ?? 0);
     },
   };
 }

@@ -144,9 +144,26 @@ export async function mountGroupedManifestList({
   return root;
 }
 
-export async function mountShapePicker({ shapes, activeMap, onChange, title = "Pick shape", initialShape }) {
+export async function mountShapePicker({
+  shapes,
+  activeMap,
+  onChange,
+  title = "Pick shape",
+  initialShape,
+  uiStore,
+}) {
   const root = el("div", "shape-picker");
-  let selected = initialShape && shapes.includes(initialShape) ? initialShape : "";
+  let selected =
+    (initialShape && shapes.includes(initialShape) ? initialShape : null) ??
+    (uiStore?.get("selectedShape") && shapes.includes(uiStore.get("selectedShape"))
+      ? uiStore.get("selectedShape")
+      : null) ??
+    "";
+
+  const persistShape = (name) => {
+    selected = name;
+    uiStore?.set({ selectedShape: name });
+  };
   const map = { ...activeMap };
 
   const renderDetail = () => {
@@ -205,6 +222,7 @@ export async function mountShapePicker({ shapes, activeMap, onChange, title = "P
     const list = el("div", "picker-list");
     const search = el("input", "input search");
     search.placeholder = "Filter shapes…";
+    search.value = uiStore?.get("pickerSearch") ?? "";
     list.appendChild(search);
     const items = el("div", "picker-items");
     list.appendChild(items);
@@ -215,7 +233,7 @@ export async function mountShapePicker({ shapes, activeMap, onChange, title = "P
         btn.type = "button";
         if (name in map) btn.classList.add("has-cap");
         btn.onclick = () => {
-          selected = name;
+          persistShape(name);
           if (!(name in map)) {
             map[name] = 0.5;
             onChange({ ...map });
@@ -226,8 +244,11 @@ export async function mountShapePicker({ shapes, activeMap, onChange, title = "P
         items.appendChild(btn);
       }
     };
-    search.oninput = () => draw(search.value.trim());
-    draw();
+    search.oninput = () => {
+      uiStore?.set({ pickerSearch: search.value });
+      draw(search.value.trim());
+    };
+    draw(search.value.trim());
     body.appendChild(list);
     body.appendChild(el("div", "picker-detail"));
     root.appendChild(body);
@@ -235,11 +256,5 @@ export async function mountShapePicker({ shapes, activeMap, onChange, title = "P
   };
 
   render();
-  if (initialShape) {
-    requestAnimationFrame(() => {
-      const btn = root.querySelector(".picker-item.active");
-      btn?.scrollIntoView({ behavior: "smooth", block: "center" });
-    });
-  }
   return root;
 }

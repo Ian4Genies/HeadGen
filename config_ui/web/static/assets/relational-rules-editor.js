@@ -69,6 +69,7 @@ export function mountRelationalRulesEditor({
   onItemsChange,
   onFilterChange,
   onMuteFilterChange,
+  onCollapsedChange,
   renderRuleBody,
   emptyRule,
   focusRuleIndex,
@@ -90,6 +91,8 @@ export function mountRelationalRulesEditor({
       .filter((i) => i >= 0);
   };
 
+  const syncCollapsed = () => onCollapsedChange?.([...collapsed]);
+
   const renderToolbar = () => {
     const bar = el("div", "rules-toolbar");
     const search = el("input", "input search");
@@ -101,6 +104,7 @@ export function mountRelationalRulesEditor({
     expandAll.type = "button";
     expandAll.onclick = () => {
       collapsed.clear();
+      syncCollapsed();
       render();
     };
 
@@ -109,6 +113,7 @@ export function mountRelationalRulesEditor({
     collapseAll.onclick = () => {
       collapsed.clear();
       items.forEach((_, i) => collapsed.add(i));
+      syncCollapsed();
       render();
     };
 
@@ -140,6 +145,7 @@ export function mountRelationalRulesEditor({
   const toggleCollapsed = (index) => {
     if (collapsed.has(index)) collapsed.delete(index);
     else collapsed.add(index);
+    syncCollapsed();
   };
 
   const renderCard = (index, item) => {

@@ -18,6 +18,7 @@ import { mountDriversEditor } from "./drivers-editor.js?v=3";
 import { mountRelationalRulesEditor } from "./relational-rules-editor.js";
 import { FILE_LAYOUTS } from "./file-layouts.js";
 import { scrollToConfigTarget } from "./config-focus.js";
+import { createUiStore, restoreScroll } from "./view-state.js";
 
 function deepClone(v) {
   return JSON.parse(JSON.stringify(v));
@@ -39,6 +40,8 @@ export class ConfigForm {
   #profile;
   #fileId;
   #focus;
+  #uiStore;
+  #scrollRestore;
   #rulesCollapsed = new Set();
   #rulesCollapsedInit = false;
   #rulesFilter = "";
@@ -52,7 +55,49 @@ export class ConfigForm {
     this.#profile = options.profile ?? "";
     this.#fileId = options.fileId ?? "";
     this.#focus = options.focus ?? null;
+    this.#uiStore = createUiStore(options.savedState?.ui ?? {});
+    this.#scrollRestore = this.#focus ? null : (options.savedState?.scrollTop ?? null);
+    if (this.#focus?.joint) this.#uiStore.set({ selectedJoint: this.#focus.joint });
+    if (this.#focus?.paramKey) {
+      this.#uiStore.set({
+        selectedParam: this.#focus.paramKey,
+        selectedShape: this.#focus.paramKey,
+      });
+    }
+    if (this.#focus?.targetEntry) this.#uiStore.set({ registryFilter: this.#focus.targetEntry });
     this.render();
+  }
+
+  exportViewState() {
+    this.#syncRulesUiState();
+    return {
+      scrollTop: this.#root.scrollTop,
+      ui: { ...this.#uiStore.state },
+    };
+  }
+
+  #syncRulesUiState() {
+    this.#uiStore.set({
+      rulesFilter: this.#rulesFilter,
+      rulesMuteFilter: this.#rulesMuteFilter,
+      rulesCollapsed: [...this.#rulesCollapsed],
+    });
+  }
+
+  #finishRender(scrollTop = 0) {
+    const focus = this.#focus;
+    this.#scrollRestore = null;
+    requestAnimationFrame(() => {
+      if (focus?.section) {
+        const sec =
+          this.#root.querySelector(`[data-config-section~="${focus.section}"]`) ??
+          this.#root.querySelector(`[data-config-section="${focus.section}"]`);
+        scrollToConfigTarget(sec);
+        this.#focus = null;
+      } else if (scrollTop > 0) {
+        restoreScroll(this.#root, scrollTop);
+      }
+    });
   }
 
   getData() {
@@ -85,6 +130,7 @@ export class ConfigForm {
   }
 
   render() {
+    const scrollTop = this.#scrollRestore ?? this.#root.scrollTop ?? 0;
     this.#root.innerHTML = "";
     this.#root.className = "form-scroll";
     if (this.#fileId === "chaos_joints") {
@@ -92,24 +138,28 @@ export class ConfigForm {
         mountChaosJointsEditor({
           data: this.#data,
           focus: this.#focus,
+          uiStore: this.#uiStore,
           onChange: (next) => {
             this.#data = deepClone(next);
             this.#touch();
           },
         }),
       );
+      this.#finishRender(scrollTop);
       return;
     }
     if (this.#fileId === "drivers") {
       this.#root.appendChild(
         mountDriversEditor({
           data: this.#data,
+          uiStore: this.#uiStore,
           onChange: (next) => {
             this.#data = deepClone(next);
             this.#touch();
           },
         }),
       );
+      this.#finishRender(scrollTop);
       return;
     }
     const layout = FILE_LAYOUTS[this.#fileId];
@@ -118,16 +168,7 @@ export class ConfigForm {
     } else {
       this.#root.appendChild(this.#node(this.#data, [], null));
     }
-    this.#applyFocus();
-  }
-
-  #applyFocus() {
-    const focus = this.#focus;
-    if (!focus?.section) return;
-    requestAnimationFrame(() => {
-      const sec = this.#root.querySelector(`[data-config-section~="${focus.section}"]`);
-      scrollToConfigTarget(sec ?? this.#root.querySelector(`[data-config-section="${focus.section}"]`));
-    });
+    this.#finishRender(scrollTop);
   }
 
   #renderLayout(layout) {
@@ -332,7 +373,8 @@ export class ConfigForm {
   #jointOverridesField(path) {
     const host = el("div", "manifest-host");
     host.dataset.configSection = "overrides";
-    const joint = this.#focus?.joint ?? null;
+    const joint =
+      this.#focus?.joint ?? this.#uiStore.get("selectedJoint") ?? null;
     host.appendChild(
       mountJointOverrideEditor({
         overrides: this.#getAt(path),
@@ -343,6 +385,7 @@ export class ConfigForm {
           scale_max: this.#data.scale_max,
         },
         initialJoint: joint,
+        uiStore: this.#uiStore,
         onChange: (map) => this.#set(path, map),
       }),
     );
@@ -353,7 +396,8 @@ export class ConfigForm {
     const host = el("div", "manifest-host");
     host.dataset.configSection = "hard_clamps";
     host.appendChild(el("span", "muted small", "Loading parameters…"));
-    const focusParam = this.#focus?.paramKey ?? null;
+    const focusParam =
+      this.#focus?.paramKey ?? this.#uiStore.get("selectedParam") ?? null;
     fetch(`/api/profiles/${encodeURIComponent(this.#profile)}/registry`)
       .then((r) => r.json())
       .then((reg) => {
@@ -364,6 +408,7 @@ export class ConfigForm {
             onChange: (map) => this.#set(path, map),
             title: "Pick parameter → set min/max clamp",
             initialParam: focusParam,
+            uiStore: this.#uiStore,
           }),
         );
       })
@@ -374,6 +419,7 @@ export class ConfigForm {
             paramSuggestions: Object.keys(this.#getAt(path)),
             onChange: (map) => this.#set(path, map),
             initialParam: focusParam,
+            uiStore: this.#uiStore,
           }),
         );
       });
@@ -385,12 +431,14 @@ export class ConfigForm {
     const sectionKey = path[path.length - 1];
     host.dataset.configSection = sectionKey;
     host.appendChild(el("span", "muted small", "Loading…"));
-    const initialShape = this.#focus?.paramKey ?? null;
+    const initialShape =
+      this.#focus?.paramKey ?? this.#uiStore.get("selectedShape") ?? null;
     mountShapePicker({
       shapes,
       activeMap: this.#getAt(path),
       title,
       initialShape,
+      uiStore: this.#uiStore,
       onChange: (map) => this.#set(path, map),
     })
       .then((node) => host.replaceChildren(node))
@@ -404,7 +452,8 @@ export class ConfigForm {
     const host = el("div", "manifest-host");
     host.dataset.configSection = "distance_weights";
     host.appendChild(el("span", "muted small", "Loading…"));
-    const initialShape = this.#focus?.paramKey ?? null;
+    const initialShape =
+      this.#focus?.paramKey ?? this.#uiStore.get("selectedShape") ?? null;
     fetch(`/api/profiles/${encodeURIComponent(this.#profile)}/registry`)
       .then((r) => r.json())
       .then((reg) =>
@@ -432,7 +481,12 @@ export class ConfigForm {
     mountRegistryPicker({
       profile: this.#profile,
       activeItems: this.#getAt(path),
-      initialTarget: this.#focus?.targetEntry ?? this.#focus?.paramKey ?? null,
+      initialTarget:
+        this.#focus?.targetEntry ??
+        this.#focus?.paramKey ??
+        this.#uiStore.get("registryFilter") ??
+        null,
+      uiStore: this.#uiStore,
       onChange: (items) => this.#set(path, items),
     })
       .then((node) => host.replaceChildren(node))
@@ -907,6 +961,10 @@ export class ConfigForm {
         items.forEach((_, i) => {
           if (i !== this.#focus.ruleIndex) this.#rulesCollapsed.add(i);
         });
+      } else if (this.#uiStore.get("rulesCollapsed")?.length) {
+        for (const i of this.#uiStore.get("rulesCollapsed")) this.#rulesCollapsed.add(i);
+        this.#rulesFilter = this.#uiStore.get("rulesFilter") ?? "";
+        this.#rulesMuteFilter = this.#uiStore.get("rulesMuteFilter") ?? "all";
       } else {
         items.forEach((_, i) => this.#rulesCollapsed.add(i));
       }
@@ -925,16 +983,23 @@ export class ConfigForm {
       filterText: this.#rulesFilter,
       muteFilter: this.#rulesMuteFilter,
       focusRuleIndex: this.#focus?.ruleIndex ?? null,
+      onCollapsedChange: (indices) => {
+        this.#rulesCollapsed.clear();
+        for (const i of indices) this.#rulesCollapsed.add(i);
+        this.#syncRulesUiState();
+      },
       onItemsChange: (next) => {
         this.#set(path, next);
         this.render();
       },
       onFilterChange: (text) => {
         this.#rulesFilter = text;
+        this.#syncRulesUiState();
         host.replaceChildren(this.#mountRelationalRules(path, this.#getAt(path), host));
       },
       onMuteFilterChange: (mode) => {
         this.#rulesMuteFilter = mode;
+        this.#syncRulesUiState();
         host.replaceChildren(this.#mountRelationalRules(path, this.#getAt(path), host));
       },
       emptyRule,

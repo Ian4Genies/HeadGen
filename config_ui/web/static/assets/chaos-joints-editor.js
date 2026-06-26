@@ -63,12 +63,19 @@ function isMirrorJoint(name) {
   return name.startsWith("Right");
 }
 
-export function mountChaosJointsEditor({ data, onChange, focus }) {
+export function mountChaosJointsEditor({ data, onChange, focus, uiStore }) {
   const root = el("div", "chaos-editor");
   let state = deepClone(data);
   let schema = null;
   let selectedOverrideJoint =
-    focus?.joint && (data.joint_names ?? []).includes(focus.joint) ? focus.joint : null;
+    focus?.joint ??
+    uiStore?.get("selectedJoint") ??
+    null;
+
+  const persistJoint = (joint) => {
+    selectedOverrideJoint = joint;
+    uiStore?.set({ selectedJoint: joint });
+  };
 
   const push = () => onChange(deepClone(state));
 
@@ -269,7 +276,7 @@ export function mountChaosJointsEditor({ data, onChange, focus }) {
       selectedOverrideJoint && overrideJoints.includes(selectedOverrideJoint)
         ? selectedOverrideJoint
         : overrideJoints[0] ?? "";
-    selectedOverrideJoint = selected;
+    persistJoint(selected);
     const picker = el("div", "joint-picker-row");
     const sel = el("select", "input joint-select");
     for (const j of overrideJoints) {
@@ -280,7 +287,7 @@ export function mountChaosJointsEditor({ data, onChange, focus }) {
     }
     sel.onchange = () => {
       selected = sel.value;
-      selectedOverrideJoint = selected;
+      persistJoint(selected);
       drawMatrix();
     };
     picker.appendChild(sel);

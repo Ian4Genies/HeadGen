@@ -4,6 +4,7 @@ import { mountRangeField } from "./joint-override-editor.js";
 import { mountRuleCardReadOnly } from "./relational-rules-editor.js";
 import { mountTraceRibbon } from "./trace-ribbon.js";
 import { buildRuleFocus, buildStageFocus } from "./config-focus.js";
+import { restoreScroll } from "./view-state.js";
 
 const STAGE_CONSTRAINTS = "constraints";
 
@@ -280,7 +281,7 @@ export function mountTraceView(host, { profile, onDirty, onOpenConfigFile }) {
 
   btnSim.onclick = () => void runSimulate();
 
-  async function loadParam(key) {
+  async function loadParam(key, { skipSimulate = false } = {}) {
     paramKey = key;
     simResult = null;
     ribbon = mountTraceRibbon(ribbonHost, {});
@@ -297,7 +298,58 @@ export function mountTraceView(host, { profile, onDirty, onOpenConfigFile }) {
     cardsHost.classList.remove("hidden");
     headerHost.classList.remove("hidden");
     simBar.classList.remove("hidden");
-    await runSimulate();
+    if (!skipSimulate) await runSimulate();
+  }
+
+  async function restoreState(state) {
+    if (!state?.paramKey) return;
+    paramKey = state.paramKey;
+    mode = state.mode ?? mode;
+    inputMode = state.inputMode ?? inputMode;
+    compact = state.compact ?? compact;
+    collapsed = new Set(state.collapsed ?? []);
+    for (const k of Object.keys(staging)) delete staging[k];
+    Object.assign(staging, state.staging ?? {});
+    stageData = state.stageData ?? null;
+    simResult = state.simResult ?? null;
+
+    if (!stageData) {
+      await loadParam(paramKey);
+      return;
+    }
+
+    syncValuePickerFromMeta();
+    renderHeader();
+    renderSimBar();
+    renderCards();
+    ribbon = mountTraceRibbon(ribbonHost, {
+      steps: simResult?.steps,
+      finalValue: simResult?.final,
+    });
+    emptyHost.classList.add("hidden");
+    cardsHost.classList.remove("hidden");
+    headerHost.classList.remove("hidden");
+    simBar.classList.remove("hidden");
+    if (state.valueInput != null) valueInput.value = state.valueInput;
+    if (state.seedInput != null) seedInput.value = state.seedInput;
+    restoreScroll(cardsHost, state.cardsScrollTop ?? 0);
+    onDirty(Object.keys(staging).length > 0, staging);
+  }
+
+  function exportViewState() {
+    return {
+      paramKey,
+      stageData,
+      simResult,
+      mode,
+      inputMode,
+      compact,
+      collapsed: [...collapsed],
+      staging: { ...staging },
+      valueInput: valueInput.value,
+      seedInput: seedInput.value,
+      cardsScrollTop: cardsHost.scrollTop,
+    };
   }
 
   function renderHeader() {
@@ -648,6 +700,8 @@ export function mountTraceView(host, { profile, onDirty, onOpenConfigFile }) {
 
   return {
     loadParam,
+    restoreState,
+    exportViewState,
     getStaging() {
       return { ...staging };
     },

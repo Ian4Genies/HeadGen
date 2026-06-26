@@ -92,16 +92,28 @@ function renderEndpoint(label, ep, setEp) {
   return sec;
 }
 
-export function mountDriversEditor({ data, onChange }) {
+export function mountDriversEditor({ data, onChange, uiStore }) {
   const root = el("div", "drivers-editor");
   let state = deepClone(data);
-  const collapsed = new Set();
-  const selected = new Set();
-  let lastClickIndex = -1;
-  let filterText = "";
-  let findText = "";
-  let replaceText = "";
-  let replaceScope = "all";
+  const collapsed = new Set(uiStore?.get("driversCollapsed") ?? []);
+  const selected = new Set(uiStore?.get("driversSelected") ?? []);
+  let lastClickIndex = uiStore?.get("driversLastClick") ?? -1;
+  let filterText = uiStore?.get("driversFilter") ?? "";
+  let findText = uiStore?.get("driversFind") ?? "";
+  let replaceText = uiStore?.get("driversReplace") ?? "";
+  let replaceScope = uiStore?.get("driversReplaceScope") ?? "all";
+
+  const persistUi = () => {
+    uiStore?.set({
+      driversCollapsed: [...collapsed],
+      driversSelected: [...selected],
+      driversLastClick: lastClickIndex,
+      driversFilter: filterText,
+      driversFind: findText,
+      driversReplace: replaceText,
+      driversReplaceScope: replaceScope,
+    });
+  };
 
   const push = () => onChange(deepClone(state));
 
@@ -479,6 +491,7 @@ export function mountDriversEditor({ data, onChange }) {
     );
     foot.appendChild(add);
     root.appendChild(foot);
+    persistUi();
   }
 
   render();

@@ -1,6 +1,12 @@
-import { mountForm } from "./forms.js?v=4";
-import { mountParamPicker } from "./param-picker.js?v=1";
-import { mountTraceView } from "./trace-view.js?v=4";
+import { mountForm } from "./forms.js?v=5";
+import { mountParamPicker } from "./param-picker.js?v=2";
+import { mountTraceView } from "./trace-view.js?v=5";
+import {
+  loadConfigFileState,
+  loadTraceState,
+  saveConfigFileState,
+  saveTraceState,
+} from "./view-state.js";
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -12,6 +18,7 @@ let dirty = false;
 let workspaceMode = "config";
 let paramPicker = null;
 let traceView = null;
+let traceProfile = null;
 let traceStaging = {};
 let pendingConfigFocus = null;
 
@@ -52,6 +59,19 @@ function confirmDiscard() {
   return !dirty || window.confirm("Discard unsaved changes?");
 }
 
+function saveCurrentConfigFileState() {
+  if (!form?.exportViewState) return;
+  saveConfigFileState(activeProfile, selectedFile, form.exportViewState());
+}
+
+function saveTraceModeState() {
+  if (!traceView?.exportViewState) return;
+  saveTraceState(activeProfile, {
+    view: traceView.exportViewState(),
+    picker: paramPicker?.exportViewState?.() ?? {},
+  });
+}
+
 function renderFileList() {
   const nav = $("#file-list");
   nav.innerHTML = "";
@@ -62,6 +82,7 @@ function renderFileList() {
     btn.innerHTML = `<div class="name">${file.label}</div><div class="desc">${file.description}</div>`;
     btn.onclick = async () => {
       if (!confirmDiscard()) return;
+      saveCurrentConfigFileState();
       selectedFile = file.id;
       renderFileList();
       await loadFile();
@@ -95,8 +116,14 @@ async function loadFile() {
   );
   const host = $("#form-root");
   const focus = pendingConfigFocus;
+  const savedState = focus ? null : loadConfigFileState(activeProfile, selectedFile);
   pendingConfigFocus = null;
-  form = mountForm(host, data, setDirty, { profile: activeProfile, fileId: selectedFile, focus });
+  form = mountForm(host, data, setDirty, {
+    profile: activeProfile,
+    fileId: selectedFile,
+    focus,
+    savedState,
+  });
   setDirty(false);
 }
 
@@ -156,6 +183,8 @@ async function saveChanges() {
 function setWorkspaceMode(mode) {
   if (mode === workspaceMode) return;
   if (!confirmDiscard()) return;
+  if (mode === "trace") saveCurrentConfigFileState();
+  else saveTraceModeState();
   workspaceMode = mode;
   dirty = false;
   setDirty(false);
@@ -165,12 +194,23 @@ function setWorkspaceMode(mode) {
   $("#sidebar-trace").classList.toggle("hidden", mode !== "trace");
   $("#panel-config").classList.toggle("hidden", mode !== "config");
   $("#panel-trace").classList.toggle("hidden", mode !== "trace");
-  if (mode === "trace") initTraceMode();
+  if (mode === "trace") void ensureTraceMode();
 }
 
-async function initTraceMode() {
+async function ensureTraceMode() {
+  if (traceView && traceProfile === activeProfile) return;
+
+  if (traceView && traceProfile && traceProfile !== activeProfile) {
+    saveTraceState(traceProfile, {
+      view: traceView.exportViewState(),
+      picker: paramPicker?.exportViewState?.() ?? {},
+    });
+  }
+
   const pickerHost = $("#param-picker-root");
   const traceHost = $("#trace-root");
+  const saved = loadTraceState(activeProfile);
+
   traceView = mountTraceView(traceHost, {
     profile: activeProfile,
     onDirty: (next, staging) => {
@@ -178,10 +218,13 @@ async function initTraceMode() {
       setDirty(next);
     },
     onOpenConfigFile: (focus) => {
+      saveTraceModeState();
       const target = typeof focus === "string" ? { fileId: focus } : focus;
       pendingConfigFocus = target;
       selectedFile = target.fileId;
       workspaceMode = "config";
+      dirty = false;
+      setDirty(false);
       $("#mode-config").classList.add("active");
       $("#mode-trace").classList.remove("active");
       $("#sidebar-config").classList.remove("hidden");
@@ -194,12 +237,21 @@ async function initTraceMode() {
   });
   paramPicker = mountParamPicker(pickerHost, {
     profile: activeProfile,
+    selectedKey: saved?.picker?.selectedKey ?? "",
     onSelect: (key) => {
+      paramPicker?.setSelected(key);
       void traceView.loadParam(key).catch((e) => toast("err", e.message));
     },
   });
   await paramPicker.load();
-  paramPicker.focusSearch();
+  if (saved?.picker) paramPicker.restoreState(saved.picker);
+  if (saved?.view?.paramKey) {
+    await traceView.restoreState(saved.view);
+    paramPicker.setSelected(saved.view.paramKey);
+  } else {
+    paramPicker.focusSearch();
+  }
+  traceProfile = activeProfile;
 }
 
 async function boot() {
@@ -217,14 +269,21 @@ async function boot() {
       e.target.value = activeProfile;
       return;
     }
+    saveCurrentConfigFileState();
+    saveTraceModeState();
     try {
       await api(`/api/profiles/${encodeURIComponent(e.target.value)}/activate`, {
         method: "POST",
       });
       activeProfile = e.target.value;
+      traceProfile = null;
       await refreshProfiles();
       if (workspaceMode === "config") await loadFile();
-      else await initTraceMode();
+      else {
+        traceView = null;
+        paramPicker = null;
+        await ensureTraceMode();
+      }
       toast("ok", `Active profile: ${activeProfile} (synced to data/config)`);
     } catch (err) {
       toast("err", err.message);

@@ -132,10 +132,10 @@ function isRedundantMirrorTarget(key, active) {
   return active.includes(left);
 }
 
-export async function mountRegistryPicker({ profile, activeItems, onChange, initialTarget }) {
+export async function mountRegistryPicker({ profile, activeItems, onChange, initialTarget, uiStore }) {
   const root = el("div", "manifest-list");
   let active = [...activeItems];
-  let filterText = initialTarget ?? "";
+  let filterText = initialTarget ?? uiStore?.get("registryFilter") ?? "";
   let registry = { rerandomize_suggestions: [] };
   try {
     const res = await fetch(`/api/profiles/${encodeURIComponent(profile)}/registry`);
@@ -231,6 +231,7 @@ export async function mountRegistryPicker({ profile, activeItems, onChange, init
 
   search.oninput = () => {
     filterText = search.value;
+    uiStore?.set({ registryFilter: filterText });
     drawPool();
   };
 

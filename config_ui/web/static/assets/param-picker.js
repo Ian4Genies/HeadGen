@@ -37,6 +37,28 @@ export function mountParamPicker(container, { profile, selectedKey = "", onSelec
   let filter = "";
   let focusIndex = 0;
   let flatItems = [];
+  const collapsedGroups = new Set();
+
+  const isSearching = () => filter.trim().length > 0;
+
+  const toggleGroup = (groupId) => {
+    if (collapsedGroups.has(groupId)) collapsedGroups.delete(groupId);
+    else collapsedGroups.add(groupId);
+    render();
+  };
+
+  const groupHead = (groupId, label, count) => {
+    const collapsed = !isSearching() && collapsedGroups.has(groupId);
+    const head = el("button", "trace-group-head" + (collapsed ? " collapsed" : ""));
+    head.type = "button";
+    head.append(
+      el("span", "trace-group-chevron", collapsed ? "▸" : "▾"),
+      el("span", "trace-group-label", label),
+      el("span", "trace-group-count", String(count)),
+    );
+    head.onclick = () => toggleGroup(groupId);
+    return head;
+  };
 
   const search = el("input", "input trace-search");
   search.placeholder = "Search parameters…";
@@ -91,31 +113,60 @@ export function mountParamPicker(container, { profile, selectedKey = "", onSelec
     render();
   };
 
+  const buildVisible = (items) => {
+    const visible = [];
+    const recent = loadRecent().filter((k) => flatItems.some((it) => it.key === k));
+    if (!isSearching() && recent.length && !collapsedGroups.has("__recent__")) {
+      for (const key of recent) {
+        const it = flatItems.find((x) => x.key === key);
+        if (it) visible.push(it);
+      }
+    }
+    const groupOrder = catalog
+      ? Object.keys(catalog.groups)
+      : [...new Set(items.map((it) => it.groupId))];
+    for (const groupId of groupOrder) {
+      if (!isSearching() && collapsedGroups.has(groupId)) continue;
+      for (const it of items.filter((x) => x.groupId === groupId)) visible.push(it);
+    }
+    return visible;
+  };
+
   const render = () => {
     listHost.innerHTML = "";
     const items = filtered();
-    if (focusIndex >= items.length) focusIndex = Math.max(0, items.length - 1);
+    if (!items.length) {
+      listHost.appendChild(el("p", "muted small", "No parameters match"));
+      return;
+    }
 
+    let idx = 0;
     const recent = loadRecent().filter((k) => flatItems.some((it) => it.key === k));
-    if (!filter && recent.length) {
-      listHost.appendChild(el("p", "trace-group-title", "Recent"));
-      for (const key of recent) {
-        const it = flatItems.find((x) => x.key === key);
-        if (it) listHost.appendChild(row(it, items.indexOf(it)));
+    if (!isSearching() && recent.length) {
+      const recentItems = recent
+        .map((key) => flatItems.find((x) => x.key === key))
+        .filter(Boolean);
+      listHost.appendChild(groupHead("__recent__", "Recent", recentItems.length));
+      if (!collapsedGroups.has("__recent__")) {
+        for (const it of recentItems) listHost.appendChild(row(it, idx++));
       }
     }
 
-    let lastGroup = null;
-    for (let i = 0; i < items.length; i++) {
-      const it = items[i];
-      if (it.groupId !== lastGroup) {
-        listHost.appendChild(el("p", "trace-group-title", it.groupLabel));
-        lastGroup = it.groupId;
+    const groupOrder = catalog
+      ? Object.keys(catalog.groups)
+      : [...new Set(items.map((it) => it.groupId))];
+
+    for (const groupId of groupOrder) {
+      const groupItems = items.filter((it) => it.groupId === groupId);
+      if (!groupItems.length) continue;
+      listHost.appendChild(groupHead(groupId, GROUP_LABELS[groupId] || groupId, groupItems.length));
+      if (isSearching() || !collapsedGroups.has(groupId)) {
+        for (const it of groupItems) listHost.appendChild(row(it, idx++));
       }
-      listHost.appendChild(row(it, i));
     }
 
-    if (!items.length) listHost.appendChild(el("p", "muted small", "No parameters match"));
+    const visible = buildVisible(items);
+    if (focusIndex >= visible.length) focusIndex = Math.max(0, visible.length - 1);
   };
 
   search.oninput = () => {
@@ -125,18 +176,18 @@ export function mountParamPicker(container, { profile, selectedKey = "", onSelec
   };
 
   search.onkeydown = (e) => {
-    const items = filtered();
+    const visible = buildVisible(filtered());
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      focusIndex = Math.min(focusIndex + 1, items.length - 1);
+      focusIndex = Math.min(focusIndex + 1, visible.length - 1);
       render();
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       focusIndex = Math.max(focusIndex - 1, 0);
       render();
-    } else if (e.key === "Enter" && items[focusIndex]) {
+    } else if (e.key === "Enter" && visible[focusIndex]) {
       e.preventDefault();
-      pick(items[focusIndex].key);
+      pick(visible[focusIndex].key);
     }
   };
 
@@ -159,13 +210,21 @@ export function mountParamPicker(container, { profile, selectedKey = "", onSelec
       search.focus();
     },
     exportViewState() {
-      return { selectedKey, filter, focusIndex, listScrollTop: listHost.scrollTop };
+      return {
+        selectedKey,
+        filter,
+        focusIndex,
+        listScrollTop: listHost.scrollTop,
+        collapsedGroups: [...collapsedGroups],
+      };
     },
     restoreState(state) {
       if (!state) return;
       selectedKey = state.selectedKey ?? selectedKey;
       filter = state.filter ?? "";
       focusIndex = state.focusIndex ?? 0;
+      collapsedGroups.clear();
+      for (const g of state.collapsedGroups ?? []) collapsedGroups.add(g);
       search.value = filter;
       render();
       restoreScroll(listHost, state.listScrollTop ?? 0);

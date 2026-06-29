@@ -719,6 +719,8 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
             #Eyebrows and Eyelashes
             _apply_weights_to_shape_keys(eyebrows_obj, constrained_bs[frame], frame)
             _apply_weights_to_shape_keys(eyelashes_obj, constrained_bs[frame], frame)
+            # add eye boolean cutters
+
             #Bone custom properties (iris/pupil) — routed to blendshapes via driver system
             apply_bone_property_values(armature, constrained_bs[frame], cfg.variation.bone_properties, frame)
             #Skin / Body Color

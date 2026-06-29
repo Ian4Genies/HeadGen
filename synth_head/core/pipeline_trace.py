@@ -219,6 +219,10 @@ def _generation_stage(cfg: "PipelineConfig", key: str, kind: ParamKind) -> dict[
             "overrides": overrides,
         }
         has_config = bool(overrides) or channel in ("location", "rotation", "scale")
+        if channel == "scale":
+            notes.append(
+                "Scale overrides are offsets from 1.0; simulation uses scene values (offset + 1)."
+            )
         if key != canon:
             notes.append(f"Right-side key — ranges from canonical {canon}")
         partner = _symmetry_partner_key(canon, "joint")

@@ -1,6 +1,6 @@
 import { mountForm } from "./forms.js?v=5";
-import { mountParamPicker } from "./param-picker.js?v=2";
-import { mountTraceView } from "./trace-view.js?v=5";
+import { mountParamPicker } from "./param-picker.js?v=3";
+import { mountTraceView } from "./trace-view.js?v=6";
 import {
   loadConfigFileState,
   loadTraceState,

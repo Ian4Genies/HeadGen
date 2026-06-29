@@ -141,6 +141,20 @@ class TestSimulate:
         vr = data["metadata"]["value_range"]
         assert "min" in vr and "max" in vr
 
+    def test_scale_value_range_is_scene_space(self, cfg: PipelineConfig):
+        data = collect_param_stages(cfg, "NoseBind.scale.x")
+        vr = data["metadata"]["value_range"]
+        assert vr["min"] == pytest.approx(0.8)
+        assert vr["max"] == pytest.approx(0.9)
+
+    def test_scale_starting_value_in_scene_space(self, cfg: PipelineConfig):
+        result = simulate_pipeline(
+            cfg, "NoseBind.scale.x", mode="randomize_face",
+            seed=1, starting_value=0.9,
+        )
+        assert result["steps"][0]["value"] == pytest.approx(0.9)
+        assert result["starting_value"] == pytest.approx(0.9)
+
     def test_constrain_matches_full_pipeline(self, cfg: PipelineConfig):
         from synth_head.core.pipeline_trace import run_full_randomize_face, _constrain_with_substeps
 

@@ -25,6 +25,34 @@ function isRange(v) {
   return v && typeof v === "object" && "min" in v && "max" in v;
 }
 
+/** Map config override → flat scene value range (scale adds 1.0). */
+function overrideToFlatRange(paramKey, merged) {
+  const parts = paramKey.split(".");
+  const isScale = parts.length === 3 && parts[1] === "scale";
+  let lo;
+  let hi;
+  if (isRange(merged)) {
+    lo = Number(merged.min);
+    hi = Number(merged.max);
+  } else if (typeof merged === "number") {
+    const abs = Math.abs(merged);
+    lo = -abs;
+    hi = abs;
+  } else {
+    return null;
+  }
+  if (isScale) {
+    lo += 1;
+    hi += 1;
+  }
+  return { min: lo, max: hi };
+}
+
+function isScaleParam(key) {
+  const p = key.split(".");
+  return p.length === 3 && p[1] === "scale";
+}
+
 function stepForStage(steps, stageId) {
   return steps?.find((s) => s.stage_id === stageId) ?? null;
 }
@@ -107,11 +135,9 @@ export function mountTraceView(host, { profile, onDirty, onOpenConfigFile }) {
     if (slice.overrides) {
       for (const [k, v] of Object.entries(slice.overrides)) {
         const merged = staged.overrides?.[k] ?? v;
-        if (isRange(merged)) return { min: merged.min, max: merged.max };
-        if (typeof merged === "number") {
-          const abs = Math.abs(merged);
-          return { min: -abs, max: abs };
-        }
+        if (staged.overrides?.[k] === undefined && fallback) return fallback;
+        const flat = overrideToFlatRange(paramKey, merged);
+        if (flat) return flat;
       }
     }
 
@@ -492,6 +518,15 @@ export function mountTraceView(host, { profile, onDirty, onOpenConfigFile }) {
       body.appendChild(
         el("p", "trace-note muted small", "Edits stage locally until you click Simulate."),
       );
+      if (isScaleParam(paramKey)) {
+        body.appendChild(
+          el(
+            "p",
+            "trace-note muted small",
+            "Scale overrides are offsets from 1.0 (config −0.1 → scene 0.9). Pick value uses scene values.",
+          ),
+        );
+      }
       if (slice.overrides) {
         for (const [k, v] of Object.entries(slice.overrides)) {
           const row = el("div", "trace-field-row");

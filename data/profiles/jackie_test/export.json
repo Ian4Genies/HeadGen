@@ -6,7 +6,7 @@
   "glb_format": "GLB",
   "frame_range": [
     1,
-    7
+    10
   ],
   "head_bake_material_name": "head_mat",
   "eye_wedge_R_material_name": "eye_wedge_R",

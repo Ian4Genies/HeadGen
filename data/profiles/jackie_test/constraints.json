@@ -15,6 +15,11 @@
     "MOUTH_LOWERER": {
       "min": 0,
       "max": 0.5
+    },
+    "JawBind.location.z": {
+      "min": -1,
+      "max": 1,
+      "muted": false
     }
   },
   "relational_rules": [
@@ -83,7 +88,8 @@
       "type": "product_clamp",
       "param_a": "NoseBind.scale.y",
       "param_b": "NoseBind.scale.x",
-      "max_product": 1.15
+      "max_product": 1.15,
+      "muted": false
     },
     {
       "title": "Raise male nostril shape for upturned narrow noses",

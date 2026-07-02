@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "seed": null,
+  "reapply_constraints": true,
+  "targets": [
+    "LeftEyeSocketBind.location.x",
+    "LeftEyeSocketBind.location.y",
+    "LeftEyeSocketBind.location.z",
+    "LeftEyeSocketBind.rotation.x",
+    "LeftEyeSocketBind.rotation.y",
+    "LeftEyeSocketBind.rotation.z",
+    "LeftEyeSocketBind.scale.x",
+    "LeftEyeSocketBind.scale.y",
+    "LeftEyeSocketBind.scale.z"
+  ]
+}

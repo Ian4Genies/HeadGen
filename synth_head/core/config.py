@@ -13,7 +13,12 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from .variation import VariationConfig, CHAOS_JOINT_NAMES, DEFAULT_JOINT_OVERRIDES
+from .variation import (
+    VariationConfig,
+    CHAOS_JOINT_NAMES,
+    DEFAULT_JOINT_OVERRIDES,
+    sync_mirror_joint_names,
+)
 from .blendshapes import (
     BlendshapeConfig,
     VARIATION_SHAPES,
@@ -470,7 +475,9 @@ def load_config(config_dir: str | Path, project_root: str | Path | None = None) 
     chaos_path = d / "chaos_joints.json"
     if chaos_path.exists():
         chaos_data = _load_json(chaos_path)
-        joint_names = frozenset(chaos_data.get("joint_names", CHAOS_JOINT_NAMES))
+        joint_names = frozenset(
+            sync_mirror_joint_names(list(chaos_data.get("joint_names", CHAOS_JOINT_NAMES)))
+        )
         variation = VariationConfig.from_dict(chaos_data, fc, seed)
     else:
         joint_names = frozenset(CHAOS_JOINT_NAMES)

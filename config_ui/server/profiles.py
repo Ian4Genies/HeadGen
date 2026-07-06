@@ -211,6 +211,10 @@ def read_config_file(profile: str, file_id: str) -> dict:
 def write_config_file(profile: str, file_id: str, data: dict) -> None:
     if file_id not in CONFIG_FILE_IDS:
         raise ProfileError(f"Unknown config file: {file_id}")
+    if file_id == "chaos_joints" and "joint_names" in data:
+        from synth_head.core.variation import sync_mirror_joint_names
+
+        data = {**data, "joint_names": sync_mirror_joint_names(data["joint_names"])}
     profile_path = _profile_dir(profile)
     if not profile_path.is_dir():
         raise ProfileError(f"Profile not found: {profile}")

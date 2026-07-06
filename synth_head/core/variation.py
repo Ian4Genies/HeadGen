@@ -198,6 +198,43 @@ def _resolve_range(
     return (-v, v)
 
 
+def mirror_partner_joint(name: str) -> str | None:
+    """Return the Left↔Right partner joint name, or None for center joints."""
+    if name.startswith("Left"):
+        return "Right" + name[4:]
+    if name.startswith("Right"):
+        return "Left" + name[5:]
+    return None
+
+
+def sync_mirror_joint_names(names: list[str]) -> list[str]:
+    """Ensure each Left* joint has its Right* partner; drop orphan Right* joints."""
+    lefts = {n for n in names if n.startswith("Left")}
+    result: list[str] = []
+    emitted: set[str] = set()
+
+    for name in names:
+        if name in emitted:
+            continue
+        if name.startswith("Left"):
+            result.append(name)
+            emitted.add(name)
+            right = mirror_partner_joint(name)
+            if right and right not in emitted:
+                result.append(right)
+                emitted.add(right)
+        elif name.startswith("Right"):
+            left = mirror_partner_joint(name)
+            if left in lefts and name not in emitted:
+                result.append(name)
+                emitted.add(name)
+        else:
+            result.append(name)
+            emitted.add(name)
+
+    return result
+
+
 def classify_joints(
     joint_names: list[str],
 ) -> tuple[list[tuple[str, str]], list[str]]:

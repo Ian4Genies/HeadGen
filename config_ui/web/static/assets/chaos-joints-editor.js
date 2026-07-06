@@ -63,9 +63,40 @@ function isMirrorJoint(name) {
   return name.startsWith("Right");
 }
 
+function syncMirrorJointNames(names) {
+  const lefts = new Set(names.filter((n) => n.startsWith("Left")));
+  const result = [];
+  const emitted = new Set();
+  for (const name of names) {
+    if (emitted.has(name)) continue;
+    if (name.startsWith("Left")) {
+      result.push(name);
+      emitted.add(name);
+      const right = mirrorPartner(name);
+      if (right && !emitted.has(right)) {
+        result.push(right);
+        emitted.add(right);
+      }
+    } else if (isMirrorJoint(name)) {
+      const left = mirrorPartner(name);
+      if (left && lefts.has(left) && !emitted.has(name)) {
+        result.push(name);
+        emitted.add(name);
+      }
+    } else {
+      result.push(name);
+      emitted.add(name);
+    }
+  }
+  return result;
+}
+
 export function mountChaosJointsEditor({ data, onChange, focus, uiStore }) {
   const root = el("div", "chaos-editor");
   let state = deepClone(data);
+  if (state.joint_names) {
+    state.joint_names = syncMirrorJointNames(state.joint_names);
+  }
   let schema = null;
   let selectedOverrideJoint =
     focus?.joint ??
@@ -78,6 +109,8 @@ export function mountChaosJointsEditor({ data, onChange, focus, uiStore }) {
   };
 
   const push = () => onChange(deepClone(state));
+
+  const setJointNames = (names) => setState({ joint_names: syncMirrorJointNames(names) });
 
   const setState = (patch) => {
     state = { ...state, ...patch };
@@ -200,7 +233,7 @@ export function mountChaosJointsEditor({ data, onChange, focus, uiStore }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids: [name] }),
       });
-      setState({ joint_names: [...names, name] });
+      setJointNames([...names, name]);
       inp.value = "";
       render();
     };
@@ -216,8 +249,7 @@ export function mountChaosJointsEditor({ data, onChange, focus, uiStore }) {
         itemLabel: "joint",
         groupMode: "joints",
         onChange: (items) => {
-          const keptRight = names.filter(isMirrorJoint);
-          setState({ joint_names: [...items, ...keptRight] });
+          setJointNames(items);
           render();
         },
       }).then((node) => catalogHost.replaceChildren(node)),
@@ -240,7 +272,7 @@ export function mountChaosJointsEditor({ data, onChange, focus, uiStore }) {
       rm.type = "button";
       rm.title = "Remove from active joints";
       rm.onclick = () => {
-        setState({ joint_names: (state.joint_names ?? []).filter((x) => x !== name) });
+        setJointNames((state.joint_names ?? []).filter((x) => x !== name));
         render();
       };
       chip.appendChild(rm);

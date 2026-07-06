@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
-from synth_head.core.variation import CHAOS_JOINT_NAMES, DEFAULT_JOINT_OVERRIDES
+from synth_head.core.variation import (
+    CHAOS_JOINT_NAMES,
+    DEFAULT_JOINT_OVERRIDES,
+    mirror_partner_joint,
+    sync_mirror_joint_names,
+)
 
 # Joints that must never be added to joint_names (workspace rule).
 BLOCKED_JOINT_NAMES = frozenset({"NeckBind"})
@@ -14,8 +19,7 @@ MIRROR_PREFIX = "Right"
 def left_partner(right_name: str) -> str | None:
     if not right_name.startswith(MIRROR_PREFIX):
         return None
-    left = "Left" + right_name[len(MIRROR_PREFIX) :]
-    return left
+    return mirror_partner_joint(right_name)
 
 
 def is_mirror_joint(name: str) -> bool:

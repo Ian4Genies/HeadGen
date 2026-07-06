@@ -5,10 +5,12 @@
     "MouthInnerBind",
     "NoseBind",
     "LeftBrowBind",
-    "LeftEyeSocketBind",
-    "FaceBind",
     "RightBrowBind",
-    "RightEyeSocketBind"
+    "LeftEyeSocketBind",
+    "RightEyeSocketBind",
+    "FaceBind",
+    "LeftCheekBind",
+    "RightCheekBind"
   ],
   "transform_max": 0.2,
   "rotate_max": 10,
@@ -135,7 +137,10 @@
       "max": 0.15
     },
     "NeckBind.location": 0,
-    "NeckBind.rotation": 0
+    "NeckBind.rotation": 0,
+    "LeftCheekBind.location": 0.2,
+    "LeftCheekBind.rotation": 6,
+    "LeftCheekBind.scale": 0.2
   },
   "bone_properties": {
     "var_iris_shrink": {

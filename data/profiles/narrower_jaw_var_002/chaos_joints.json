@@ -5,10 +5,12 @@
     "MouthInnerBind",
     "NoseBind",
     "LeftBrowBind",
-    "LeftEyeSocketBind",
-    "FaceBind",
     "RightBrowBind",
-    "RightEyeSocketBind"
+    "LeftEyeSocketBind",
+    "RightEyeSocketBind",
+    "FaceBind",
+    "LeftCheekBind",
+    "RightCheekBind"
   ],
   "transform_max": 0.2,
   "rotate_max": 10,

@@ -21,6 +21,7 @@ MANIFEST_IDS = (
     "independent_shapes",
     "bone_properties",
     "texture_channels",
+    "hide_collection",
 )
 
 # Hard rule: NeckBind must never be re-added to active joint_names.
@@ -39,6 +40,20 @@ DEFAULT_INDEPENDENT_DEFAULTS: dict[str, dict] = {
 
 DEFAULT_TEXTURE_CHANNELS = ("brow", "lash", "lip", "beard", "nose")
 
+DEFAULT_HIDE_COLLECTION_OBJECTS = (
+    "_BrowControlShape",
+    "_eyeControlShape",
+    "_JawControlShape",
+    "_LowerCheek",
+    "_mouthControlShape",
+    "_NoseBSGuideMax",
+    "_NoseBSGuideMin",
+    "_noseControlShape",
+    "_NoseStaticGuideMax",
+    "_NoseStaticGuideMin",
+    "_UpperCheek",
+)
+
 PYTHON_SEEDS: dict[str, list[str]] = {
     "joints": sorted(CHAOS_JOINT_NAMES),
     "variation_shapes": list(VARIATION_SHAPES),
@@ -46,6 +61,7 @@ PYTHON_SEEDS: dict[str, list[str]] = {
     "independent_shapes": list(DEFAULT_INDEPENDENT_DEFAULTS.keys()),
     "bone_properties": list(DEFAULT_BONE_PROPERTY_DEFAULTS.keys()),
     "texture_channels": list(DEFAULT_TEXTURE_CHANNELS),
+    "hide_collection": list(DEFAULT_HIDE_COLLECTION_OBJECTS),
 }
 
 
@@ -174,6 +190,10 @@ def _scan_profiles(data: dict, manifest_id: str) -> None:
         if ts.exists() and manifest_id == "texture_channels":
             raw = json.loads(ts.read_text(encoding="utf-8"))
             add_many(list(raw.get("channels", {}).keys()), f"profile:{profile_dir.name}")
+        runner = profile_dir / "runner.json"
+        if runner.exists() and manifest_id == "hide_collection":
+            raw = json.loads(runner.read_text(encoding="utf-8"))
+            add_many(raw.get("hideCollection", []), f"profile:{profile_dir.name}")
 
 
 def ensure_manifests() -> None:
@@ -196,6 +216,8 @@ def ingest_config_file(file_id: str, data: dict) -> None:
         register_items("independent_shapes", list(data.get("independent_shapes", {}).keys()), source="config_save")
     elif file_id == "texture_swap":
         register_items("texture_channels", list(data.get("channels", {}).keys()), source="config_save")
+    elif file_id == "runner":
+        register_items("hide_collection", data.get("hideCollection", []), source="config_save")
 
 
 def build_registry(profile_name: str) -> dict:

@@ -27,6 +27,7 @@ if "bpy" in locals():
     from .scene import progress as scene_progress
     from .scene import progress_overlay as scene_progress_overlay
     from .scene import export_pipeline as scene_export_pipeline
+    from .scene import hide_collection as scene_hide_collection
 
     from .scene import rerandomize as scene_rerandomize
 
@@ -62,6 +63,7 @@ if "bpy" in locals():
     importlib.reload(scene_progress_overlay)
     importlib.reload(scene_export_pipeline)
     importlib.reload(scene_progress)
+    importlib.reload(scene_hide_collection)
     importlib.reload(scene_rerandomize)
     importlib.reload(scene)
     importlib.reload(operators)

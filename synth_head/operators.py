@@ -52,6 +52,7 @@ from .scene.materials import (
 from .scene.modifiers import add_smooth_corrective
 from .scene.reset import reset_frame
 from .scene.mesh import clean_head_mesh_wedge, Clean_head_mesh_Simple, copy_modifiers_to_wedges, cut_and_sew, join_and_merge
+from .scene.hide_collection import hide_objects_in_collection
 from .scene.snapshot import (
     read_bone_transforms,
     read_shape_key_values,
@@ -798,8 +799,8 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
 
         L_eye_obj.hide_viewport = True
         R_eye_obj.hide_viewport = True
-        
 
+        hide_objects_in_collection(context.scene, cfg.runner.hide_collection)
 
         Path(cfg.runner.save_variation_blend_path).parent.mkdir(parents=True, exist_ok=True)
         bpy.ops.wm.save_as_mainfile(filepath=cfg.runner.save_variation_blend_path)

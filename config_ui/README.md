@@ -34,6 +34,7 @@ add it back later from the catalog.
 | `independent_shapes.json` | `blendshapes.json` → `independent_shapes` |
 | `bone_properties.json` | `chaos_joints.json` → `bone_properties` |
 | `texture_channels.json` | `texture_swap.json` → `channels` |
+| `hide_collection.json` | `runner.json` → `hideCollection` |
 
 `NeckBind` is blocked from joint activation (quality rule). Saving any config auto-registers new items into the relevant manifest.
 

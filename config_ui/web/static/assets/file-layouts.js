@@ -15,6 +15,12 @@ export const FILE_LAYOUTS = {
     sections: [
       { keys: ["frame_count", "seed"], cols: 2 },
       { keys: ["paths"], full: true, title: "Paths" },
+      {
+        keys: ["hideCollection"],
+        full: true,
+        title: "Hide collection",
+        hint: "Objects moved into hideCollection and hidden in viewport after Variation Pipeline completes.",
+      },
     ],
   },
   chaos_joints: {

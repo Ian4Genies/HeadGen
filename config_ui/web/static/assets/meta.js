@@ -4,6 +4,7 @@ export const MANIFEST_LIST_KEYS = {
   joint_names: { manifestId: "joints", itemLabel: "joint" },
   variation_shapes: { manifestId: "variation_shapes", itemLabel: "variation shape" },
   expression_shapes: { manifestId: "expression_shapes", itemLabel: "expression shape" },
+  hideCollection: { manifestId: "hide_collection", itemLabel: "object" },
 };
 
 export const LABELS = {
@@ -21,6 +22,7 @@ export const LABELS = {
   good_dir: "Good heads directory",
   attractive_dir: "Attractive heads directory",
   final_output_dir: "Final output directory",
+  hideCollection: "Objects to hide after variation",
   transform_max: "Location max (m)",
   rotate_max: "Rotation max (°)",
   scale_max: "Scale max",

@@ -10,7 +10,9 @@
     "RightEyeSocketBind",
     "FaceBind",
     "LeftCheekBind",
-    "RightCheekBind"
+    "RightCheekBind",
+    "LeftCheekBoneBind",
+    "RightCheekBoneBind"
   ],
   "transform_max": 0.2,
   "rotate_max": 10,

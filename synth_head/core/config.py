@@ -244,6 +244,7 @@ class RunnerConfig:
     good_dir: str = ""
     attractive_dir: str = ""
     final_output_dir: str = ""
+    hide_collection: list[str] = field(default_factory=list)
 
     @classmethod
     def from_dict(cls, d: dict) -> RunnerConfig:
@@ -261,6 +262,7 @@ class RunnerConfig:
             good_dir=paths.get("good_dir", ""),
             attractive_dir=paths.get("attractive_dir", ""),
             final_output_dir=paths.get("final_output_dir", ""),
+            hide_collection=list(d.get("hideCollection", [])),
         )
 
     def resolve(self, base: Path) -> RunnerConfig:
@@ -278,6 +280,7 @@ class RunnerConfig:
             good_dir=str((base / self.good_dir).resolve()) if self.good_dir else "",
             attractive_dir=str((base / self.attractive_dir).resolve()) if self.attractive_dir else "",
             final_output_dir=str((base / self.final_output_dir).resolve()) if self.final_output_dir else "",
+            hide_collection=list(self.hide_collection),
         )
 
 

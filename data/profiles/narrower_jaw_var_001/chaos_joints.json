@@ -10,7 +10,9 @@
     "RightEyeSocketBind",
     "FaceBind",
     "LeftCheekBind",
-    "RightCheekBind"
+    "RightCheekBind",
+    "LeftCheekBoneBind",
+    "RightCheekBoneBind"
   ],
   "transform_max": 0.2,
   "rotate_max": 10,
@@ -140,7 +142,10 @@
     "NeckBind.rotation": 0,
     "LeftCheekBind.location": 0.2,
     "LeftCheekBind.rotation": 6,
-    "LeftCheekBind.scale": 0.2
+    "LeftCheekBind.scale": 0.2,
+    "LeftCheekBoneBind.location": 0.2,
+    "LeftCheekBoneBind.rotation": 6,
+    "LeftCheekBoneBind.scale": 0.2
   },
   "bone_properties": {
     "var_iris_shrink": {

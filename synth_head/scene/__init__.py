@@ -23,6 +23,7 @@ from .texture_swap import (
     read_sequence_offset,
     clear_sequence_offset_keyframes,
 )
+from .hide_collection import hide_objects_in_collection
 
 __all__ = [
     "add_object_to_armature",
@@ -55,4 +56,5 @@ __all__ = [
     "key_sequence_offset",
     "read_sequence_offset",
     "clear_sequence_offset_keyframes",
+    "hide_objects_in_collection",
 ]

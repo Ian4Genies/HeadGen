@@ -44,7 +44,20 @@ Controls the top-level pipeline run.
     "good_dir":               "head-good",
     "attractive_dir":         "head-attractive",
     "final_output_dir":       "final-output"
-  }
+  },
+  "hideCollection": [
+    "_BrowControlShape",
+    "_eyeControlShape",
+    "_JawControlShape",
+    "_LowerCheek",
+    "_mouthControlShape",
+    "_NoseBSGuideMax",
+    "_NoseBSGuideMin",
+    "_noseControlShape",
+    "_NoseStaticGuideMax",
+    "_NoseStaticGuideMin",
+    "_UpperCheek"
+  ]
 }
 ```
 
@@ -61,6 +74,7 @@ Controls the top-level pipeline run.
 | `paths.good_dir` | string | Directory for good-head qualitative/quantitative snapshots, relative to `data/` |
 | `paths.attractive_dir` | string | Directory for attractive-head snapshots used by the attractor system, relative to `data/` |
 | `paths.final_output_dir` | string | Output root for Pipeline 03 — per-frame `.glb`, snapshot JSONs, and `frame_NNNN/` texture sidecar folders, relative to `data/` |
+| `hideCollection` | string[] | Object names moved into a `hideCollection` collection and hidden in the viewport when Variation Pipeline completes |
 
 ---
 

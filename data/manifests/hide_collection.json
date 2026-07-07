@@ -1,0 +1,71 @@
+{
+  "items": [
+    {
+      "id": "_BrowControlShape",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-07-07T00:00:00+00:00"
+    },
+    {
+      "id": "_eyeControlShape",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-07-07T00:00:00+00:00"
+    },
+    {
+      "id": "_JawControlShape",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-07-07T00:00:00+00:00"
+    },
+    {
+      "id": "_LowerCheek",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-07-07T00:00:00+00:00"
+    },
+    {
+      "id": "_mouthControlShape",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-07-07T00:00:00+00:00"
+    },
+    {
+      "id": "_NoseBSGuideMax",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-07-07T00:00:00+00:00"
+    },
+    {
+      "id": "_NoseBSGuideMin",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-07-07T00:00:00+00:00"
+    },
+    {
+      "id": "_noseControlShape",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-07-07T00:00:00+00:00"
+    },
+    {
+      "id": "_NoseStaticGuideMax",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-07-07T00:00:00+00:00"
+    },
+    {
+      "id": "_NoseStaticGuideMin",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-07-07T00:00:00+00:00"
+    },
+    {
+      "id": "_UpperCheek",
+      "source": "python_default",
+      "note": "",
+      "added_at": "2026-07-07T00:00:00+00:00"
+    }
+  ],
+  "updated_at": "2026-07-07T21:00:41.394277+00:00"
+}

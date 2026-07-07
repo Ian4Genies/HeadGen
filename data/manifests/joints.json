@@ -65,9 +65,21 @@
       "source": "config_save",
       "note": "",
       "added_at": "2026-07-06T20:46:09.831647+00:00"
+    },
+    {
+      "id": "LeftCheekBoneBind",
+      "source": "user",
+      "note": "",
+      "added_at": "2026-07-07T20:30:08.267209+00:00"
+    },
+    {
+      "id": "RightCheekBoneBind",
+      "source": "config_save",
+      "note": "",
+      "added_at": "2026-07-07T20:30:31.443016+00:00"
     }
   ],
-  "updated_at": "2026-07-06T20:57:35.782427+00:00",
+  "updated_at": "2026-07-07T20:30:31.443016+00:00",
   "blocked": [
     "NeckBind"
   ]

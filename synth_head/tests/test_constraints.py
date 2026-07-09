@@ -19,6 +19,7 @@ from synth_head.core.constraints import (
     flatten_params,
     load_rules,
     unflatten_params,
+    validate_rule_completeness,
     validate_rules,
 )
 
@@ -307,6 +308,39 @@ class TestValidateRules:
         report = validate_rules(rules, {"A"})
         assert "STALE_SRC" in report.stale_keys
 
+    def test_sandwich_floor_ceiling_counted(self):
+        rules = ConstraintRules(
+            relational_rules=[
+                {
+                    "type": "sandwich_clamp",
+                    "target": "MouthBind.location.y",
+                    "floor": "STALE_FLOOR",
+                    "ceiling": "STALE_CEIL",
+                },
+            ],
+        )
+        report = validate_rules(rules, {"MouthBind.location.y"})
+        assert "STALE_FLOOR" in report.stale_keys
+        assert "STALE_CEIL" in report.stale_keys
+
+
+class TestValidateRuleCompleteness:
+    def test_complete_scale_follow(self):
+        assert not validate_rule_completeness(
+            {
+                "type": "scale_follow",
+                "target": "A",
+                "source": "B",
+                "factor": 0.5,
+            }
+        )
+
+    def test_winner_take_all_needs_two_params(self):
+        missing = validate_rule_completeness(
+            {"type": "winner_take_all", "params": ["only_one"]},
+        )
+        assert any("2" in m for m in missing)
+
 
 # ---------------------------------------------------------------------------
 # Live validation against real configs
@@ -317,16 +351,31 @@ _DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
 
 def _build_known_params() -> set[str]:
     """Build the full set of known parameter keys from the current configs."""
+    import json
+
     params: set[str] = set()
     for joint in CHAOS_JOINT_NAMES:
         params.update(expand_joint_keys(joint))
     params.update(VARIATION_SHAPES)
     params.update(EXPRESSION_SHAPES)
+
+    cj_path = _DATA_DIR / "config" / "chaos_joints.json"
+    if cj_path.exists():
+        cj = json.loads(cj_path.read_text(encoding="utf-8"))
+        for joint in cj.get("joint_names", []):
+            params.update(expand_joint_keys(joint))
+        params.update(cj.get("bone_properties", {}).keys())
+
+    bs_path = _DATA_DIR / "config" / "blendshapes.json"
+    if bs_path.exists():
+        bs = json.loads(bs_path.read_text(encoding="utf-8"))
+        params.update(bs.get("independent_shapes", {}).keys())
+
     return params
 
 
 def test_validate_live_rules():
-    """Sanity check: every key in constraint_rules.json must reference a
+    """Sanity check: every key in constraints.json must reference a
     parameter that actually exists in the current joint/shape configs.
 
     Run with: ``pytest -k validate_live_rules -v``
@@ -334,16 +383,16 @@ def test_validate_live_rules():
     If this fails, the constraint_rules.json contains stale references that
     should be pruned.
     """
-    rules_path = _DATA_DIR / "constraint_rules.json"
+    rules_path = _DATA_DIR / "config" / "constraints.json"
     if not rules_path.exists():
-        pytest.skip("constraint_rules.json not found")
+        pytest.skip("constraints.json not found")
 
     rules = load_rules(rules_path)
     known = _build_known_params()
     report = validate_rules(rules, known)
 
     if report.stale_keys:
-        lines = ["Stale keys in constraint_rules.json (no matching param):"]
+        lines = ["Stale keys in constraints.json (no matching param):"]
         for key in report.stale_keys:
             lines.append(f"  - {key}")
         pytest.fail("\n".join(lines))

@@ -608,49 +608,120 @@ def constrain(
 def _collect_rule_keys(rules: ConstraintRules) -> set[str]:
     """Return every parameter key referenced by any rule."""
     keys: set[str] = set()
+
+    def add(key: object) -> None:
+        if isinstance(key, str) and key.strip():
+            keys.add(key)
+
     keys.update(rules.hard_clamps.keys())
     for rule in rules.relational_rules:
         # scale_follow / conditional_clamp
-        if "target" in rule:
-            keys.add(rule["target"])
-        if "source" in rule:
-            keys.add(rule["source"])
+        add(rule.get("target"))
+        add(rule.get("source"))
         condition = rule.get("condition", {})
-        if "param" in condition:
-            keys.add(condition["param"])
-        # mutual_dampen
+        add(condition.get("param"))
+        # mutual_dampen / winner_take_all
         for p in rule.get("params", []):
-            keys.add(p)
+            add(p)
         # ratio_clamp
-        if "numerator" in rule:
-            keys.add(rule["numerator"])
-        if "denominator" in rule:
-            keys.add(rule["denominator"])
+        add(rule.get("numerator"))
+        add(rule.get("denominator"))
         # product_clamp
-        if "param_a" in rule:
-            keys.add(rule["param_a"])
-        if "param_b" in rule:
-            keys.add(rule["param_b"])
+        add(rule.get("param_a"))
+        add(rule.get("param_b"))
         # cross_proportion_clamp
         for cond_key in ("if", "and"):
             cond = rule.get(cond_key, {})
-            if "param" in cond:
-                keys.add(cond["param"])
+            add(cond.get("param"))
         then_clamp = rule.get("then_clamp", {})
-        if "param" in then_clamp:
-            keys.add(then_clamp["param"])
+        add(then_clamp.get("param"))
+        # sandwich_clamp
+        add(rule.get("floor"))
+        add(rule.get("ceiling"))
         # conditional_bias
-        if "target" in rule and rule.get("type") == "conditional_bias":
-            keys.add(rule["target"])
+        if rule.get("type") == "conditional_bias":
+            add(rule.get("target"))
         for driver in rule.get("drivers", []):
-            if "param" in driver:
-                keys.add(driver["param"])
+            add(driver.get("param"))
     return keys
 
 
 def _collect_constrained_keys(rules: ConstraintRules) -> set[str]:
     """Return every parameter key that is constrained (clamped or targeted)."""
     return _collect_rule_keys(rules)
+
+
+def _is_blank(value: object) -> bool:
+    if value is None:
+        return True
+    if isinstance(value, str):
+        return not value.strip()
+    return False
+
+
+def validate_rule_completeness(rule: dict) -> list[str]:
+    """Return human-readable missing field labels for a relational rule."""
+    rtype = rule.get("type", "")
+    missing: list[str] = []
+
+    def need(key: str, label: str | None = None) -> None:
+        if _is_blank(rule.get(key)):
+            missing.append(label or key)
+
+    if rtype == "scale_follow":
+        need("target", "Target param")
+        need("source", "Source param")
+        if rule.get("factor") is None:
+            missing.append("Factor")
+    elif rtype == "conditional_clamp":
+        need("target", "Target param")
+        cond = rule.get("condition") or {}
+        if _is_blank(cond.get("param")):
+            missing.append("Condition param")
+        if cond.get("above") is None and cond.get("below") is None:
+            missing.append("Condition threshold")
+        if rule.get("min") is None and rule.get("max") is None:
+            missing.append("Min or max bound")
+    elif rtype == "mutual_dampen":
+        params = [p for p in rule.get("params", []) if not _is_blank(p)]
+        if not params:
+            missing.append("Params")
+        if rule.get("max_combined") is None:
+            missing.append("Max combined")
+    elif rtype == "ratio_clamp":
+        need("numerator", "Numerator")
+        need("denominator", "Denominator")
+        if rule.get("max_ratio") is None:
+            missing.append("Max ratio")
+    elif rtype == "product_clamp":
+        need("param_a", "Param A")
+        need("param_b", "Param B")
+        if rule.get("max_product") is None:
+            missing.append("Max product")
+    elif rtype == "cross_proportion_clamp":
+        for label, key in (("If", "if"), ("And", "and"), ("Then clamp", "then_clamp")):
+            block = rule.get(key) or {}
+            if _is_blank(block.get("param")):
+                missing.append(f"{label} param")
+            if key in ("if", "and") and block.get("above") is None and block.get("below") is None:
+                missing.append(f"{label} threshold")
+            if key == "then_clamp" and block.get("min") is None and block.get("max") is None:
+                missing.append("Then clamp bound")
+    elif rtype == "sandwich_clamp":
+        need("target", "Target param")
+        need("floor", "Floor param")
+        need("ceiling", "Ceiling param")
+    elif rtype == "conditional_bias":
+        need("target", "Target shape")
+        drivers = rule.get("drivers") or []
+        if not drivers or any(_is_blank(d.get("param")) for d in drivers):
+            missing.append("Drivers")
+    elif rtype == "winner_take_all":
+        params = [p for p in rule.get("params", []) if not _is_blank(p)]
+        if len(params) < 2:
+            missing.append("Params (need ≥2)")
+
+    return missing
 
 
 def validate_rules(

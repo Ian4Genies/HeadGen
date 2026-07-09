@@ -1,6 +1,5 @@
 {
   "drivers": [
-
     {
       "target": { "object": "eye_wedge_L", "bone": null, "property": "Shrinkwrap", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "Shrinkwrap", "shape_key": true }
@@ -9,41 +8,70 @@
       "target": { "object": "eye_wedge_R", "bone": null, "property": "Shrinkwrap", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "Shrinkwrap", "shape_key": true }
     },
-    
     {
       "target": { "object": "eye_R_geo_hd_target", "bone": null, "property": "var_iris_shrink", "shape_key": true },
-      "source": { "object": "ARMATURE", "bone": "LeftEyeSocketBind", "property": "var_iris_shrink" }
+      "source": {
+        "object": "ARMATURE",
+        "bone": "LeftEyeSocketBind",
+        "property": "var_iris_shrink"
+      }
     },
     {
       "target": { "object": "eye_L_geo_hd_target", "bone": null, "property": "var_iris_shrink", "shape_key": true },
-      "source": { "object": "ARMATURE", "bone": "LeftEyeSocketBind", "property": "var_iris_shrink" }
+      "source": {
+        "object": "ARMATURE",
+        "bone": "LeftEyeSocketBind",
+        "property": "var_iris_shrink"
+      }
     },
     {
       "target": { "object": "eye_R_geo_hd_target", "bone": null, "property": "var_iris_grow", "shape_key": true },
-      "source": { "object": "ARMATURE", "bone": "LeftEyeSocketBind", "property": "var_iris_grow" }
+      "source": {
+        "object": "ARMATURE",
+        "bone": "LeftEyeSocketBind",
+        "property": "var_iris_grow"
+      }
     },
     {
       "target": { "object": "eye_L_geo_hd_target", "bone": null, "property": "var_iris_grow", "shape_key": true },
-      "source": { "object": "ARMATURE", "bone": "LeftEyeSocketBind", "property": "var_iris_grow" }
+      "source": {
+        "object": "ARMATURE",
+        "bone": "LeftEyeSocketBind",
+        "property": "var_iris_grow"
+      }
     },
     {
       "target": { "object": "eye_R_geo_hd_target", "bone": null, "property": "var_pupil_shrink", "shape_key": true },
-      "source": { "object": "ARMATURE", "bone": "LeftEyeSocketBind", "property": "var_pupil_shrink" }
+      "source": {
+        "object": "ARMATURE",
+        "bone": "LeftEyeSocketBind",
+        "property": "var_pupil_shrink"
+      }
     },
     {
       "target": { "object": "eye_L_geo_hd_target", "bone": null, "property": "var_pupil_shrink", "shape_key": true },
-      "source": { "object": "ARMATURE", "bone": "LeftEyeSocketBind", "property": "var_pupil_shrink" }
+      "source": {
+        "object": "ARMATURE",
+        "bone": "LeftEyeSocketBind",
+        "property": "var_pupil_shrink"
+      }
     },
     {
       "target": { "object": "eye_R_geo_hd_target", "bone": null, "property": "var_pupil_grow", "shape_key": true },
-      "source": { "object": "ARMATURE", "bone": "LeftEyeSocketBind", "property": "var_pupil_grow" }
+      "source": {
+        "object": "ARMATURE",
+        "bone": "LeftEyeSocketBind",
+        "property": "var_pupil_grow"
+      }
     },
     {
       "target": { "object": "eye_L_geo_hd_target", "bone": null, "property": "var_pupil_grow", "shape_key": true },
-      "source": { "object": "ARMATURE", "bone": "LeftEyeSocketBind", "property": "var_pupil_grow" }
+      "source": {
+        "object": "ARMATURE",
+        "bone": "LeftEyeSocketBind",
+        "property": "var_pupil_grow"
+      }
     },
-
-
     {
       "target": { "object": "eye_wedge_L", "bone": null, "property": "auth_african_f_0037", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_african_f_0037", "shape_key": true }
@@ -60,12 +88,10 @@
       "target": { "object": "eye_wedge_R_bake", "bone": null, "property": "auth_african_f_0037", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_african_f_0037", "shape_key": true }
     },
-
     {
       "target": { "object": "eyeControlShape", "bone": null, "property": "auth_african_f_0037", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_african_f_0037", "shape_key": true }
     },
-    
     {
       "target": { "object": "NoseStaticGuideMax", "bone": null, "property": "auth_african_f_0037", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_african_f_0037", "shape_key": true }
@@ -74,9 +100,6 @@
       "target": { "object": "NoseStaticGuideMin", "bone": null, "property": "auth_african_f_0037", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_african_f_0037", "shape_key": true }
     },
-
-
-    
     {
       "target": { "object": "eye_wedge_L", "bone": null, "property": "auth_african_m_0030", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_african_m_0030", "shape_key": true }
@@ -93,12 +116,10 @@
       "target": { "object": "eye_wedge_R_bake", "bone": null, "property": "auth_african_m_0030", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_african_m_0030", "shape_key": true }
     },
-
     {
       "target": { "object": "eyeControlShape", "bone": null, "property": "auth_african_m_0030", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_african_m_0030", "shape_key": true }
     },
-    
     {
       "target": { "object": "NoseStaticGuideMax", "bone": null, "property": "auth_african_m_0030", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_african_m_0030", "shape_key": true }
@@ -107,9 +128,6 @@
       "target": { "object": "NoseStaticGuideMin", "bone": null, "property": "auth_african_m_0030", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_african_m_0030", "shape_key": true }
     },
-
-
-    
     {
       "target": { "object": "eye_wedge_L", "bone": null, "property": "auth_asian_f_0029", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_asian_f_0029", "shape_key": true }
@@ -126,12 +144,10 @@
       "target": { "object": "eye_wedge_R_bake", "bone": null, "property": "auth_asian_f_0029", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_asian_f_0029", "shape_key": true }
     },
-
     {
       "target": { "object": "eyeControlShape", "bone": null, "property": "auth_asian_f_0029", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_asian_f_0029", "shape_key": true }
     },
-    
     {
       "target": { "object": "NoseStaticGuideMax", "bone": null, "property": "auth_asian_f_0029", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_asian_f_0029", "shape_key": true }
@@ -139,10 +155,7 @@
     {
       "target": { "object": "NoseStaticGuideMin", "bone": null, "property": "auth_asian_f_0029", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_asian_f_0029", "shape_key": true }
-    }, 
-    
-    
-        
+    },
     {
       "target": { "object": "eye_wedge_L", "bone": null, "property": "auth_asian_m_0013", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_asian_m_0013", "shape_key": true }
@@ -159,12 +172,10 @@
       "target": { "object": "eye_wedge_R_bake", "bone": null, "property": "auth_asian_m_0013", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_asian_m_0013", "shape_key": true }
     },
-
     {
       "target": { "object": "eyeControlShape", "bone": null, "property": "auth_asian_m_0013", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_asian_m_0013", "shape_key": true }
     },
-    
     {
       "target": { "object": "NoseStaticGuideMax", "bone": null, "property": "auth_asian_m_0013", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_asian_m_0013", "shape_key": true }
@@ -173,8 +184,6 @@
       "target": { "object": "NoseStaticGuideMin", "bone": null, "property": "auth_asian_m_0013", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_asian_m_0013", "shape_key": true }
     },
-
-
     {
       "target": { "object": "eye_wedge_L", "bone": null, "property": "auth_caucasian_f_0005", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_caucasian_f_0005", "shape_key": true }
@@ -191,12 +200,10 @@
       "target": { "object": "eye_wedge_R_bake", "bone": null, "property": "auth_caucasian_f_0005", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_caucasian_f_0005", "shape_key": true }
     },
-
     {
       "target": { "object": "eyeControlShape", "bone": null, "property": "auth_caucasian_f_0005", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_caucasian_f_0005", "shape_key": true }
     },
-    
     {
       "target": { "object": "NoseStaticGuideMax", "bone": null, "property": "auth_caucasian_f_0005", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_caucasian_f_0005", "shape_key": true }
@@ -205,8 +212,6 @@
       "target": { "object": "NoseStaticGuideMin", "bone": null, "property": "auth_caucasian_f_0005", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_caucasian_f_0005", "shape_key": true }
     },
-
-
     {
       "target": { "object": "eye_wedge_L", "bone": null, "property": "auth_latino_f_0032", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_latino_f_0032", "shape_key": true }
@@ -223,12 +228,10 @@
       "target": { "object": "eye_wedge_R_bake", "bone": null, "property": "auth_latino_f_0032", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_latino_f_0032", "shape_key": true }
     },
-
     {
       "target": { "object": "eyeControlShape", "bone": null, "property": "auth_latino_f_0032", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_latino_f_0032", "shape_key": true }
     },
-    
     {
       "target": { "object": "NoseStaticGuideMax", "bone": null, "property": "auth_latino_f_0032", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_latino_f_0032", "shape_key": true }
@@ -237,8 +240,6 @@
       "target": { "object": "NoseStaticGuideMin", "bone": null, "property": "auth_latino_f_0032", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_latino_f_0032", "shape_key": true }
     },
-
-
     {
       "target": { "object": "eye_wedge_L", "bone": null, "property": "auth_latino_m_0045", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_latino_m_0045", "shape_key": true }
@@ -255,12 +256,10 @@
       "target": { "object": "eye_wedge_R_bake", "bone": null, "property": "auth_latino_m_0045", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_latino_m_0045", "shape_key": true }
     },
-
     {
       "target": { "object": "eyeControlShape", "bone": null, "property": "auth_latino_m_0045", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_latino_m_0045", "shape_key": true }
     },
-    
     {
       "target": { "object": "NoseStaticGuideMax", "bone": null, "property": "auth_latino_m_0045", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_latino_m_0045", "shape_key": true }
@@ -269,8 +268,6 @@
       "target": { "object": "NoseStaticGuideMin", "bone": null, "property": "auth_latino_m_0045", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_latino_m_0045", "shape_key": true }
     },
-
-  
     {
       "target": { "object": "eye_wedge_L", "bone": null, "property": "auth_middleEast_f_0011", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_middleEast_f_0011", "shape_key": true }
@@ -287,12 +284,10 @@
       "target": { "object": "eye_wedge_R_bake", "bone": null, "property": "auth_middleEast_f_0011", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_middleEast_f_0011", "shape_key": true }
     },
-
     {
       "target": { "object": "eyeControlShape", "bone": null, "property": "auth_middleEast_f_0011", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_middleEast_f_0011", "shape_key": true }
     },
-    
     {
       "target": { "object": "NoseStaticGuideMax", "bone": null, "property": "auth_middleEast_f_0011", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_middleEast_f_0011", "shape_key": true }
@@ -301,8 +296,6 @@
       "target": { "object": "NoseStaticGuideMin", "bone": null, "property": "auth_middleEast_f_0011", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_middleEast_f_0011", "shape_key": true }
     },
-
-
     {
       "target": { "object": "eye_wedge_L", "bone": null, "property": "auth_middleEast_m_0037", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_middleEast_m_0037", "shape_key": true }
@@ -319,12 +312,10 @@
       "target": { "object": "eye_wedge_R_bake", "bone": null, "property": "auth_middleEast_m_0037", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_middleEast_m_0037", "shape_key": true }
     },
-
     {
       "target": { "object": "eyeControlShape", "bone": null, "property": "auth_middleEast_m_0037", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_middleEast_m_0037", "shape_key": true }
     },
-    
     {
       "target": { "object": "NoseStaticGuideMax", "bone": null, "property": "auth_middleEast_m_0037", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_middleEast_m_0037", "shape_key": true }
@@ -332,7 +323,102 @@
     {
       "target": { "object": "NoseStaticGuideMin", "bone": null, "property": "auth_middleEast_m_0037", "shape_key": true },
       "source": { "object": "headOnly_geo", "bone": null, "property": "auth_middleEast_m_0037", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_L_boolean", "bone": null, "property": "eyes_female_varGp01A", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_female_varGp01A", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_R_boolean", "bone": null, "property": "eyes_female_varGp01A", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_female_varGp01A", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_L_boolean", "bone": null, "property": "eyes_female_varGp01B", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_female_varGp01B", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_R_boolean", "bone": null, "property": "eyes_female_varGp01B", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_female_varGp01B", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_L_boolean", "bone": null, "property": "eyes_female_varGp01C", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_female_varGp01C", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_R_boolean", "bone": null, "property": "eyes_female_varGp01C", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_female_varGp01C", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_L_boolean", "bone": null, "property": "eyes_female_varGp01E", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_female_varGp01E", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_R_boolean", "bone": null, "property": "eyes_female_varGp01E", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_female_varGp01E", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_L_boolean", "bone": null, "property": "eyes_female_varGp01G", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_female_varGp01G", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_R_boolean", "bone": null, "property": "eyes_female_varGp01G", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_female_varGp01G", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_L_boolean", "bone": null, "property": "eyes_female_varGp01I", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_female_varGp01I", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_R_boolean", "bone": null, "property": "eyes_female_varGp01I", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_female_varGp01I", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_L_boolean", "bone": null, "property": "eyes_male_varGp01D", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_male_varGp01D", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_R_boolean", "bone": null, "property": "eyes_male_varGp01D", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_male_varGp01D", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_L_boolean", "bone": null, "property": "eyes_male_varGp01F", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_male_varGp01F", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_R_boolean", "bone": null, "property": "eyes_male_varGp01F", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_male_varGp01F", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_L_boolean", "bone": null, "property": "eyes_male_varGp01H", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_male_varGp01H", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_R_boolean", "bone": null, "property": "eyes_male_varGp01H", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_male_varGp01H", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_L_boolean", "bone": null, "property": "eyes_male_varGp01J", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_male_varGp01J", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_R_boolean", "bone": null, "property": "eyes_male_varGp01J", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_male_varGp01J", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_L_boolean", "bone": null, "property": "eyes_male_varGp01K", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_male_varGp01K", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_R_boolean", "bone": null, "property": "eyes_male_varGp01K", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_male_varGp01K", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_L_boolean", "bone": null, "property": "eyes_male_varGp01L", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_male_varGp01L", "shape_key": true }
+    },
+    {
+      "target": { "object": "eye_R_boolean", "bone": null, "property": "eyes_male_varGp01L", "shape_key": true },
+      "source": { "object": "headOnly_geo", "bone": null, "property": "eyes_male_varGp01L", "shape_key": true }
     }
-
   ]
 }

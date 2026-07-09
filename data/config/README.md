@@ -224,10 +224,13 @@ Applied after generation to enforce hard limits and relational rules. Rules run 
     { "type": "ratio_clamp", ... },
     { "type": "product_clamp", ... },
     { "type": "cross_proportion_clamp", ... },
-    { "type": "conditional_bias", ... }
+    { "type": "conditional_bias", ... },
+    { "type": "winner_take_all", ... }
   ]
 }
 ```
+
+Hard clamps and relational rules accept optional `"muted": true` to skip evaluation without removing the entry.
 
 ### hard_clamps
 
@@ -430,6 +433,20 @@ Drives a target shape value up or down based on one or more parameter signals. U
 - `"average"` — blends proportionally across all drivers
 
 Values outside a driver's `range` are clamped to the mapped boundary. Missing params contribute `0` to the combined signal.
+
+---
+
+#### `winner_take_all`
+Zeroes all but the largest-magnitude param in a group (ties broken by list order).
+
+```json
+{
+  "type":   "winner_take_all",
+  "params": ["var_iris_grow", "var_iris_shrink"]
+}
+```
+
+Requires at least two params present in the flat dict at runtime.
 
 ---
 

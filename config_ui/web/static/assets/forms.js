@@ -1,6 +1,5 @@
 import {
   MANIFEST_LIST_KEYS,
-  RULE_TYPES,
   isBonePropertiesKey,
   isChannelsKey,
   isIndependentShapesKey,
@@ -16,6 +15,23 @@ import { mountClampEditor, mountJointOverrideEditor } from "./joint-override-edi
 import { mountChaosJointsEditor } from "./chaos-joints-editor.js";
 import { mountDriversEditor } from "./drivers-editor.js?v=3";
 import { mountRelationalRulesEditor } from "./relational-rules-editor.js";
+import { mountInlineParamInput, mountInlineParamList } from "./inline-param-input.js";
+import {
+  RULE_TYPES,
+  emptyRule,
+  migrateRuleType,
+  migrationDataLoss,
+  normalizeRule,
+  schemaFields,
+  validateRule,
+} from "./rule-schemas.js";
+import {
+  mountFieldLabelWithTip,
+  mountRuleTypeDetail,
+  ruleTypeOptionLabel,
+  updateRuleTypeDetail,
+  WIDGET_INLINE_HELP,
+} from "./rule-help.js";
 import { FILE_LAYOUTS } from "./file-layouts.js";
 import { scrollToConfigTarget } from "./config-focus.js";
 import { createUiStore, restoreScroll } from "./view-state.js";
@@ -46,6 +62,9 @@ export class ConfigForm {
   #rulesCollapsedInit = false;
   #rulesFilter = "";
   #rulesMuteFilter = "all";
+  #paramSuggestions = [];
+  #staleKeys = new Set();
+  #registryLoaded = false;
 
   constructor(root, data, onChange, options = {}) {
     this.#root = root;
@@ -101,7 +120,11 @@ export class ConfigForm {
   }
 
   getData() {
-    return deepClone(this.#data);
+    const data = deepClone(this.#data);
+    if (this.#fileId === "constraints" && Array.isArray(data.relational_rules)) {
+      data.relational_rules = data.relational_rules.map(normalizeRule);
+    }
+    return data;
   }
 
   isDirty() {
@@ -270,11 +293,81 @@ export class ConfigForm {
     return sec;
   }
 
-  #fieldWrap(key, node) {
+  #fieldWrap(key, node, customLabel = null) {
     const wrap = el("div", "field");
-    wrap.appendChild(el("label", "field-label", labelFor(key)));
+    wrap.appendChild(el("label", "field-label", customLabel ?? labelFor(key)));
     wrap.appendChild(node);
     return wrap;
+  }
+
+  #schemaFieldWrap(field, control) {
+    const wrap = el("div", "field");
+    const forceInline = WIDGET_INLINE_HELP.has(field.widget);
+    const { labelRow, inlineHelp } = mountFieldLabelWithTip(field.label, field.help, { forceInline });
+    wrap.appendChild(labelRow);
+    wrap.appendChild(control);
+    if (inlineHelp) wrap.appendChild(inlineHelp);
+    return wrap;
+  }
+
+  async #loadParamRegistry() {
+    if (this.#registryLoaded) return;
+    try {
+      const reg = await fetch(
+        `/api/profiles/${encodeURIComponent(this.#profile)}/registry`,
+      ).then((r) => r.json());
+      this.#paramSuggestions = reg.rerandomize_suggestions ?? [];
+    } catch {
+      this.#paramSuggestions = Object.keys(this.#data.hard_clamps ?? {});
+    }
+    this.#registryLoaded = true;
+  }
+
+  async #refreshConstraintLint(host) {
+    try {
+      const result = await fetch(
+        `/api/profiles/${encodeURIComponent(this.#profile)}/constraints/validate`,
+      ).then((r) => r.json());
+      this.#staleKeys = new Set(result.stale_keys ?? []);
+      host.replaceChildren(this.#buildConstraintLintPanel(result, host));
+    } catch (err) {
+      host.replaceChildren(el("p", "muted small", `Lint unavailable: ${err.message}`));
+    }
+  }
+
+  #buildConstraintLintPanel(result, lintHost) {
+    const panel = el("div", "constraint-lint");
+    const stale = result.stale_keys ?? [];
+    const issues = result.rules_with_issues ?? [];
+    if (!stale.length && !issues.length) {
+      panel.appendChild(el("p", "chip-hint ok-hint", "All constraint references look valid."));
+      return panel;
+    }
+    if (stale.length) {
+      const sec = el("div", "lint-block");
+      sec.appendChild(el("strong", "", "Stale parameter keys"));
+      sec.appendChild(el("p", "muted small", stale.join(", ")));
+      panel.appendChild(sec);
+    }
+    if (issues.length) {
+      const sec = el("div", "lint-block");
+      sec.appendChild(el("strong", "", "Incomplete rules"));
+      for (const issue of issues) {
+        sec.appendChild(
+          el(
+            "p",
+            "muted small",
+            `#${issue.index + 1} ${issue.title || issue.type}: ${issue.missing.join(", ")}`,
+          ),
+        );
+      }
+      panel.appendChild(sec);
+    }
+    const refresh = el("button", "btn ghost tiny", "Refresh lint");
+    refresh.type = "button";
+    refresh.onclick = () => void this.#refreshConstraintLint(lintHost);
+    panel.appendChild(refresh);
+    return panel;
   }
 
   #scalar(path, key, value) {
@@ -965,42 +1058,48 @@ export class ConfigForm {
         for (const i of this.#uiStore.get("rulesCollapsed")) this.#rulesCollapsed.add(i);
         this.#rulesFilter = this.#uiStore.get("rulesFilter") ?? "";
         this.#rulesMuteFilter = this.#uiStore.get("rulesMuteFilter") ?? "all";
-      } else {
+      } else if (items.length > 0) {
         items.forEach((_, i) => this.#rulesCollapsed.add(i));
       }
       this.#rulesCollapsedInit = true;
     }
     const host = el("div", "rules-editor-host");
     host.dataset.configSection = "relational_rules";
-    host.appendChild(this.#mountRelationalRules(path, items, host));
+    const lintHost = el("div", "constraint-lint-host");
+    const rulesHost = el("div", "rules-mount");
+    host.append(lintHost, rulesHost);
+    void this.#loadParamRegistry().then(() => this.#refreshConstraintLint(lintHost));
+    rulesHost.appendChild(this.#mountRelationalRules(path, items, rulesHost));
     return host;
   }
 
-  #mountRelationalRules(path, items, host) {
+  #mountRelationalRules(path, items, rulesHost) {
     return mountRelationalRulesEditor({
       items,
       collapsed: this.#rulesCollapsed,
       filterText: this.#rulesFilter,
       muteFilter: this.#rulesMuteFilter,
       focusRuleIndex: this.#focus?.ruleIndex ?? null,
+      validateRule,
       onCollapsedChange: (indices) => {
         this.#rulesCollapsed.clear();
         for (const i of indices) this.#rulesCollapsed.add(i);
         this.#syncRulesUiState();
       },
-      onItemsChange: (next) => {
+      onItemsChange: (next, opts = {}) => {
         this.#set(path, next);
+        if (opts.expandIndex != null) this.#rulesCollapsed.delete(opts.expandIndex);
         this.render();
       },
       onFilterChange: (text) => {
         this.#rulesFilter = text;
         this.#syncRulesUiState();
-        host.replaceChildren(this.#mountRelationalRules(path, this.#getAt(path), host));
+        rulesHost.replaceChildren(this.#mountRelationalRules(path, this.#getAt(path), rulesHost));
       },
       onMuteFilterChange: (mode) => {
         this.#rulesMuteFilter = mode;
         this.#syncRulesUiState();
-        host.replaceChildren(this.#mountRelationalRules(path, this.#getAt(path), host));
+        rulesHost.replaceChildren(this.#mountRelationalRules(path, this.#getAt(path), rulesHost));
       },
       emptyRule,
       renderRuleBody: (index, item, touch) => this.#renderRuleFields(path, items, index, item, touch),
@@ -1020,25 +1119,153 @@ export class ConfigForm {
 
     const typeSel = el("select", "input");
     for (const t of RULE_TYPES) {
-      const opt = el("option", "", t);
+      const opt = el("option", "", ruleTypeOptionLabel(t));
       opt.value = t;
       if (item.type === t) opt.selected = true;
       typeSel.appendChild(opt);
     }
+
+    const typeDetail = mountRuleTypeDetail(item.type);
+
+    const body = el("div", "field-grid rule-typed-body");
+    const renderBody = () => {
+      this.#renderTypedRuleBody(item, [...path, index], touch, body);
+    };
+
     typeSel.onchange = () => {
-      item.type = typeSel.value;
+      const newType = typeSel.value;
+      updateRuleTypeDetail(typeDetail, newType);
+      if (newType === item.type) return;
+      const lost = migrationDataLoss(item, newType);
+      const migrateMsg = lost.length
+        ? `Changing type removes: ${lost.join(", ")}. Continue?`
+        : "Change rule type? Existing field values will be reset.";
+      if (!window.confirm(migrateMsg)) {
+        typeSel.value = item.type;
+        updateRuleTypeDetail(typeDetail, item.type);
+        return;
+      }
+      const migrated = migrateRuleType(item, newType);
+      for (const k of Object.keys(item)) delete item[k];
+      Object.assign(item, migrated);
+      updateRuleTypeDetail(typeDetail, item.type);
+      renderBody();
       touch();
-      this.render();
     };
     wrap.appendChild(this.#fieldWrap("type", typeSel));
+    wrap.appendChild(typeDetail);
 
-    const body = el("div", "field-grid");
-    for (const [k, v] of Object.entries(item)) {
-      if (k === "title" || k === "type" || k === "muted") continue;
-      body.appendChild(this.#fieldWrap(k, this.#inlineValue([...path, index, k], v, k, item.type)));
-    }
+    renderBody();
     wrap.appendChild(body);
+
+    const validation = validateRule(item);
+    if (validation.warnings.length) {
+      for (const w of validation.warnings) {
+        wrap.appendChild(el("p", "chip-hint", w));
+      }
+    }
     return wrap;
+  }
+
+  #renderTypedRuleBody(item, basePath, touch, bodyEl) {
+    bodyEl.innerHTML = "";
+    const fields = schemaFields(item.type);
+    for (const field of fields) {
+      const fieldPath = [...basePath, field.key];
+      let control;
+      const sync = (val) => {
+        if (val === undefined) delete item[field.key];
+        else item[field.key] = val;
+        this.#set(basePath.slice(0, -1), this.#getAt(basePath.slice(0, -1)));
+        touch();
+      };
+
+      switch (field.widget) {
+        case "param":
+          control = mountInlineParamInput({
+            value: item[field.key] ?? "",
+            suggestions: this.#paramSuggestions,
+            staleKeys: this.#staleKeys,
+            onChange: (v) => {
+              item[field.key] = v;
+              touch();
+            },
+          });
+          break;
+        case "param_list":
+          if (!Array.isArray(item[field.key])) item[field.key] = [...field.default];
+          control = mountInlineParamList({
+            values: item[field.key],
+            suggestions: this.#paramSuggestions,
+            staleKeys: this.#staleKeys,
+            minItems: field.minItems ?? 1,
+            onChange: (next) => {
+              item[field.key] = next;
+              touch();
+            },
+          });
+          break;
+        case "number":
+          control = this.#numberInput(fieldPath, item[field.key] ?? field.default ?? 0);
+          break;
+        case "number_optional": {
+          const row = el("div", "optional-num-row");
+          const num = el("input", "input");
+          num.type = "number";
+          num.step = "any";
+          num.placeholder = "optional";
+          num.value = item[field.key] ?? "";
+          num.oninput = () => {
+            if (num.value === "") {
+              delete item[field.key];
+            } else {
+              item[field.key] = parseFloat(num.value);
+            }
+            touch();
+          };
+          row.appendChild(num);
+          control = row;
+          break;
+        }
+        case "enum": {
+          const sel = el("select", "input");
+          for (const opt of field.options) {
+            const o = el("option", "", opt.label);
+            o.value = String(opt.value);
+            if (item[field.key] === opt.value || String(item[field.key]) === String(opt.value)) {
+              o.selected = true;
+            }
+            sel.appendChild(o);
+          }
+          sel.onchange = () => {
+            const raw = sel.value;
+            item[field.key] = raw === "-1" || raw === "1" ? parseInt(raw, 10) : raw;
+            touch();
+          };
+          control = sel;
+          break;
+        }
+        case "condition":
+          if (!item[field.key] || typeof item[field.key] !== "object") {
+            item[field.key] = field.default ? JSON.parse(JSON.stringify(field.default)) : { param: "" };
+          }
+          control = this.#conditionEditor(fieldPath, item[field.key], true);
+          break;
+        case "clamp_spec":
+          if (!item[field.key] || typeof item[field.key] !== "object") {
+            item[field.key] = field.default ? JSON.parse(JSON.stringify(field.default)) : { param: "" };
+          }
+          control = this.#clampSpecEditor(fieldPath, item[field.key], true);
+          break;
+        case "bias_drivers":
+          if (!Array.isArray(item[field.key])) item[field.key] = [];
+          control = this.#biasDriversEditor(fieldPath, item[field.key], true);
+          break;
+        default:
+          control = this.#inlineValue(fieldPath, item[field.key], field.key, item.type);
+      }
+      bodyEl.appendChild(this.#schemaFieldWrap(field, control));
+    }
   }
 
   #objectArray(path, items, kind) {
@@ -1255,15 +1482,30 @@ export class ConfigForm {
     return row;
   }
 
-  #conditionEditor(path, cond) {
+  #conditionEditor(path, cond, usePicker = false) {
     const box = el("div", "mini-grid");
-    const param = el("input", "input");
-    param.value = cond.param ?? "";
-    param.placeholder = "param";
-    param.oninput = () => {
-      cond.param = param.value;
-      this.#set(path, { ...cond });
-    };
+    const setCond = () => this.#set(path, { ...cond });
+    let param;
+    if (usePicker) {
+      param = mountInlineParamInput({
+        value: cond.param ?? "",
+        suggestions: this.#paramSuggestions,
+        staleKeys: this.#staleKeys,
+        placeholder: "param",
+        onChange: (v) => {
+          cond.param = v;
+          setCond();
+        },
+      });
+    } else {
+      param = el("input", "input");
+      param.value = cond.param ?? "";
+      param.placeholder = "param";
+      param.oninput = () => {
+        cond.param = param.value;
+        setCond();
+      };
+    }
     const above = el("input", "input small");
     above.type = "number";
     above.step = "any";
@@ -1272,7 +1514,7 @@ export class ConfigForm {
     above.oninput = () => {
       if (above.value === "") delete cond.above;
       else cond.above = parseFloat(above.value);
-      this.#set(path, { ...cond });
+      setCond();
     };
     const below = el("input", "input small");
     below.type = "number";
@@ -1282,20 +1524,34 @@ export class ConfigForm {
     below.oninput = () => {
       if (below.value === "") delete cond.below;
       else cond.below = parseFloat(below.value);
-      this.#set(path, { ...cond });
+      setCond();
     };
     box.append(param, above, below);
     return box;
   }
 
-  #clampSpecEditor(path, spec) {
+  #clampSpecEditor(path, spec, usePicker = false) {
     const box = el("div", "mini-grid");
-    const param = el("input", "input");
-    param.value = spec.param ?? "";
-    param.oninput = () => {
-      spec.param = param.value;
-      this.#set(path, { ...spec });
-    };
+    const setSpec = () => this.#set(path, { ...spec });
+    let param;
+    if (usePicker) {
+      param = mountInlineParamInput({
+        value: spec.param ?? "",
+        suggestions: this.#paramSuggestions,
+        staleKeys: this.#staleKeys,
+        onChange: (v) => {
+          spec.param = v;
+          setSpec();
+        },
+      });
+    } else {
+      param = el("input", "input");
+      param.value = spec.param ?? "";
+      param.oninput = () => {
+        spec.param = param.value;
+        setSpec();
+      };
+    }
     const min = el("input", "input small");
     min.type = "number";
     min.step = "any";
@@ -1304,7 +1560,7 @@ export class ConfigForm {
     min.oninput = () => {
       if (min.value === "") delete spec.min;
       else spec.min = parseFloat(min.value);
-      this.#set(path, { ...spec });
+      setSpec();
     };
     const max = el("input", "input small");
     max.type = "number";
@@ -1314,24 +1570,32 @@ export class ConfigForm {
     max.oninput = () => {
       if (max.value === "") delete spec.max;
       else spec.max = parseFloat(max.value);
-      this.#set(path, { ...spec });
+      setSpec();
     };
     box.append(param, min, max);
     return box;
   }
 
-  #biasDriversEditor(path, drivers) {
+  #biasDriversEditor(path, drivers, labeled = false) {
     const box = el("div", "driver-bias-list");
     const render = () => {
       box.innerHTML = "";
+      if (labeled) {
+        const head = el("div", "bias-driver-head muted small");
+        head.append("Param", el("span", "", "Input range"), el("span", "", "Output map"), el("span", "", ""));
+        box.appendChild(head);
+      }
       drivers.forEach((d, i) => {
         const row = el("div", "bias-driver-row");
-        const param = el("input", "input");
-        param.value = d.param ?? "";
-        param.oninput = () => {
-          drivers[i].param = param.value;
-          this.#set(path, [...drivers]);
-        };
+        const param = mountInlineParamInput({
+          value: d.param ?? "",
+          suggestions: this.#paramSuggestions,
+          staleKeys: this.#staleKeys,
+          onChange: (v) => {
+            drivers[i].param = v;
+            this.#set(path, [...drivers]);
+          },
+        });
         const range = el("div", "range-pair");
         const r0 = el("input", "input small");
         r0.type = "number";
@@ -1365,7 +1629,11 @@ export class ConfigForm {
           this.#set(path, [...drivers]);
           render();
         };
-        row.append(param, el("span", "muted small", "range"), range, el("span", "muted small", "map"), map, del);
+        if (labeled) {
+          row.append(param, range, map, del);
+        } else {
+          row.append(param, el("span", "muted small", "range"), range, el("span", "muted small", "map"), map, del);
+        }
         box.appendChild(row);
       });
       const add = el("button", "btn ghost add-btn", "+ Add driver");
@@ -1469,9 +1737,7 @@ function el(tag, cls = "", text = "") {
   return node;
 }
 
-function emptyRule() {
-  return { title: "New rule", type: "scale_follow", target: "", source: "", factor: 0.5, muted: false };
-}
+export { emptyRule } from "./rule-schemas.js";
 
 function emptyDriver() {
   return {

@@ -313,6 +313,14 @@
       "source": "LeftCheekBind.location.x",
       "factor": 1,
       "muted": true
+    },
+    {
+      "title": "New rule",
+      "type": "sandwich_clamp",
+      "target": "",
+      "source": "",
+      "factor": 0.5,
+      "muted": false
     }
   ]
 }

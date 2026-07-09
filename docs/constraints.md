@@ -1,12 +1,14 @@
 # Constraint Rules Reference
 
-Rules live in `data/constraint_rules.json`. The constraint engine runs
+Rules live in `data/config/constraints.json`. The constraint engine runs
 per-frame between generation and scene application — it cannot crash the
 pipeline. If a rule references a parameter that doesn't exist (because a
 joint or shape was pruned), the rule is silently skipped.
 
 Run `pytest -k validate_live_rules -v` after any edit to the JSON or to the
 joint/shape config lists to catch stale references.
+
+For the full schema of all nine relational rule types, see `data/config/README.md` § constraints.json.
 
 ---
 
@@ -93,6 +95,8 @@ may be omitted if you only need one bound.
 ```
 
 Both `min` and `max` are optional. Omit whichever bound you don't need.
+
+Set `"muted": true` on a hard clamp entry to skip it without deleting it.
 
 ### Examples
 
@@ -437,11 +441,37 @@ representative entries. Delete or adjust anything that doesn't apply.
 }
 ```
 
+Set `"muted": true` on any relational rule to skip it without deleting it.
+
+---
+
+## Rule type: `winner_take_all`
+
+### What it does
+
+Among the listed params, the one with the highest absolute value keeps its value; every other param in the group is set to zero.
+
+### Fields
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `type` | yes | string | Must be `"winner_take_all"` |
+| `params` | yes | string[] | At least two parameter keys |
+
+### Example
+
+```json
+{
+  "type": "winner_take_all",
+  "params": ["var_iris_grow", "var_iris_shrink"]
+}
+```
+
 ---
 
 ## Sanity check
 
-After any edit to `constraint_rules.json`, or after pruning/adding joints or
+After any edit to `data/config/constraints.json`, or after pruning/adding joints or
 shapes from the config lists, run:
 
 ```

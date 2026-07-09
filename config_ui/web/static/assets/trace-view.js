@@ -669,6 +669,16 @@ export function mountTraceView(host, { profile, onDirty, onOpenConfigFile }) {
         const hc = el("div", "trace-subsection");
         hc.appendChild(el("h4", "", "Hard clamp"));
         const spec = slice.hard_clamp;
+        const muteRow = el("label", "switch-row compact mute-toggle");
+        const muteChk = el("input");
+        muteChk.type = "checkbox";
+        muteChk.checked = !!spec.muted;
+        muteChk.onchange = async () => {
+          await ensureFile(fid);
+          markStaging(fid, { hard_clamps: { [paramKey]: { ...spec, muted: muteChk.checked } } });
+        };
+        muteRow.append(muteChk, el("span", "switch-ui"), el("span", "switch-label", "Muted"));
+        hc.appendChild(muteRow);
         numField(hc, "min", spec.min, async (v) => {
           await ensureFile(fid);
           markStaging(fid, { hard_clamps: { [paramKey]: { ...spec, min: v } } });

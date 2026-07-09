@@ -12,18 +12,5 @@
     "good_dir": "head-good",
     "attractive_dir": "head-attractive",
     "final_output_dir": "output-data-set"
-  },
-  "hideCollection": [
-    "_BrowControlShape",
-    "_eyeControlShape",
-    "_JawControlShape",
-    "_LowerCheek",
-    "_mouthControlShape",
-    "_NoseBSGuideMax",
-    "_NoseBSGuideMin",
-    "_noseControlShape",
-    "_NoseStaticGuideMax",
-    "_NoseStaticGuideMin",
-    "_UpperCheek"
-  ]
+  }
 }

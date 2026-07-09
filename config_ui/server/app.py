@@ -151,6 +151,14 @@ def validate_profile(name: str) -> dict:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
+@app.get("/api/profiles/{name}/constraints/validate")
+def validate_constraints(name: str) -> dict:
+    try:
+        return prof.validate_constraints(name)
+    except prof.ProfileError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
 @app.get("/api/profiles/{name}/config/{file_id}")
 def read_config(name: str, file_id: str) -> dict:
     try:

@@ -1,4 +1,4 @@
-import { mountForm } from "./forms.js?v=5";
+import { mountForm } from "./forms.js?v=7";
 import { mountParamPicker } from "./param-picker.js?v=3";
 import { mountTraceView } from "./trace-view.js?v=6";
 import {
@@ -309,14 +309,22 @@ async function boot() {
       const result = await api(
         `/api/profiles/${encodeURIComponent(activeProfile)}/validate`,
       );
-      if (result.valid) {
-        toast(
-          "ok",
-          `Valid — ${result.frame_count} frames, ${result.joint_count} joints, ${result.driver_count} drivers`,
+      let msg = result.valid
+        ? `Valid — ${result.frame_count} frames, ${result.joint_count} joints, ${result.driver_count} drivers`
+        : result.message;
+      if (result.valid && workspaceMode === "config" && selectedFile === "constraints") {
+        const cv = await api(
+          `/api/profiles/${encodeURIComponent(activeProfile)}/constraints/validate`,
         );
-      } else {
-        toast("err", result.message);
+        const stale = cv.stale_keys?.length ?? 0;
+        const incomplete = cv.rules_with_issues?.length ?? 0;
+        if (stale || incomplete) {
+          msg += ` · ${stale} stale key(s), ${incomplete} incomplete rule(s)`;
+        } else {
+          msg += " · constraints OK";
+        }
       }
+      toast(result.valid ? "ok" : "err", msg);
     } catch (err) {
       toast("err", err.message);
     }

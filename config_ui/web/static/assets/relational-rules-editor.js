@@ -1,6 +1,12 @@
 /** Collapsible relational-rules list for constraints.json. */
 
-import { RULE_TYPES } from "./meta.js";
+import {
+  RULE_TYPES,
+  RULE_SCHEMAS,
+  emptyRule,
+  validateRule,
+  ruleTypeDescription,
+} from "./rule-schemas.js";
 
 function el(tag, cls = "", text = "") {
   const n = document.createElement(tag);
@@ -21,7 +27,7 @@ export function ruleSummary(item) {
     push(item.floor);
     push(item.ceiling);
   }
-  if (item.params?.length) bits.push(item.params.join(", "));
+  if (item.params?.length) bits.push(item.params.filter(Boolean).join(", "));
   if (item.numerator && item.denominator) bits.push(`${item.numerator} / ${item.denominator}`);
   if (item.param_a && item.param_b) bits.push(`${item.param_a} × ${item.param_b}`);
   if (item.condition?.param) bits.push(`if ${item.condition.param}`);
@@ -59,6 +65,17 @@ export function reindexCollapsedSet(set, removedIndex) {
   for (const i of next) set.add(i);
 }
 
+function shiftCollapsedSet(set, fromIndex, delta) {
+  const next = new Set();
+  for (const i of set) {
+    if (delta > 0 && i >= fromIndex) next.add(i + delta);
+    else if (delta < 0 && i >= fromIndex + delta && i < fromIndex) next.add(i + delta);
+    else next.add(i);
+  }
+  set.clear();
+  for (const i of next) set.add(i);
+}
+
 import { scrollToConfigTarget } from "./config-focus.js";
 
 export function mountRelationalRulesEditor({
@@ -71,12 +88,13 @@ export function mountRelationalRulesEditor({
   onMuteFilterChange,
   onCollapsedChange,
   renderRuleBody,
-  emptyRule,
+  emptyRule: emptyRuleFn = emptyRule,
   focusRuleIndex,
+  validateRule: validateRuleFn = validateRule,
 }) {
   const root = el("div", "rules-editor");
 
-  const syncItems = (next) => onItemsChange(next);
+  const syncItems = (next, opts) => onItemsChange(next, opts);
 
   const visibleIndices = () => {
     const q = filterText.trim().toLowerCase();
@@ -92,6 +110,35 @@ export function mountRelationalRulesEditor({
   };
 
   const syncCollapsed = () => onCollapsedChange?.([...collapsed]);
+
+  const moveRule = (index, dir) => {
+    const target = index + dir;
+    if (target < 0 || target >= items.length) return;
+    const next = [...items];
+    [next[index], next[target]] = [next[target], next[index]];
+    const newCollapsed = new Set();
+    for (const i of collapsed) {
+      if (i === index) newCollapsed.add(target);
+      else if (i === target) newCollapsed.add(index);
+      else newCollapsed.add(i);
+    }
+    collapsed.clear();
+    for (const i of newCollapsed) collapsed.add(i);
+    syncCollapsed();
+    syncItems(next);
+    render();
+  };
+
+  const duplicateRule = (index) => {
+    const copy = structuredClone(items[index]);
+    copy.title = `${copy.title || `Rule ${index + 1}`} (copy)`;
+    const next = [...items];
+    next.splice(index + 1, 0, copy);
+    shiftCollapsedSet(collapsed, index + 1, 1);
+    syncCollapsed();
+    syncItems(next, { expandIndex: index + 1 });
+    render();
+  };
 
   const renderToolbar = () => {
     const bar = el("div", "rules-toolbar");
@@ -165,8 +212,42 @@ export function mountRelationalRulesEditor({
     if (item.type) head.appendChild(el("span", "type-badge", item.type));
     if (item.muted) head.appendChild(el("span", "mute-badge", "MUTED"));
 
+    const v = validateRuleFn(item);
+    if (!v.ok) {
+      head.appendChild(
+        el("span", "rule-incomplete-badge", `${v.missing.length} missing`),
+      );
+    }
+
     const summary = ruleSummary(item);
     if (summary) head.appendChild(el("span", "rule-card-summary mono", summary));
+
+    const actions = el("div", "rule-card-actions");
+    const up = el("button", "btn icon ghost tiny", "↑");
+    up.type = "button";
+    up.disabled = index === 0;
+    up.title = "Move up";
+    up.onclick = (e) => {
+      e.stopPropagation();
+      moveRule(index, -1);
+    };
+    const down = el("button", "btn icon ghost tiny", "↓");
+    down.type = "button";
+    down.disabled = index === items.length - 1;
+    down.title = "Move down";
+    down.onclick = (e) => {
+      e.stopPropagation();
+      moveRule(index, 1);
+    };
+    const dup = el("button", "btn icon ghost tiny", "⎘");
+    dup.type = "button";
+    dup.title = "Duplicate";
+    dup.onclick = (e) => {
+      e.stopPropagation();
+      duplicateRule(index);
+    };
+    actions.append(up, down, dup);
+    head.appendChild(actions);
 
     const muteLabel = el("label", "switch-row compact mute-toggle");
     const muteChk = el("input");
@@ -208,6 +289,31 @@ export function mountRelationalRulesEditor({
     return card;
   };
 
+  const renderAddRow = () => {
+    const row = el("div", "add-rule-row");
+    const typeSel = el("select", "input");
+    for (const t of RULE_TYPES) {
+      const schema = RULE_SCHEMAS[t];
+      const opt = el("option", "", schema?.label ? `${schema.label} (${t})` : t);
+      opt.value = t;
+      typeSel.appendChild(opt);
+    }
+    const hint = el("span", "muted small add-rule-hint", ruleTypeDescription(typeSel.value));
+    typeSel.onchange = () => {
+      hint.textContent = ruleTypeDescription(typeSel.value);
+    };
+
+    const add = el("button", "btn ghost add-btn", "+ Add rule");
+    add.type = "button";
+    add.onclick = () => {
+      const next = [...items, emptyRuleFn(typeSel.value)];
+      syncItems(next, { expandIndex: next.length - 1 });
+      render();
+    };
+    row.append(typeSel, hint, add);
+    return row;
+  };
+
   const render = () => {
     root.innerHTML = "";
     root.appendChild(renderToolbar());
@@ -222,14 +328,7 @@ export function mountRelationalRulesEditor({
       }
     }
 
-    const add = el("button", "btn ghost add-btn", "+ Add rule");
-    add.type = "button";
-    add.onclick = () => {
-      const next = [...items, emptyRule()];
-      syncItems(next);
-      render();
-    };
-    list.appendChild(add);
+    list.appendChild(renderAddRow());
     root.appendChild(list);
 
     if (focusRuleIndex != null) {
@@ -270,4 +369,4 @@ export function mountRuleCardReadOnly(entry, { index = 0, writes = true, onOpenI
   return card;
 }
 
-export { RULE_TYPES };
+export { RULE_TYPES, emptyRule };

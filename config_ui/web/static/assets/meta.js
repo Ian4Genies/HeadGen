@@ -166,17 +166,7 @@ export const LABELS = {
   range: "Input range",
 };
 
-export const RULE_TYPES = [
-  "scale_follow",
-  "conditional_clamp",
-  "mutual_dampen",
-  "ratio_clamp",
-  "product_clamp",
-  "cross_proportion_clamp",
-  "sandwich_clamp",
-  "conditional_bias",
-  "winner_take_all",
-];
+export { RULE_TYPES } from "./rule-schemas.js";
 
 export function labelFor(key) {
   return LABELS[key] ?? key.replace(/_/g, " ").replace(/-/g, " ");

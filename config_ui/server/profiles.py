@@ -241,3 +241,34 @@ def validate_profile(name: str) -> dict:
         }
     except Exception as exc:
         return {"valid": False, "message": str(exc)}
+
+
+def validate_constraints(name: str) -> dict:
+    from synth_head.core.constraints import ConstraintRules, validate_rule_completeness, validate_rules
+
+    from . import manifests as mf
+
+    ensure_profiles_layout()
+    profile_path = _profile_dir(name)
+    if not profile_path.is_dir():
+        raise ProfileError(f"Profile not found: {name}")
+    data = read_config_file(name, "constraints")
+    rules = ConstraintRules.from_dict(data)
+    known = set(mf.build_registry(name).get("rerandomize_suggestions", []))
+    report = validate_rules(rules, known)
+    rules_with_issues = []
+    for i, rule in enumerate(data.get("relational_rules", [])):
+        missing = validate_rule_completeness(rule)
+        if missing:
+            rules_with_issues.append(
+                {
+                    "index": i,
+                    "title": rule.get("title", ""),
+                    "type": rule.get("type", ""),
+                    "missing": missing,
+                }
+            )
+    return {
+        "stale_keys": report.stale_keys,
+        "rules_with_issues": rules_with_issues,
+    }

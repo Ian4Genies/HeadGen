@@ -48,8 +48,18 @@ export const FILE_LAYOUTS = {
   },
   constraints: {
     sections: [
-      { keys: ["hard_clamps"], full: true, title: "Hard clamps" },
-      { keys: ["relational_rules"], full: true, title: "Relational rules" },
+      {
+        keys: ["hard_clamps"],
+        full: true,
+        title: "Hard clamps",
+        hint: "Unconditional min/max per param. Runs after all relational rules — always wins. Joint keys: JawBind.scale.x · Shapes: JAW_DROP",
+      },
+      {
+        keys: ["relational_rules"],
+        full: true,
+        title: "Relational rules",
+        hint: "Evaluated top to bottom, then hard clamps. Rules that reference missing params are skipped silently.",
+      },
     ],
   },
   modifiers: {

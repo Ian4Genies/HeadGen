@@ -6,6 +6,8 @@ import {
   migrationDataLoss,
   validateRule,
   RULE_TYPES,
+  RULE_SCHEMAS,
+  ruleTypeFormula,
 } from "./rule-schemas.js";
 
 describe("emptyRule", () => {
@@ -71,5 +73,20 @@ describe("validateRule", () => {
     rule.condition = { param: "Y", above: 1 };
     const v = validateRule(rule);
     assert.ok(v.missing.some((m) => m.includes("Min or max")));
+  });
+});
+
+describe("rule docs metadata", () => {
+  for (const type of RULE_TYPES) {
+    it(`${type} has formula and field help`, () => {
+      const s = RULE_SCHEMAS[type];
+      assert.ok(s.formula, `${type} missing formula`);
+      assert.ok(s.description, `${type} missing description`);
+      assert.ok(s.fields.every((f) => f.help), `${type} missing field help`);
+    });
+  }
+
+  it("ruleTypeFormula returns string", () => {
+    assert.equal(ruleTypeFormula("scale_follow"), "target = source × factor");
   });
 });

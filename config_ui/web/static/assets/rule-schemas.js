@@ -14,6 +14,19 @@ export const RULE_TYPES = [
 
 const COMMON_KEYS = new Set(["title", "type", "muted"]);
 
+const P = {
+  target: "Parameter overwritten when the rule fires. Joint: JawBind.scale.x · Shape: JAW_DROP",
+  source: "Parameter read as input. Joint: JawBind.location.y · Shape: MOUTH_LOWERER",
+  param: "Flat param key. Joint: NoseBind.scale.z · Shape: CHEEK_PUFF_L",
+  factor: "Multiplier on source. 0.5 = half strength. Negative inverts direction.",
+  minBound: "Optional floor applied to target when the condition fires.",
+  maxBound: "Optional ceiling applied to target when the condition fires.",
+  maxCombined: "Max allowed sum of |value| across all listed params.",
+  maxRatio: "Numerator is scaled down if numerator ÷ denominator exceeds this.",
+  maxProduct: "Param A is scaled down if param_a × param_b exceeds this.",
+  tolerance: "Extra slack beyond floor/ceiling anchors (same units as params).",
+};
+
 function cond(p = "") {
   return { param: p };
 }
@@ -29,100 +42,210 @@ function driver(p = "") {
   return { param: p, range: [0, 1], map: [0, 1] };
 }
 
-/** @type {Record<string, { label: string, description: string, help?: string, fields: object[] }>} */
+/** @type {Record<string, object>} */
 export const RULE_SCHEMAS = {
   scale_follow: {
     label: "Scale follow",
-    description: "Forces target = source × factor.",
+    formula: "target = source × factor",
+    description: "Replaces the target with a scaled copy of the source every frame.",
+    whenToUse: "One param should track another proportionally (mouth follows jaw, inverse shape pairs).",
+    example: { source: "JawBind.location.y", target: "MouthBind.location.y", factor: 0.5 },
+    caveats: "The target's independently generated value is discarded.",
     fields: [
-      { key: "target", label: "Target param", widget: "param", required: true, default: "" },
-      { key: "source", label: "Source param", widget: "param", required: true, default: "" },
-      { key: "factor", label: "Factor", widget: "number", required: true, default: 0.5 },
+      { key: "target", label: "Target param", widget: "param", required: true, default: "", help: P.target },
+      { key: "source", label: "Source param", widget: "param", required: true, default: "", help: P.source },
+      { key: "factor", label: "Factor", widget: "number", required: true, default: 0.5, help: P.factor },
     ],
   },
   conditional_clamp: {
     label: "Conditional clamp",
-    description: "Clamps target only when a condition param crosses a threshold.",
+    formula: "if condition → clamp(target)",
+    description: "Clamps target only when a watched param crosses a threshold.",
+    whenToUse: "Prevent bad combos without permanently restricting either param alone.",
+    example: { target: "MOUTH_LOWERER", condition: { param: "JAW_DROP", above: 0.5 }, max: 0.2 },
     fields: [
-      { key: "target", label: "Target param", widget: "param", required: true, default: "" },
-      { key: "condition", label: "Condition", widget: "condition", required: true, default: cond() },
-      { key: "min", label: "Min bound", widget: "number_optional", required: false, default: undefined },
-      { key: "max", label: "Max bound", widget: "number_optional", required: false, default: undefined },
+      { key: "target", label: "Target param", widget: "param", required: true, default: "", help: P.target },
+      {
+        key: "condition",
+        label: "Condition",
+        widget: "condition",
+        required: true,
+        default: cond(),
+        help: "Fires when param is strictly above and/or below threshold. At least one bound required on condition.",
+      },
+      { key: "min", label: "Min bound", widget: "number_optional", required: false, default: undefined, help: P.minBound },
+      { key: "max", label: "Max bound", widget: "number_optional", required: false, default: undefined, help: P.maxBound },
     ],
   },
   mutual_dampen: {
     label: "Mutual dampen",
-    description: "Scales params proportionally when combined |values| exceed max_combined.",
+    formula: "scale all down if Σ|params| > max_combined",
+    description: "Scales listed params proportionally when their combined absolute total exceeds a budget.",
+    whenToUse: "Stop competing shapes or jaws from stacking to implausible combined levels.",
+    example: { params: ["JAW_DROP", "JAW_THRUST"], max_combined: 1 },
+    caveats: "Ratios between params are preserved — nothing is zeroed unless it was already zero.",
     fields: [
-      { key: "params", label: "Params", widget: "param_list", required: true, default: [""], minItems: 1 },
-      { key: "max_combined", label: "Max combined", widget: "number", required: true, default: 1 },
+      {
+        key: "params",
+        label: "Params",
+        widget: "param_list",
+        required: true,
+        default: [""],
+        minItems: 1,
+        help: "Group monitored together. Missing params are skipped; rule still runs on present ones.",
+      },
+      { key: "max_combined", label: "Max combined", widget: "number", required: true, default: 1, help: P.maxCombined },
     ],
   },
   ratio_clamp: {
     label: "Ratio clamp",
-    description: "Scales numerator down when numerator / denominator > max_ratio.",
+    formula: "if num ÷ den > max_ratio → num = den × max_ratio",
+    description: "Scales numerator down when its ratio to denominator exceeds a cap.",
+    whenToUse: "Proportion limits — nose length vs width, mouth height vs width.",
+    example: { numerator: "NoseBind.scale.z", denominator: "NoseBind.scale.x", max_ratio: 1.6 },
+    caveats: "Skipped silently when denominator is zero.",
     fields: [
-      { key: "numerator", label: "Numerator", widget: "param", required: true, default: "" },
-      { key: "denominator", label: "Denominator", widget: "param", required: true, default: "" },
-      { key: "max_ratio", label: "Max ratio", widget: "number", required: true, default: 1 },
+      { key: "numerator", label: "Numerator", widget: "param", required: true, default: "", help: "Param scaled down when ratio is too high." },
+      { key: "denominator", label: "Denominator", widget: "param", required: true, default: "", help: "Reference param for the ratio." },
+      { key: "max_ratio", label: "Max ratio", widget: "number", required: true, default: 1, help: P.maxRatio },
     ],
   },
   product_clamp: {
     label: "Product clamp",
-    description: "Scales param_a down when param_a × param_b > max_product.",
+    formula: "if a × b > max_product → a = max_product ÷ b",
+    description: "Scales param_a down when its product with param_b exceeds a budget.",
+    whenToUse: "Inverse-proportion guards — wide nose should cap tall Z, etc.",
+    example: { param_a: "NoseBind.scale.z", param_b: "NoseBind.scale.x", max_product: 1.6 },
+    caveats: "Use when two dimensions share a budget; differs from ratio_clamp which caps a fixed ratio at any scale.",
     fields: [
-      { key: "param_a", label: "Param A", widget: "param", required: true, default: "" },
-      { key: "param_b", label: "Param B", widget: "param", required: true, default: "" },
-      { key: "max_product", label: "Max product", widget: "number", required: true, default: 1 },
+      { key: "param_a", label: "Param A", widget: "param", required: true, default: "", help: "Param scaled down when product is too high." },
+      { key: "param_b", label: "Param B", widget: "param", required: true, default: "", help: "Partner in the product budget." },
+      { key: "max_product", label: "Max product", widget: "number", required: true, default: 1, help: P.maxProduct },
     ],
   },
   cross_proportion_clamp: {
     label: "Cross proportion clamp",
+    formula: "if (if) AND (and) → clamp(then_clamp)",
     description: "Clamps a target when two independent conditions are both true.",
+    whenToUse: "Contextual caps — e.g. limit eye socket width only when the nose is narrow.",
+    example: {
+      if: { param: "LeftEyeSocketBind.scale.x", above: 1.05 },
+      and: { param: "NoseBind.scale.x", below: 1 },
+      then_clamp: { param: "LeftEyeSocketBind.scale.x", max: 1.05 },
+    },
     help: "Left* joint targets auto-mirror to Right* at runtime.",
     fields: [
-      { key: "if", label: "If", widget: "condition", required: true, default: cond() },
-      { key: "and", label: "And", widget: "condition", required: true, default: cond() },
-      { key: "then_clamp", label: "Then clamp", widget: "clamp_spec", required: true, default: clampSpec() },
+      { key: "if", label: "If", widget: "condition", required: true, default: cond(), help: "First condition — must pass." },
+      { key: "and", label: "And", widget: "condition", required: true, default: cond(), help: "Second condition — both must pass." },
+      {
+        key: "then_clamp",
+        label: "Then clamp",
+        widget: "clamp_spec",
+        required: true,
+        default: clampSpec(),
+        help: "Param and min/max applied when both conditions are true.",
+      },
     ],
   },
   sandwich_clamp: {
     label: "Sandwich clamp",
-    description: "Keeps target sandwiched between floor and ceiling anchor params.",
+    formula: "floor − tolerance ≤ target ≤ ceiling + tolerance",
+    description: "Keeps target between two anchor params (sorted dynamically).",
+    whenToUse: "Mouth Y between nose and jaw, or any param that must stay in a live band.",
+    example: {
+      target: "MouthBind.location.y",
+      floor: "NoseBind.location.y",
+      ceiling: "JawBind.location.y",
+      target_sign: -1,
+      tolerance: 0.05,
+    },
     fields: [
-      { key: "target", label: "Target param", widget: "param", required: true, default: "" },
-      { key: "floor", label: "Floor param", widget: "param", required: true, default: "" },
-      { key: "ceiling", label: "Ceiling param", widget: "param", required: true, default: "" },
-      { key: "tolerance", label: "Tolerance", widget: "number", required: false, default: 0 },
-      { key: "target_sign", label: "Target sign", widget: "enum", required: false, default: 1, options: [
-        { value: 1, label: "1 (normal)" },
-        { value: -1, label: "-1 (inverted axis)" },
-      ] },
+      { key: "target", label: "Target param", widget: "param", required: true, default: "", help: P.target },
+      { key: "floor", label: "Floor param", widget: "param", required: true, default: "", help: "Lower anchor (auto-sorted with ceiling)." },
+      { key: "ceiling", label: "Ceiling param", widget: "param", required: true, default: "", help: "Upper anchor (auto-sorted with floor)." },
+      { key: "tolerance", label: "Tolerance", widget: "number", required: false, default: 0, help: P.tolerance },
+      {
+        key: "target_sign",
+        label: "Target sign",
+        widget: "enum",
+        required: false,
+        default: 1,
+        help: "Use −1 when target axis is inverted vs anchors (e.g. MouthBind Y positive-down).",
+        options: [
+          { value: 1, label: "1 (normal)" },
+          { value: -1, label: "-1 (inverted axis)" },
+        ],
+      },
     ],
   },
   conditional_bias: {
     label: "Conditional bias",
-    description: "Raises or suppresses a shape target based on driver signals.",
+    formula: "raise: max(target, signal×max_bias) · suppress: min(target, (1−signal)×max_bias)",
+    description: "Biases a blendshape up or down based on remapped driver signals.",
+    whenToUse: "Nostril shapes that should rise on upturned narrow noses, or suppress on wide noses.",
+    example: {
+      direction: "raise",
+      target: "nose_male_varGp01G",
+      drivers: [{ param: "NoseBind.rotation.x", range: [0, -8], map: [0, 1] }],
+      combine: "min",
+      max_bias: 1,
+    },
+    caveats: "Blendshapes only — never lowers below generated value in raise mode, or raises above it in suppress mode.",
     fields: [
-      { key: "direction", label: "Direction", widget: "enum", required: true, default: "raise", options: [
-        { value: "raise", label: "raise" },
-        { value: "suppress", label: "suppress" },
-      ] },
-      { key: "target", label: "Target shape", widget: "param", required: true, default: "" },
-      { key: "drivers", label: "Drivers", widget: "bias_drivers", required: true, default: [driver()] },
-      { key: "combine", label: "Combine", widget: "enum", required: false, default: "min", options: [
-        { value: "min", label: "min (AND)" },
-        { value: "max", label: "max (OR)" },
-        { value: "average", label: "average" },
-      ] },
-      { key: "max_bias", label: "Max bias", widget: "number", required: false, default: 1 },
+      {
+        key: "direction",
+        label: "Direction",
+        widget: "enum",
+        required: true,
+        default: "raise",
+        help: "raise = floor the target up; suppress = shrink the ceiling down.",
+        options: [
+          { value: "raise", label: "raise" },
+          { value: "suppress", label: "suppress" },
+        ],
+      },
+      { key: "target", label: "Target shape", widget: "param", required: true, default: "", help: "Blendshape name to bias." },
+      {
+        key: "drivers",
+        label: "Drivers",
+        widget: "bias_drivers",
+        required: true,
+        default: [driver()],
+        help: "Each driver remaps a param from range → map (0–1 signal). range [in_lo, in_hi], map [out_lo, out_hi].",
+      },
+      {
+        key: "combine",
+        label: "Combine",
+        widget: "enum",
+        required: false,
+        default: "min",
+        help: "How to merge driver signals: min = all must agree (AND), max = any (OR), average.",
+        options: [
+          { value: "min", label: "min (AND)" },
+          { value: "max", label: "max (OR)" },
+          { value: "average", label: "average" },
+        ],
+      },
+      { key: "max_bias", label: "Max bias", widget: "number", required: false, default: 1, help: "Scales the combined signal (usually 0–1)." },
     ],
   },
   winner_take_all: {
     label: "Winner take all",
-    description: "Zeroes all params except the largest |value| in the group.",
+    formula: "keep argmax(|params|); zero the rest",
+    description: "Zeroes all listed params except the one with the largest absolute value.",
+    whenToUse: "Mutually exclusive pairs — iris grow vs shrink, pupil grow vs shrink.",
+    example: { params: ["var_iris_grow", "var_iris_shrink"] },
+    caveats: "Ties broken by list order — first param wins.",
     fields: [
-      { key: "params", label: "Params", widget: "param_list", required: true, default: ["", ""], minItems: 2 },
+      {
+        key: "params",
+        label: "Params",
+        widget: "param_list",
+        required: true,
+        default: ["", ""],
+        minItems: 2,
+        help: "At least two params. Missing params are skipped; need two present to run.",
+      },
     ],
   },
 };
@@ -131,7 +254,7 @@ function deepClone(v) {
   return JSON.parse(JSON.stringify(v));
 }
 
-function schemaFor(type) {
+export function schemaFor(type) {
   return RULE_SCHEMAS[type] ?? RULE_SCHEMAS.scale_follow;
 }
 
@@ -234,6 +357,10 @@ export function ruleTypeDescription(type) {
 
 export function ruleTypeHelp(type) {
   return schemaFor(type).help ?? "";
+}
+
+export function ruleTypeFormula(type) {
+  return schemaFor(type).formula ?? "";
 }
 
 export function schemaFields(type) {

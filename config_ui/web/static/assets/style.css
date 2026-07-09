@@ -2096,6 +2096,109 @@ select:focus {
   margin: 0.15rem 0 0.35rem;
 }
 
+.rule-type-detail {
+  margin: 0.35rem 0 0.65rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.5rem;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(139, 92, 246, 0.18);
+}
+
+.rule-type-detail-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.rule-type-detail-k {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.rule-type-formula {
+  font-size: 0.78rem;
+  color: #c4b5fd;
+}
+
+.rule-type-detail-desc {
+  margin: 0.2rem 0 0.15rem;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.rule-type-detail-when {
+  margin: 0 0 0.25rem;
+}
+
+.rule-type-detail-ex {
+  word-break: break-word;
+}
+
+.rule-type-detail-caveat {
+  margin: 0.35rem 0 0;
+}
+
+.field-label-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.field-label-text {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.field-help-btn {
+  width: 1.1rem;
+  height: 1.1rem;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  background: rgba(139, 92, 246, 0.12);
+  color: #c4b5fd;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: help;
+}
+
+.field-help-btn:hover {
+  background: rgba(139, 92, 246, 0.25);
+}
+
+.field-inline-help {
+  margin: 0.15rem 0 0;
+  font-size: 0.68rem;
+  line-height: 1.35;
+}
+
+.add-rule-block {
+  margin-top: 0.5rem;
+}
+
+.add-rule-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.add-rule-row select {
+  min-width: 14rem;
+}
+
+.add-rule-hint {
+  flex: 1 1 200px;
+}
+
 .rule-incomplete-badge {
   font-size: 0.68rem;
   padding: 0.1rem 0.4rem;
@@ -2107,22 +2210,6 @@ select:focus {
 .rule-card-actions {
   display: flex;
   gap: 0.15rem;
-}
-
-.add-rule-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.45rem;
-  margin-top: 0.5rem;
-}
-
-.add-rule-row select {
-  min-width: 14rem;
-}
-
-.add-rule-hint {
-  flex: 1 1 200px;
 }
 
 .bias-driver-head {

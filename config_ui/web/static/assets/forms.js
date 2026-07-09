@@ -1,6 +1,5 @@
 import {
   MANIFEST_LIST_KEYS,
-  RULE_TYPES,
   isBonePropertiesKey,
   isChannelsKey,
   isIndependentShapesKey,
@@ -18,15 +17,21 @@ import { mountDriversEditor } from "./drivers-editor.js?v=3";
 import { mountRelationalRulesEditor } from "./relational-rules-editor.js";
 import { mountInlineParamInput, mountInlineParamList } from "./inline-param-input.js";
 import {
+  RULE_TYPES,
   emptyRule,
   migrateRuleType,
   migrationDataLoss,
   normalizeRule,
-  ruleTypeDescription,
-  ruleTypeHelp,
   schemaFields,
   validateRule,
 } from "./rule-schemas.js";
+import {
+  mountFieldLabelWithTip,
+  mountRuleTypeDetail,
+  ruleTypeOptionLabel,
+  updateRuleTypeDetail,
+  WIDGET_INLINE_HELP,
+} from "./rule-help.js";
 import { FILE_LAYOUTS } from "./file-layouts.js";
 import { scrollToConfigTarget } from "./config-focus.js";
 import { createUiStore, restoreScroll } from "./view-state.js";
@@ -292,6 +297,16 @@ export class ConfigForm {
     const wrap = el("div", "field");
     wrap.appendChild(el("label", "field-label", customLabel ?? labelFor(key)));
     wrap.appendChild(node);
+    return wrap;
+  }
+
+  #schemaFieldWrap(field, control) {
+    const wrap = el("div", "field");
+    const forceInline = WIDGET_INLINE_HELP.has(field.widget);
+    const { labelRow, inlineHelp } = mountFieldLabelWithTip(field.label, field.help, { forceInline });
+    wrap.appendChild(labelRow);
+    wrap.appendChild(control);
+    if (inlineHelp) wrap.appendChild(inlineHelp);
     return wrap;
   }
 
@@ -1104,11 +1119,13 @@ export class ConfigForm {
 
     const typeSel = el("select", "input");
     for (const t of RULE_TYPES) {
-      const opt = el("option", "", t);
+      const opt = el("option", "", ruleTypeOptionLabel(t));
       opt.value = t;
       if (item.type === t) opt.selected = true;
       typeSel.appendChild(opt);
     }
+
+    const typeDetail = mountRuleTypeDetail(item.type);
 
     const body = el("div", "field-grid rule-typed-body");
     const renderBody = () => {
@@ -1117,27 +1134,26 @@ export class ConfigForm {
 
     typeSel.onchange = () => {
       const newType = typeSel.value;
+      updateRuleTypeDetail(typeDetail, newType);
       if (newType === item.type) return;
       const lost = migrationDataLoss(item, newType);
-      if (lost.length && !window.confirm(`Changing type removes: ${lost.join(", ")}. Continue?`)) {
+      const migrateMsg = lost.length
+        ? `Changing type removes: ${lost.join(", ")}. Continue?`
+        : "Change rule type? Existing field values will be reset.";
+      if (!window.confirm(migrateMsg)) {
         typeSel.value = item.type;
+        updateRuleTypeDetail(typeDetail, item.type);
         return;
       }
       const migrated = migrateRuleType(item, newType);
       for (const k of Object.keys(item)) delete item[k];
       Object.assign(item, migrated);
-      help.textContent = ruleTypeDescription(item.type);
-      helpHint.textContent = ruleTypeHelp(item.type);
-      helpHint.classList.toggle("hidden", !ruleTypeHelp(item.type));
+      updateRuleTypeDetail(typeDetail, item.type);
       renderBody();
       touch();
     };
     wrap.appendChild(this.#fieldWrap("type", typeSel));
-
-    const help = el("p", "rule-type-help muted small", ruleTypeDescription(item.type));
-    wrap.appendChild(help);
-    const helpHint = el("p", "rule-type-hint chip-hint" + (ruleTypeHelp(item.type) ? "" : " hidden"), ruleTypeHelp(item.type));
-    wrap.appendChild(helpHint);
+    wrap.appendChild(typeDetail);
 
     renderBody();
     wrap.appendChild(body);
@@ -1248,7 +1264,7 @@ export class ConfigForm {
         default:
           control = this.#inlineValue(fieldPath, item[field.key], field.key, item.type);
       }
-      bodyEl.appendChild(this.#fieldWrap(field.key, control, field.label));
+      bodyEl.appendChild(this.#schemaFieldWrap(field, control));
     }
   }
 

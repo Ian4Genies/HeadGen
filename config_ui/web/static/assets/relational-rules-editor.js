@@ -2,11 +2,11 @@
 
 import {
   RULE_TYPES,
-  RULE_SCHEMAS,
   emptyRule,
   validateRule,
-  ruleTypeDescription,
+  ruleTypeFormula,
 } from "./rule-schemas.js";
+import { mountRuleTypeDetail, ruleTypeOptionLabel, updateRuleTypeDetail } from "./rule-help.js";
 
 function el(tag, cls = "", text = "") {
   const n = document.createElement(tag);
@@ -209,7 +209,12 @@ export function mountRelationalRulesEditor({
 
     const title = item.title || `Rule ${index + 1}`;
     head.appendChild(el("strong", "rule-card-title", title));
-    if (item.type) head.appendChild(el("span", "type-badge", item.type));
+    if (item.type) {
+      const badge = el("span", "type-badge", item.type);
+      const formula = ruleTypeFormula(item.type);
+      if (formula) badge.title = formula;
+      head.appendChild(badge);
+    }
     if (item.muted) head.appendChild(el("span", "mute-badge", "MUTED"));
 
     const v = validateRuleFn(item);
@@ -290,18 +295,16 @@ export function mountRelationalRulesEditor({
   };
 
   const renderAddRow = () => {
+    const block = el("div", "add-rule-block");
     const row = el("div", "add-rule-row");
     const typeSel = el("select", "input");
     for (const t of RULE_TYPES) {
-      const schema = RULE_SCHEMAS[t];
-      const opt = el("option", "", schema?.label ? `${schema.label} (${t})` : t);
+      const opt = el("option", "", ruleTypeOptionLabel(t));
       opt.value = t;
       typeSel.appendChild(opt);
     }
-    const hint = el("span", "muted small add-rule-hint", ruleTypeDescription(typeSel.value));
-    typeSel.onchange = () => {
-      hint.textContent = ruleTypeDescription(typeSel.value);
-    };
+    const detail = mountRuleTypeDetail(typeSel.value);
+    typeSel.onchange = () => updateRuleTypeDetail(detail, typeSel.value);
 
     const add = el("button", "btn ghost add-btn", "+ Add rule");
     add.type = "button";
@@ -310,8 +313,9 @@ export function mountRelationalRulesEditor({
       syncItems(next, { expandIndex: next.length - 1 });
       render();
     };
-    row.append(typeSel, hint, add);
-    return row;
+    row.append(typeSel, add);
+    block.append(row, detail);
+    return block;
   };
 
   const render = () => {

@@ -27,14 +27,14 @@
       "max": 0
     },
     "JawBind.scale.y": {
-      "min": -0.05,
-      "max": 0.05
+      "min": 0,
+      "max": 0.1
     },
-    "JawBind.scale.z": 0.1,
+    "JawBind.scale.z": 0.05,
     "JawBind.location.x": 0,
     "JawBind.location.y": {
-      "min": -2,
-      "max": 2
+      "min": -0.5,
+      "max": 0.5
     },
     "JawBind.location.z": {
       "min": 0,
@@ -74,7 +74,7 @@
     "MouthInnerBind.rotation": 0,
     "NoseBind.scale.x": {
       "min": -0.2,
-      "max": 0.05
+      "max": 0.1
     },
     "NoseBind.scale.y": {
       "min": 0,
@@ -85,10 +85,13 @@
       "max": 0.1
     },
     "NoseBind.location.x": 0,
-    "NoseBind.location.y": 1.2,
+    "NoseBind.location.y": {
+      "min": -1,
+      "max": 0.2
+    },
     "NoseBind.location.z": 0.0325,
     "NoseBind.rotation.x": {
-      "min": -8,
+      "min": -4,
       "max": 0
     },
     "NoseBind.rotation.y": 0,
@@ -139,7 +142,13 @@
       "max": 0.15
     },
     "NeckBind.location": 0,
-    "NeckBind.rotation": 0
+    "NeckBind.rotation": 0,
+    "LeftCheekBind.location": 0.1,
+    "LeftCheekBind.rotation": 6,
+    "LeftCheekBind.scale": 0.1,
+    "LeftCheekBoneBind.location": 0.1,
+    "LeftCheekBoneBind.rotation": 6,
+    "LeftCheekBoneBind.scale": 0.1
   },
   "bone_properties": {
     "var_iris_shrink": {

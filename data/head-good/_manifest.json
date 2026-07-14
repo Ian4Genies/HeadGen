@@ -1,5 +1,8 @@
 {
   "files": [
+    "good_frame002_20260713_122738.json",
+    "good_frame002_20260713_123726.json",
+    "good_frame006_20260713_114454.json",
     "good_frame012_20260622_222720.json",
     "good_frame017_20260622_224817.json",
     "good_frame093_20260622_225433.json",
@@ -7,5 +10,5 @@
     "good_frame119_20260622_225547.json",
     "good_frame250_20260622_225155.json"
   ],
-  "count": 6
+  "count": 9
 }

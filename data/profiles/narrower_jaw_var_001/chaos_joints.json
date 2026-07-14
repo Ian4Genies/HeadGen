@@ -27,14 +27,14 @@
       "max": 0
     },
     "JawBind.scale.y": {
-      "min": -0.05,
-      "max": 0.05
+      "min": 0,
+      "max": 0.1
     },
-    "JawBind.scale.z": 0.1,
+    "JawBind.scale.z": 0.05,
     "JawBind.location.x": 0,
     "JawBind.location.y": {
-      "min": -2,
-      "max": 2
+      "min": -0.5,
+      "max": 0.5
     },
     "JawBind.location.z": {
       "min": 0,

@@ -204,6 +204,16 @@ def _apply_scale_follow(flat: dict[str, float], rule: dict) -> None:
         return
     flat[target] = flat[source] * factor
 
+def _apply_delta_follow(flat: dict[str, float], rule: dict) -> None:
+    """target += (source - neutral) * factor"""
+    source = rule.get("source", "")
+    target = rule.get("target", "")
+    neutral = rule.get("neutral", 1.0)
+    factor = rule.get("factor", 1.0)
+    if source not in flat or target not in flat:
+        return
+    flat[target] += (flat[source] - neutral) * factor
+
 
 def _apply_conditional_clamp(flat: dict[str, float], rule: dict) -> None:
     """If condition.param crosses a threshold, clamp target."""
@@ -562,6 +572,7 @@ def _apply_conditional_bias(flat: dict[str, float], rule: dict) -> None:
 
 _RULE_HANDLERS = {
     "scale_follow": _apply_scale_follow,
+    "delta_follow": _apply_delta_follow,
     "conditional_clamp": _apply_conditional_clamp,
     "mutual_dampen": _apply_mutual_dampen,
     "ratio_clamp": _apply_ratio_clamp,
@@ -669,6 +680,11 @@ def validate_rule_completeness(rule: dict) -> list[str]:
             missing.append(label or key)
 
     if rtype == "scale_follow":
+        need("target", "Target param")
+        need("source", "Source param")
+        if rule.get("factor") is None:
+            missing.append("Factor")
+    elif rtype == "delta_follow":
         need("target", "Target param")
         need("source", "Source param")
         if rule.get("factor") is None:

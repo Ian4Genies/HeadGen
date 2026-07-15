@@ -2,6 +2,7 @@
 
 export const RULE_TYPES = [
   "scale_follow",
+  "delta_follow",
   "conditional_clamp",
   "mutual_dampen",
   "ratio_clamp",
@@ -54,6 +55,20 @@ export const RULE_SCHEMAS = {
     fields: [
       { key: "target", label: "Target param", widget: "param", required: true, default: "", help: P.target },
       { key: "source", label: "Source param", widget: "param", required: true, default: "", help: P.source },
+      { key: "factor", label: "Factor", widget: "number", required: true, default: 0.5, help: P.factor },
+    ],
+  },
+  delta_follow: {
+    label: "Delta follow",
+    formula: "target += (source − neutral) × factor",
+    description: "Nudges the target by the source's offset from a neutral baseline, preserving the target's generated value.",
+    whenToUse: "Proportional pull — e.g. nose/mouth drop as the jaw stretches (JawBind.scale.z past neutral 1.0).",
+    example: { source: "JawBind.scale.z", target: "MouthBind.location.y", neutral: 1, factor: 0.6 },
+    caveats: "For scale sources use neutral 1.0; for location/rotation sources use neutral 0.0.",
+    fields: [
+      { key: "target", label: "Target param", widget: "param", required: true, default: "", help: P.target },
+      { key: "source", label: "Source param", widget: "param", required: true, default: "", help: P.source },
+      { key: "neutral", label: "Neutral", widget: "number", required: false, default: 1, help: "Baseline value of source that produces zero effect (1.0 for scale, 0.0 for loc/rot)." },
       { key: "factor", label: "Factor", widget: "number", required: true, default: 0.5, help: P.factor },
     ],
   },

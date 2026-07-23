@@ -1,0 +1,2644 @@
+{
+  "version": 6,
+  "timestamp": "2026-07-23T14:43:39",
+  "frame": 1,
+  "label": "issue",
+  "note": "Eyes slanted too far up.",
+  "skin_color": [
+    0.7371212244033813,
+    0.5996928811073303,
+    0.4747770428657532,
+    1.0
+  ],
+  "texture_code": "A",
+  "texture_overlays": {
+    "beard": "beard_SDS_04_moustache.png",
+    "brow": "eyebrows_SDS_straightThick.png",
+    "lash": "eyelashes_SDS_naturalFull.png",
+    "lip": "lips_SDS_05_opacVar.png",
+    "nose": "default"
+  },
+  "chaos_joints": {
+    "JawBind": {
+      "location": [
+        0.0,
+        -0.05000000074505806,
+        -0.0068707517348229885
+      ],
+      "rotation_quaternion": [
+        1.0,
+        -0.00011581693979678676,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0944980382919312,
+        1.1384133100509644,
+        1.0193530321121216
+      ]
+    },
+    "MouthBind": {
+      "location": [
+        0.0,
+        0.4052141606807709,
+        -0.002061225473880768
+      ],
+      "rotation_quaternion": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0987143516540527,
+        1.0301878452301025,
+        0.9069233536720276
+      ]
+    },
+    "MouthInnerBind": {
+      "location": [
+        0.0,
+        0.001582045224495232,
+        0.0
+      ],
+      "rotation_quaternion": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0398528575897217,
+        1.005761981010437,
+        1.0
+      ]
+    },
+    "LeftCheekBind": {
+      "location": [
+        0.07098178565502167,
+        0.17760725319385529,
+        0.03787849843502045
+      ],
+      "rotation_quaternion": [
+        0.9959385395050049,
+        0.059808868914842606,
+        0.005326838232576847,
+        -0.06708937883377075
+      ],
+      "scale": [
+        0.9661596417427063,
+        0.8889622688293457,
+        0.9709491729736328
+      ]
+    },
+    "RightCheekBind": {
+      "location": [
+        -0.07098178565502167,
+        0.17760725319385529,
+        0.03787849843502045
+      ],
+      "rotation_quaternion": [
+        0.9959385395050049,
+        0.059808868914842606,
+        -0.005326838232576847,
+        0.06708937883377075
+      ],
+      "scale": [
+        1.0837403535842896,
+        0.8889622688293457,
+        0.9709491729736328
+      ]
+    },
+    "NoseBind": {
+      "location": [
+        0.0,
+        -0.24185772240161896,
+        0.0
+      ],
+      "rotation_quaternion": [
+        0.9999054074287415,
+        -0.013752306811511517,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.9057251811027527,
+        0.9057251811027527,
+        1.0055210590362549
+      ]
+    },
+    "LeftBrowBind": {
+      "location": [
+        -0.0005352814914658666,
+        0.0,
+        0.0
+      ],
+      "rotation_quaternion": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.9662038087844849,
+        1.2105082273483276,
+        1.0
+      ]
+    },
+    "RightBrowBind": {
+      "location": [
+        0.0005352814914658666,
+        0.0,
+        0.0
+      ],
+      "rotation_quaternion": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.9662038087844849,
+        1.2105082273483276,
+        1.0
+      ]
+    },
+    "RightEyeSocketBind": {
+      "location": [
+        -0.0036003966815769672,
+        -0.05172653868794441,
+        0.0
+      ],
+      "rotation_quaternion": [
+        0.9974437952041626,
+        0.0,
+        0.0,
+        0.07145556807518005
+      ],
+      "scale": [
+        0.9669497609138489,
+        0.8842245936393738,
+        1.042389988899231
+      ]
+    },
+    "LeftEyeSocketBind": {
+      "location": [
+        0.0036003966815769672,
+        -0.05172653868794441,
+        0.0
+      ],
+      "rotation_quaternion": [
+        0.9974437952041626,
+        0.0,
+        0.0,
+        -0.07145556807518005
+      ],
+      "scale": [
+        0.9669497609138489,
+        0.8842245936393738,
+        1.042389988899231
+      ]
+    },
+    "FaceBind": {
+      "location": [
+        0.0,
+        0.0022358663845807314,
+        -0.004745654761791229
+      ],
+      "rotation_quaternion": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        0.9808931350708008,
+        0.9827418327331543,
+        1.0069427490234375
+      ]
+    },
+    "LeftCheekBoneBind": {
+      "location": [
+        -0.0966721624135971,
+        0.03259119763970375,
+        0.030125413089990616
+      ],
+      "rotation_quaternion": [
+        0.9983681440353394,
+        -0.05159788578748703,
+        -0.023199815303087234,
+        0.00777861475944519
+      ],
+      "scale": [
+        0.9661596417427063,
+        1.0246657133102417,
+        0.9019492864608765
+      ]
+    },
+    "RightCheekBoneBind": {
+      "location": [
+        0.0966721624135971,
+        0.03259119763970375,
+        0.030125413089990616
+      ],
+      "rotation_quaternion": [
+        0.9983681440353394,
+        -0.05159788578748703,
+        0.023199815303087234,
+        -0.00777861475944519
+      ],
+      "scale": [
+        0.9661596417427063,
+        1.0246657133102417,
+        0.9019492864608765
+      ]
+    }
+  },
+  "bone_properties": {
+    "var_iris_shrink": 0.40607738494873047,
+    "var_iris_grow": 0.0,
+    "var_pupil_shrink": 0.2706160247325897,
+    "var_pupil_grow": 0.0
+  },
+  "variation_shapes": {
+    "jaw_female_varGp01A": 0.20000000298023224,
+    "jaw_female_varGp01B": 0.0,
+    "jaw_female_varGp01D": 0.0,
+    "jaw_female_varGp01F": 0.0,
+    "jaw_female_varGp01H": 0.0,
+    "jaw_female_varGp01K": 0.0,
+    "jaw_male_varGp01A": 0.0,
+    "jaw_male_varGp01D": 0.0,
+    "jaw_male_varGp01E": 0.0,
+    "jaw_male_varGp01H": 0.0,
+    "jaw_male_varGp01K": 0.0,
+    "jaw_male_varGp01L": 0.0,
+    "lips_female_varGp01C": 0.0,
+    "lips_female_varGp01D": 0.0,
+    "lips_female_varGp01E": 0.0,
+    "lips_female_varGp01F": 0.0,
+    "lips_female_varGp01I": 0.0,
+    "lips_female_varGp01J": 0.0,
+    "lips_male_varGp01D": 0.0,
+    "lips_male_varGp01F": 0.0,
+    "lips_male_varGp01G": 0.0,
+    "lips_male_varGp01H": 0.20000000298023224,
+    "lips_male_varGp01I": 0.0,
+    "lips_male_varGp01K": 0.0,
+    "nose_female_varGp01A": 0.0,
+    "nose_female_varGp01C": 0.0,
+    "nose_female_varGp01D": 0.0,
+    "nose_female_varGp01F": 0.0,
+    "nose_female_varGp01H": 0.09602716565132141,
+    "nose_female_varGp01K": 0.0,
+    "nose_male_varGp01D": 0.0,
+    "nose_male_varGp01E": 0.0,
+    "nose_male_varGp01I": 0.0,
+    "nose_male_varGp01K": 0.10397283732891083,
+    "nose_male_varGp01G": 0.0805494412779808
+  },
+  "expression_shapes": {
+    "BROW_LOWERER_L": 0.0,
+    "BROW_LOWERER_R": 0.0,
+    "CHEEK_PUFF_L": 0.21317225694656372,
+    "CHEEK_PUFF_R": 0.21317225694656372,
+    "CHEEK_RAISER_L": 0.0,
+    "CHEEK_RAISER_R": 0.0,
+    "CHEEK_SUCK_L": 0.0,
+    "CHEEK_SUCK_R": 0.0,
+    "CHIN_DEPRESSOR_B": 0.0,
+    "CHIN_RAISER_B": 0.0,
+    "CHIN_RAISER_T": 0.0,
+    "DIMPLER_L": 0.0,
+    "DIMPLER_R": 0.0,
+    "EYES_CLOSED_L": 0.0,
+    "EYES_CLOSED_R": 0.0,
+    "EYES_LOOK_DOWN_L": 0.0,
+    "EYES_LOOK_DOWN_R": 0.0,
+    "EYES_LOOK_LEFT_L": 0.0,
+    "EYES_LOOK_LEFT_R": 0.0,
+    "EYES_LOOK_RIGHT_L": 0.0,
+    "EYES_LOOK_RIGHT_R": 0.0,
+    "EYES_LOOK_UP_L": 0.0,
+    "EYES_LOOK_UP_R": 0.0,
+    "INNER_BROW_CONTRACTOR_L": 0.0,
+    "INNER_BROW_CONTRACTOR_R": 0.0,
+    "INNER_BROW_RAISER_L": 0.0,
+    "INNER_BROW_RAISER_R": 0.0,
+    "JAW_COMPRESSOR": 0.0,
+    "JAW_DROP": 0.0,
+    "JAW_RETREAT": 0.0,
+    "JAW_SIDEWAYS_LEFT": 0.0,
+    "JAW_SIDEWAYS_RIGHT": 0.0,
+    "JAW_THRUST": 0.0,
+    "LID_TIGHTENER_L": 0.0,
+    "LID_TIGHTENER_R": 0.0,
+    "LIPS_TOWARD": 0.0,
+    "LIP_CORNER_DEPRESSOR_L": 0.0,
+    "LIP_CORNER_DEPRESSOR_R": 0.0,
+    "LIP_CORNER_PULLER_L": 0.0,
+    "LIP_CORNER_PULLER_R": 0.0,
+    "LIP_FUNNELER_LB": 0.0,
+    "LIP_FUNNELER_LT": 0.0,
+    "LIP_FUNNELER_RB": 0.0,
+    "LIP_FUNNELER_RT": 0.0,
+    "LIP_PRESSOR_L": 0.0,
+    "LIP_PRESSOR_R": 0.0,
+    "LIP_PUCKER_L": 0.0,
+    "LIP_PUCKER_R": 0.0,
+    "LIP_STRETCHER_L": 0.0,
+    "LIP_STRETCHER_R": 0.0,
+    "LIP_SUCK_LB": 0.0,
+    "LIP_SUCK_LT": 0.0,
+    "LIP_SUCK_RB": 0.0,
+    "LIP_SUCK_RT": 0.0,
+    "LIP_TIGHTENER_L": 0.0,
+    "LIP_TIGHTENER_R": 0.0,
+    "LOWER_LIP_DEPRESSOR_L": 0.0,
+    "LOWER_LIP_DEPRESSOR_R": 0.0,
+    "MOUTH_LEFT": 0.0,
+    "MOUTH_LOWERER": 0.0,
+    "MOUTH_RAISER": 0.0,
+    "MOUTH_RIGHT": 0.0,
+    "NOSE_WRINKLER_L": 0.0,
+    "NOSE_WRINKLER_R": 0.0,
+    "OUTER_BROW_RAISER_L": 0.0,
+    "OUTER_BROW_RAISER_R": 0.0,
+    "UPPER_LID_RAISER_L": 0.0,
+    "UPPER_LID_RAISER_R": 0.0,
+    "UPPER_LIP_RAISER_L": 0.0,
+    "UPPER_LIP_RAISER_R": 0.0
+  },
+  "hair_color": [
+    0.10826130956411362,
+    0.07117702066898346,
+    0.03040684014558792,
+    1.0
+  ],
+  "lip_color": [
+    0.7049407958984375,
+    0.47259294986724854,
+    0.4627404808998108,
+    1.0
+  ],
+  "config_snapshot": {
+    "attractor": {
+      "enabled": true,
+      "debug": false,
+      "attractive_heads_dir": "head-attractive",
+      "min_attractors": 1,
+      "max_attractors": 3,
+      "max_influence": 0,
+      "distance_weights": {
+        "MouthBind.scale.y": 1.5,
+        "MouthBind.scale.x": 1.5,
+        "NoseBind.scale.x": 1.5,
+        "nose_female_varGp01C": 1.5,
+        "nose_female_varGp01D": 1.2,
+        "nose_female_varGp01H": 1.5,
+        "nose_male_varGp01E": 1.5,
+        "nose_male_varGp01D": 1.5,
+        "JawBind.scale.x": 1.5,
+        "JawBind.rotation.x": 1.5
+      },
+      "exclude_params": []
+    },
+    "blendshapes": {
+      "variation_shapes": [
+        "jaw_female_varGp01A",
+        "jaw_female_varGp01B",
+        "jaw_female_varGp01D",
+        "jaw_female_varGp01F",
+        "jaw_female_varGp01H",
+        "jaw_female_varGp01K",
+        "jaw_male_varGp01A",
+        "jaw_male_varGp01D",
+        "jaw_male_varGp01E",
+        "jaw_male_varGp01H",
+        "jaw_male_varGp01K",
+        "jaw_male_varGp01L",
+        "lips_female_varGp01C",
+        "lips_female_varGp01D",
+        "lips_female_varGp01E",
+        "lips_female_varGp01F",
+        "lips_female_varGp01I",
+        "lips_female_varGp01J",
+        "lips_male_varGp01D",
+        "lips_male_varGp01F",
+        "lips_male_varGp01G",
+        "lips_male_varGp01H",
+        "lips_male_varGp01I",
+        "lips_male_varGp01K",
+        "nose_female_varGp01A",
+        "nose_female_varGp01C",
+        "nose_female_varGp01D",
+        "nose_female_varGp01F",
+        "nose_female_varGp01H",
+        "nose_female_varGp01K",
+        "nose_male_varGp01D",
+        "nose_male_varGp01E",
+        "nose_male_varGp01I",
+        "nose_male_varGp01K"
+      ],
+      "max_var_shapes": 2,
+      "max_variation": 0.2,
+      "variation_overrides": {},
+      "expression_shapes": [
+        "BROW_LOWERER_L",
+        "BROW_LOWERER_R",
+        "CHEEK_PUFF_L",
+        "CHEEK_PUFF_R",
+        "CHEEK_RAISER_L",
+        "CHEEK_RAISER_R",
+        "CHEEK_SUCK_L",
+        "CHEEK_SUCK_R",
+        "CHIN_DEPRESSOR_B",
+        "CHIN_RAISER_B",
+        "CHIN_RAISER_T",
+        "DIMPLER_L",
+        "DIMPLER_R",
+        "EYES_CLOSED_L",
+        "EYES_CLOSED_R",
+        "EYES_LOOK_DOWN_L",
+        "EYES_LOOK_DOWN_R",
+        "EYES_LOOK_LEFT_L",
+        "EYES_LOOK_LEFT_R",
+        "EYES_LOOK_RIGHT_L",
+        "EYES_LOOK_RIGHT_R",
+        "EYES_LOOK_UP_L",
+        "EYES_LOOK_UP_R",
+        "INNER_BROW_CONTRACTOR_L",
+        "INNER_BROW_CONTRACTOR_R",
+        "INNER_BROW_RAISER_L",
+        "INNER_BROW_RAISER_R",
+        "JAW_COMPRESSOR",
+        "JAW_DROP",
+        "JAW_RETREAT",
+        "JAW_SIDEWAYS_LEFT",
+        "JAW_SIDEWAYS_RIGHT",
+        "JAW_THRUST",
+        "LID_TIGHTENER_L",
+        "LID_TIGHTENER_R",
+        "LIPS_TOWARD",
+        "LIP_CORNER_DEPRESSOR_L",
+        "LIP_CORNER_DEPRESSOR_R",
+        "LIP_CORNER_PULLER_L",
+        "LIP_CORNER_PULLER_R",
+        "LIP_FUNNELER_LB",
+        "LIP_FUNNELER_LT",
+        "LIP_FUNNELER_RB",
+        "LIP_FUNNELER_RT",
+        "LIP_PRESSOR_L",
+        "LIP_PRESSOR_R",
+        "LIP_PUCKER_L",
+        "LIP_PUCKER_R",
+        "LIP_STRETCHER_L",
+        "LIP_STRETCHER_R",
+        "LIP_SUCK_LB",
+        "LIP_SUCK_LT",
+        "LIP_SUCK_RB",
+        "LIP_SUCK_RT",
+        "LIP_TIGHTENER_L",
+        "LIP_TIGHTENER_R",
+        "LOWER_LIP_DEPRESSOR_L",
+        "LOWER_LIP_DEPRESSOR_R",
+        "MOUTH_LEFT",
+        "MOUTH_LOWERER",
+        "MOUTH_RAISER",
+        "MOUTH_RIGHT",
+        "NOSE_WRINKLER_L",
+        "NOSE_WRINKLER_R",
+        "OUTER_BROW_RAISER_L",
+        "OUTER_BROW_RAISER_R",
+        "UPPER_LID_RAISER_L",
+        "UPPER_LID_RAISER_R",
+        "UPPER_LIP_RAISER_L",
+        "UPPER_LIP_RAISER_R"
+      ],
+      "expression_max": 0,
+      "expression_overrides": {
+        "CHEEK_PUFF_L": 0.3,
+        "CHEEK_PUFF_R": 0.3
+      },
+      "independent_shapes": {
+        "nose_male_varGp01G": {
+          "min": 0,
+          "max": 0.2,
+          "mirror_sides": false
+        }
+      }
+    },
+    "chaos_joints": {
+      "joint_names": [
+        "JawBind",
+        "MouthBind",
+        "MouthInnerBind",
+        "NoseBind",
+        "LeftBrowBind",
+        "RightBrowBind",
+        "LeftEyeSocketBind",
+        "RightEyeSocketBind",
+        "FaceBind",
+        "LeftCheekBind",
+        "RightCheekBind",
+        "LeftCheekBoneBind",
+        "RightCheekBoneBind"
+      ],
+      "transform_max": 0.2,
+      "rotate_max": 10,
+      "scale_max": 0.2,
+      "enable_scale": true,
+      "overrides": {
+        "FaceBind.location": 0.005,
+        "FaceBind.rotation": 0,
+        "FaceBind.scale": 0.02,
+        "JawBind.scale.x": {
+          "min": -0.1,
+          "max": 0.1
+        },
+        "JawBind.scale.y": {
+          "min": 0,
+          "max": 0.25
+        },
+        "JawBind.scale.z": {
+          "min": 0,
+          "max": 0.05
+        },
+        "JawBind.location.x": 0,
+        "JawBind.location.y": {
+          "min": 0,
+          "max": 0.35
+        },
+        "JawBind.location.z": {
+          "min": -0.05,
+          "max": 0
+        },
+        "JawBind.rotation.x": 0.015,
+        "JawBind.rotation.y": 0,
+        "JawBind.rotation.z": 0,
+        "MouthBind.scale.x": {
+          "min": -0.1,
+          "max": 0.1
+        },
+        "MouthBind.scale.y": {
+          "min": -0.05,
+          "max": 0.05
+        },
+        "MouthBind.scale.z": {
+          "min": -0.1,
+          "max": 0.1
+        },
+        "MouthBind.location.x": 0,
+        "MouthBind.location.y": 0.05,
+        "MouthBind.location.z": 0.15,
+        "MouthBind.rotation": 0,
+        "MouthInnerBind.scale.x": {
+          "min": -0.1,
+          "max": 0.1
+        },
+        "MouthInnerBind.scale.y": {
+          "min": -0.075,
+          "max": 0.075
+        },
+        "MouthInnerBind.scale.z": 0,
+        "MouthInnerBind.location.x": 0,
+        "MouthInnerBind.location.y": 0.0025,
+        "MouthInnerBind.location.z": 0,
+        "MouthInnerBind.rotation": 0,
+        "NoseBind.scale.x": {
+          "min": -0.2,
+          "max": 0.1
+        },
+        "NoseBind.scale.y": {
+          "min": 0,
+          "max": 0.2
+        },
+        "NoseBind.scale.z": {
+          "min": 0,
+          "max": 0.1
+        },
+        "NoseBind.location.x": 0,
+        "NoseBind.location.y": {
+          "min": -0.2,
+          "max": 0.1
+        },
+        "NoseBind.location.z": 0.0325,
+        "NoseBind.rotation.x": {
+          "min": -4,
+          "max": 0
+        },
+        "NoseBind.rotation.y": 0,
+        "NoseBind.rotation.z": 0,
+        "LeftBrowBind.scale.x": {
+          "min": -0.1,
+          "max": 0.1
+        },
+        "LeftBrowBind.scale.y": {
+          "min": -0.25,
+          "max": 0.25
+        },
+        "LeftBrowBind.scale.z": 0,
+        "LeftBrowBind.location.x": 0.001,
+        "LeftBrowBind.location.y": 0,
+        "LeftBrowBind.location.z": 0,
+        "LeftBrowBind.rotation.x": 0,
+        "LeftBrowBind.rotation.y": 0,
+        "LeftBrowBind.rotation.z": 0,
+        "LeftEyeSocketBind.scale.x": {
+          "min": -0.05,
+          "max": 0.15
+        },
+        "LeftEyeSocketBind.scale.y": {
+          "min": -0.3,
+          "max": -0.1
+        },
+        "LeftEyeSocketBind.scale.z": {
+          "min": -0.1,
+          "max": 0.1
+        },
+        "LeftEyeSocketBind.location.x": 0.01,
+        "LeftEyeSocketBind.location.y": 0.2,
+        "LeftEyeSocketBind.location.z": 0,
+        "LeftEyeSocketBind.rotation.x": 0,
+        "LeftEyeSocketBind.rotation.y": 0,
+        "LeftEyeSocketBind.rotation.z": {
+          "min": -9,
+          "max": 9
+        },
+        "NeckBind.scale.x": {
+          "min": -0.2,
+          "max": 0.25
+        },
+        "NeckBind.scale.y": 0,
+        "NeckBind.scale.z": {
+          "min": -0.13,
+          "max": 0.15
+        },
+        "NeckBind.location": 0,
+        "NeckBind.rotation": 0,
+        "LeftCheekBind.location.x": 0.2,
+        "LeftCheekBind.location.y": 0.2,
+        "LeftCheekBind.location.z": 0.2,
+        "LeftCheekBoneBind.location": 0.1,
+        "LeftCheekBoneBind.rotation": 6,
+        "LeftCheekBoneBind.scale": 0.1
+      },
+      "bone_properties": {
+        "var_iris_shrink": {
+          "min": 0.2,
+          "max": 0.8,
+          "target_bone": "LeftEyeSocketBind"
+        },
+        "var_iris_grow": {
+          "min": 0,
+          "max": 0,
+          "target_bone": "LeftEyeSocketBind"
+        },
+        "var_pupil_shrink": {
+          "min": 0,
+          "max": 0.5,
+          "target_bone": "LeftEyeSocketBind"
+        },
+        "var_pupil_grow": {
+          "min": 0,
+          "max": 0,
+          "target_bone": "LeftEyeSocketBind"
+        }
+      }
+    },
+    "cleanup": {
+      "paths": {
+        "assets_blend_path": "gen13.blend"
+      },
+      "eye_wedge_R_name": "eye_wedge_R",
+      "eye_wedge_L_name": "eye_wedge_L",
+      "mouth_bag_group": "MouthBag",
+      "mouth_sew_indices": {
+        "21": 22,
+        "195": 193,
+        "196": 192,
+        "218": 852,
+        "303": 194,
+        "417": 402,
+        "665": 677,
+        "1075": 1073,
+        "1076": 1072,
+        "1098": 1707,
+        "1183": 1074,
+        "1297": 1282,
+        "1527": 1539
+      },
+      "remove_mouth_bag": true,
+      "sew_lips": false,
+      "snap_lips": true,
+      "join_merge_distance": 1e-07,
+      "lip_sew_merge_distance": 1e-08,
+      "seam_weld_distance": 1e-07
+    },
+    "constraints": {
+      "hard_clamps": {
+        "JawBind.location.y": {
+          "min": -1,
+          "max": -0.05
+        },
+        "JawBind.rotation.x": {
+          "min": -8,
+          "max": 8
+        },
+        "JAW_DROP": {
+          "min": 0,
+          "max": 0.8
+        },
+        "MOUTH_LOWERER": {
+          "min": 0,
+          "max": 0.5
+        },
+        "JawBind.location.z": {
+          "min": -1,
+          "max": 1,
+          "muted": false
+        },
+        "NoseBind.location.z": {
+          "min": 0,
+          "max": 1,
+          "muted": false
+        },
+        "NoseBind.location.y": {
+          "min": -1,
+          "max": 0.4,
+          "muted": false
+        }
+      },
+      "relational_rules": [
+        {
+          "type": "sandwich_clamp",
+          "title": "Mouth Y stays sandwiched between nose and jaw Y",
+          "muted": false,
+          "target": "MouthBind.location.y",
+          "floor": "NoseBind.location.y",
+          "ceiling": "JawBind.location.y",
+          "tolerance": 0.3,
+          "target_sign": -1
+        },
+        {
+          "type": "scale_follow",
+          "title": "Mouth follows jaw forward/back",
+          "muted": false,
+          "target": "MouthBind.location.z",
+          "source": "JawBind.location.z",
+          "factor": 0.3
+        },
+        {
+          "type": "conditional_clamp",
+          "title": "Suppress mouth lowerer when jaw drops",
+          "muted": false,
+          "target": "MOUTH_LOWERER",
+          "condition": {
+            "param": "JAW_DROP",
+            "above": 0.3
+          },
+          "max": 0.2
+        },
+        {
+          "type": "mutual_dampen",
+          "title": "Jaw drop and jaw thrust share a combined budget",
+          "muted": false,
+          "params": [
+            "JAW_DROP",
+            "JAW_THRUST"
+          ],
+          "max_combined": 1
+        },
+        {
+          "type": "ratio_clamp",
+          "title": "Nose Z/X ratio cap (narrow-tall limit)",
+          "muted": false,
+          "numerator": "NoseBind.scale.z",
+          "denominator": "NoseBind.scale.x",
+          "max_ratio": 1.6
+        },
+        {
+          "type": "product_clamp",
+          "title": "Nose Z*X product cap (wide-tall limit)",
+          "muted": false,
+          "param_a": "NoseBind.scale.z",
+          "param_b": "NoseBind.scale.x",
+          "max_product": 1.2
+        },
+        {
+          "type": "ratio_clamp",
+          "title": "Nose Y/X ratio cap (narrow-wide limit)",
+          "muted": false,
+          "numerator": "NoseBind.scale.y",
+          "denominator": "NoseBind.scale.x",
+          "max_ratio": 1
+        },
+        {
+          "type": "product_clamp",
+          "title": "Nose Y*X product cap (wide-tall limit)",
+          "muted": false,
+          "param_a": "NoseBind.scale.y",
+          "param_b": "NoseBind.scale.x",
+          "max_product": 1.15
+        },
+        {
+          "type": "conditional_bias",
+          "title": "Raise male nostril shape for upturned narrow noses",
+          "muted": true,
+          "direction": "raise",
+          "target": "nose_male_varGp01G",
+          "drivers": [
+            {
+              "param": "NoseBind.rotation.x",
+              "range": [
+                0,
+                -8
+              ],
+              "map": [
+                0,
+                1
+              ]
+            },
+            {
+              "param": "NoseBind.scale.x",
+              "range": [
+                1,
+                0.7
+              ],
+              "map": [
+                0,
+                1
+              ]
+            }
+          ],
+          "combine": "min",
+          "max_bias": 1
+        },
+        {
+          "type": "conditional_bias",
+          "title": "Suppress male nostril shape for downturned noses",
+          "muted": true,
+          "direction": "suppress",
+          "target": "nose_male_varGp01G",
+          "drivers": [
+            {
+              "param": "NoseBind.rotation.x",
+              "range": [
+                0,
+                8
+              ],
+              "map": [
+                0,
+                1
+              ]
+            }
+          ],
+          "combine": "min",
+          "max_bias": 1
+        },
+        {
+          "type": "conditional_bias",
+          "title": "Suppress male nostril shape for wide noses",
+          "muted": true,
+          "direction": "suppress",
+          "target": "nose_male_varGp01G",
+          "drivers": [
+            {
+              "param": "NoseBind.scale.y",
+              "range": [
+                1,
+                1.25
+              ],
+              "map": [
+                0,
+                0.3
+              ]
+            }
+          ],
+          "combine": "min",
+          "max_bias": 1
+        },
+        {
+          "type": "cross_proportion_clamp",
+          "title": "Cap nose Y scale when downturned",
+          "muted": false,
+          "if": {
+            "param": "NoseBind.rotation.x",
+            "above": 4
+          },
+          "and": {
+            "param": "NoseBind.scale.y",
+            "above": 1.1
+          },
+          "then_clamp": {
+            "param": "NoseBind.scale.y",
+            "max": 1.1
+          }
+        },
+        {
+          "type": "cross_proportion_clamp",
+          "title": "Cap nose rotation when nose is wide",
+          "muted": true,
+          "if": {
+            "param": "NoseBind.scale.y",
+            "above": 1.15
+          },
+          "and": {
+            "param": "NoseBind.rotation.x",
+            "above": 2
+          },
+          "then_clamp": {
+            "param": "NoseBind.rotation.x",
+            "max": 2
+          }
+        },
+        {
+          "type": "conditional_bias",
+          "title": "Suppress female nostril shape for upturned narrow noses",
+          "muted": true,
+          "direction": "suppress",
+          "target": "nose_female_varGp01K",
+          "drivers": [
+            {
+              "param": "NoseBind.rotation.x",
+              "range": [
+                0,
+                -8
+              ],
+              "map": [
+                0,
+                1
+              ]
+            },
+            {
+              "param": "NoseBind.scale.x",
+              "range": [
+                1,
+                0.7
+              ],
+              "map": [
+                0,
+                1
+              ]
+            }
+          ],
+          "combine": "min",
+          "max_bias": 1
+        },
+        {
+          "type": "cross_proportion_clamp",
+          "title": "Cap eye socket width when nose is narrow",
+          "muted": false,
+          "if": {
+            "param": "LeftEyeSocketBind.scale.x",
+            "above": 1.05
+          },
+          "and": {
+            "param": "NoseBind.scale.x",
+            "below": 1
+          },
+          "then_clamp": {
+            "param": "LeftEyeSocketBind.scale.x",
+            "max": 1.2
+          }
+        },
+        {
+          "type": "cross_proportion_clamp",
+          "title": "Cap mouth width when nose is narrow",
+          "muted": false,
+          "if": {
+            "param": "MouthBind.scale.x",
+            "above": 1.1
+          },
+          "and": {
+            "param": "NoseBind.scale.x",
+            "below": 1
+          },
+          "then_clamp": {
+            "param": "MouthBind.scale.x",
+            "max": 1.1
+          }
+        },
+        {
+          "type": "ratio_clamp",
+          "title": "suppress mouth scale height when mouth is wide",
+          "muted": false,
+          "numerator": "MouthBind.scale.y",
+          "denominator": "MouthBind.scale.x",
+          "max_ratio": 1.7
+        },
+        {
+          "type": "ratio_clamp",
+          "title": "Prevent mouth from being too wide when tall",
+          "muted": false,
+          "numerator": "MouthBind.scale.x",
+          "denominator": "MouthBind.scale.y",
+          "max_ratio": 1.7
+        },
+        {
+          "type": "winner_take_all",
+          "title": "Iris grow and shrink are mutually exclusive — largest wins",
+          "muted": false,
+          "params": [
+            "var_iris_grow",
+            "var_iris_shrink"
+          ]
+        },
+        {
+          "type": "winner_take_all",
+          "title": "Pupil grow and shrink are mutually exclusive — largest wins",
+          "muted": false,
+          "params": [
+            "var_pupil_grow",
+            "var_pupil_shrink"
+          ]
+        },
+        {
+          "type": "ratio_clamp",
+          "title": "Lower cheek X scale cannot exceed upper cheekbone",
+          "muted": false,
+          "numerator": "LeftCheekBind.scale.x",
+          "denominator": "LeftCheekBoneBind.scale.x",
+          "max_ratio": 1
+        },
+        {
+          "type": "scale_follow",
+          "title": "Jaw scale follows cheek location",
+          "muted": true,
+          "target": "LeftCheekBind.scale.x",
+          "source": "JawBind.scale.x",
+          "factor": 0.5
+        },
+        {
+          "type": "delta_follow",
+          "title": "Nose follows jaw length in z direction",
+          "muted": false,
+          "target": "NoseBind.location.y",
+          "source": "JawBind.scale.y",
+          "neutral": 1,
+          "factor": -1.5
+        },
+        {
+          "type": "delta_follow",
+          "title": "Mouth follows jaw length in z direction",
+          "muted": false,
+          "target": "MouthBind.location.y",
+          "source": "JawBind.scale.y",
+          "neutral": 1,
+          "factor": 3
+        }
+      ]
+    },
+    "drivers": {
+      "drivers": [
+        {
+          "target": {
+            "object": "eye_wedge_L",
+            "bone": null,
+            "property": "Shrinkwrap",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "Shrinkwrap",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_wedge_R",
+            "bone": null,
+            "property": "Shrinkwrap",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "Shrinkwrap",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_geo_hd_target",
+            "bone": null,
+            "property": "var_iris_shrink",
+            "shape_key": true
+          },
+          "source": {
+            "object": "ARMATURE",
+            "bone": "LeftEyeSocketBind",
+            "property": "var_iris_shrink"
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_geo_hd_target",
+            "bone": null,
+            "property": "var_iris_shrink",
+            "shape_key": true
+          },
+          "source": {
+            "object": "ARMATURE",
+            "bone": "LeftEyeSocketBind",
+            "property": "var_iris_shrink"
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_geo_hd_target",
+            "bone": null,
+            "property": "var_iris_grow",
+            "shape_key": true
+          },
+          "source": {
+            "object": "ARMATURE",
+            "bone": "LeftEyeSocketBind",
+            "property": "var_iris_grow"
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_geo_hd_target",
+            "bone": null,
+            "property": "var_iris_grow",
+            "shape_key": true
+          },
+          "source": {
+            "object": "ARMATURE",
+            "bone": "LeftEyeSocketBind",
+            "property": "var_iris_grow"
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_geo_hd_target",
+            "bone": null,
+            "property": "var_pupil_shrink",
+            "shape_key": true
+          },
+          "source": {
+            "object": "ARMATURE",
+            "bone": "LeftEyeSocketBind",
+            "property": "var_pupil_shrink"
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_geo_hd_target",
+            "bone": null,
+            "property": "var_pupil_shrink",
+            "shape_key": true
+          },
+          "source": {
+            "object": "ARMATURE",
+            "bone": "LeftEyeSocketBind",
+            "property": "var_pupil_shrink"
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_geo_hd_target",
+            "bone": null,
+            "property": "var_pupil_grow",
+            "shape_key": true
+          },
+          "source": {
+            "object": "ARMATURE",
+            "bone": "LeftEyeSocketBind",
+            "property": "var_pupil_grow"
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_geo_hd_target",
+            "bone": null,
+            "property": "var_pupil_grow",
+            "shape_key": true
+          },
+          "source": {
+            "object": "ARMATURE",
+            "bone": "LeftEyeSocketBind",
+            "property": "var_pupil_grow"
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "auth_african_f_0022",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_african_f_0022",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "auth_african_f_0022",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_african_f_0022",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_geo_hd_target",
+            "bone": null,
+            "property": "auth_african_f_0022",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_african_f_0022",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_geo_hd_target",
+            "bone": null,
+            "property": "auth_african_f_0022",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_african_f_0022",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "auth_latino_f_0006",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_latino_f_0006",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "auth_latino_f_0006",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_latino_f_0006",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_geo_hd_target",
+            "bone": null,
+            "property": "auth_latino_f_0006",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_latino_f_0006",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_geo_hd_target",
+            "bone": null,
+            "property": "auth_latino_f_0006",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_latino_f_0006",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "auth_asian_f_0013",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_asian_f_0013",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "auth_asian_f_0013",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_asian_f_0013",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_geo_hd_target",
+            "bone": null,
+            "property": "auth_asian_f_0013",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_asian_f_0013",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_geo_hd_target",
+            "bone": null,
+            "property": "auth_asian_f_0013",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_asian_f_0013",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "auth_middleeast_m_0025",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_middleeast_m_0025",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "auth_middleeast_m_0025",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_middleeast_m_0025",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_geo_hd_target",
+            "bone": null,
+            "property": "auth_middleeast_m_0025",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_middleeast_m_0025",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_geo_hd_target",
+            "bone": null,
+            "property": "auth_middleeast_m_0025",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_middleeast_m_0025",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "auth_middleeast_m_0011",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_middleeast_m_0011",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "auth_middleeast_m_0011",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_middleeast_m_0011",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_geo_hd_target",
+            "bone": null,
+            "property": "auth_middleeast_m_0011",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_middleeast_m_0011",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_geo_hd_target",
+            "bone": null,
+            "property": "auth_middleeast_m_0011",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_middleeast_m_0011",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "auth_middleeast_f_0028",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_middleeast_f_0028",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "auth_middleeast_f_0028",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_middleeast_f_0028",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_geo_hd_target",
+            "bone": null,
+            "property": "auth_middleeast_f_0028",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_middleeast_f_0028",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_geo_hd_target",
+            "bone": null,
+            "property": "auth_middleeast_f_0028",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_middleeast_f_0028",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "auth_middleeast_f_0009",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_middleeast_f_0009",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "auth_middleeast_f_0009",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_middleeast_f_0009",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_geo_hd_target",
+            "bone": null,
+            "property": "auth_middleeast_f_0009",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_middleeast_f_0009",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_geo_hd_target",
+            "bone": null,
+            "property": "auth_middleeast_f_0009",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_middleeast_f_0009",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "auth_caucasian_m_0025",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_caucasian_m_0025",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "auth_caucasian_m_0025",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_caucasian_m_0025",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_geo_hd_target",
+            "bone": null,
+            "property": "auth_caucasian_m_0025",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_caucasian_m_0025",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_geo_hd_target",
+            "bone": null,
+            "property": "auth_caucasian_m_0025",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_caucasian_m_0025",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "auth_asian_m_0016",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_asian_m_0016",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "auth_asian_m_0016",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_asian_m_0016",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_geo_hd_target",
+            "bone": null,
+            "property": "auth_asian_m_0016",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_asian_m_0016",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_geo_hd_target",
+            "bone": null,
+            "property": "auth_asian_m_0016",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_asian_m_0016",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "auth_asian_f_0022",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_asian_f_0022",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "auth_asian_f_0022",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_asian_f_0022",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_geo_hd_target",
+            "bone": null,
+            "property": "auth_asian_f_0022",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_asian_f_0022",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_geo_hd_target",
+            "bone": null,
+            "property": "auth_asian_f_0022",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_asian_f_0022",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "auth_asian_f_0014",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_asian_f_0014",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "auth_asian_f_0014",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_asian_f_0014",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_geo_hd_target",
+            "bone": null,
+            "property": "auth_asian_f_0014",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_asian_f_0014",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_geo_hd_target",
+            "bone": null,
+            "property": "auth_asian_f_0014",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_asian_f_0014",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "auth_african_f_0023",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_african_f_0023",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "auth_african_f_0023",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_african_f_0023",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_geo_hd_target",
+            "bone": null,
+            "property": "auth_african_f_0023",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_african_f_0023",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_geo_hd_target",
+            "bone": null,
+            "property": "auth_african_f_0023",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_african_f_0023",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "auth_latino_f_0020",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_latino_f_0020",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "auth_latino_f_0020",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_latino_f_0020",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_geo_hd_target",
+            "bone": null,
+            "property": "auth_latino_f_0020",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_latino_f_0020",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_geo_hd_target",
+            "bone": null,
+            "property": "auth_latino_f_0020",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_latino_f_0020",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "auth_latino_f_0058",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_latino_f_0058",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "auth_latino_f_0058",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_latino_f_0058",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_geo_hd_target",
+            "bone": null,
+            "property": "auth_latino_f_0058",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_latino_f_0058",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_geo_hd_target",
+            "bone": null,
+            "property": "auth_latino_f_0058",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_latino_f_0058",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "auth_latino_m_0017",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_latino_m_0017",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "auth_latino_m_0017",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_latino_m_0017",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_geo_hd_target",
+            "bone": null,
+            "property": "auth_latino_m_0017",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_latino_m_0017",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_geo_hd_target",
+            "bone": null,
+            "property": "auth_latino_m_0017",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_latino_m_0017",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "auth_latino_m_0049",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_latino_m_0049",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "auth_latino_m_0049",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_latino_m_0049",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_geo_hd_target",
+            "bone": null,
+            "property": "auth_latino_m_0049",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_latino_m_0049",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_geo_hd_target",
+            "bone": null,
+            "property": "auth_latino_m_0049",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "auth_latino_m_0049",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "eyes_female_varGp01A",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_female_varGp01A",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "eyes_female_varGp01A",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_female_varGp01A",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "eyes_female_varGp01B",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_female_varGp01B",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "eyes_female_varGp01B",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_female_varGp01B",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "eyes_female_varGp01C",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_female_varGp01C",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "eyes_female_varGp01C",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_female_varGp01C",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "eyes_female_varGp01E",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_female_varGp01E",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "eyes_female_varGp01E",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_female_varGp01E",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "eyes_female_varGp01G",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_female_varGp01G",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "eyes_female_varGp01G",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_female_varGp01G",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "eyes_female_varGp01I",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_female_varGp01I",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "eyes_female_varGp01I",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_female_varGp01I",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "eyes_male_varGp01D",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_male_varGp01D",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "eyes_male_varGp01D",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_male_varGp01D",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "eyes_male_varGp01F",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_male_varGp01F",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "eyes_male_varGp01F",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_male_varGp01F",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "eyes_male_varGp01H",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_male_varGp01H",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "eyes_male_varGp01H",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_male_varGp01H",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "eyes_male_varGp01J",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_male_varGp01J",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "eyes_male_varGp01J",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_male_varGp01J",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "eyes_male_varGp01K",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_male_varGp01K",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "eyes_male_varGp01K",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_male_varGp01K",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_L_boolean",
+            "bone": null,
+            "property": "eyes_male_varGp01L",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_male_varGp01L",
+            "shape_key": true
+          }
+        },
+        {
+          "target": {
+            "object": "eye_R_boolean",
+            "bone": null,
+            "property": "eyes_male_varGp01L",
+            "shape_key": true
+          },
+          "source": {
+            "object": "headOnly_geo",
+            "bone": null,
+            "property": "eyes_male_varGp01L",
+            "shape_key": true
+          }
+        }
+      ]
+    },
+    "export": {
+      "head_bake_resolution": 2048,
+      "eye_wedge_bake_resolution": 512,
+      "bake_samples": 4,
+      "bake_margin": 8,
+      "glb_format": "GLB",
+      "frame_range": [
+        1,
+        10
+      ],
+      "head_bake_material_name": "head_mat",
+      "eye_wedge_R_material_name": "eye_wedge_R",
+      "eye_wedge_L_material_name": "eye_wedge_L",
+      "include_eyes": false,
+      "include_brows": false,
+      "include_lashes": false,
+      "bake_wedge_texture_direct": false,
+      "copy_eye_projection": false,
+      "bake_brow_texture_direct": false,
+      "bake_lash_texture_direct": false,
+      "include_hd_eyes": true,
+      "include_boolean_cutters": true,
+      "bake_hd_eye_texture_direct": true,
+      "hd_eye_material_name": "eye_mat",
+      "hd_eye_bake_resolution": 512,
+      "clean_head_on_export": true
+    },
+    "featureFlags": {
+      "wedgeProjection": false
+    },
+    "materials": {
+      "paths": {
+        "skin_material_blend": "gen13.blend"
+      },
+      "skin_material_name": "head_mat",
+      "eye_material_name": "eye_mat",
+      "final_color_randomness": 0.05,
+      "hair-color-node": "hair-color",
+      "hair_color_randomness": 0.05,
+      "hair_color_defaults": [
+        "#000000",
+        "#321608",
+        "#5E2C05",
+        "#87580A",
+        "#EFBC78",
+        "#E9E095",
+        "#321608",
+        "#F4F4CF",
+        "#963624",
+        "#AF2E1A"
+      ],
+      "lip-color-node": "lip-color",
+      "lip_color_randomness": 0.6,
+      "lip_color_override": 0.0
+    },
+    "modifiers": {
+      "smooth_corrective": {
+        "factor": 0.6,
+        "iterations": 5,
+        "scale": 1.0,
+        "smooth_type": "SIMPLE",
+        "use_only_smooth": false,
+        "use_pin_boundary": false,
+        "rest_source": "ORCO"
+      }
+    },
+    "projection": {
+      "paths": {
+        "assets_blend_path": "gen13.blend",
+        "baked-sequence-R-path": "output-pipeline/eye-bake-sequence-R/",
+        "baked-sequence-L-path": "output-pipeline/eye-bake-sequence-L/"
+      },
+      "eye_wedge_R_bake_name": "eye_wedge_R_bake",
+      "eye_wedge_L_bake_name": "eye_wedge_L_bake",
+      "hd_eye_R_name": "eye_R_geo_hd_target",
+      "hd_eye_L_name": "eye_L_geo_hd_target",
+      "R_projector_name": "eye_wedge_R_projector",
+      "L_projector_name": "eye_wedge_L_projector",
+      "eye-baked-sequence-name": "baked-sequence",
+      "eye-bake-diffuse-name": "bake-diffuse",
+      "eye-bake-switch-name": "bake-switch",
+      "eye-color-name": "eye-color",
+      "eye-bake-settings": {
+        "render_engine": "CYCLES",
+        "bake_type": "DIFFUSE",
+        "use_pass_direct": false,
+        "use_pass_indirect": false,
+        "use_pass_color": true,
+        "use_selected_to_active": false,
+        "use_cage": false,
+        "cage_extrusion": 0.05,
+        "max_ray_distance": 0.2,
+        "target": "IMAGE_TEXTURES",
+        "margin_type": "EXTEND",
+        "margin": 16,
+        "use_clear": true,
+        "save_mode": "EXTERNAL"
+      }
+    },
+    "rerandomize": {
+      "enabled": true,
+      "seed": null,
+      "reapply_constraints": true,
+      "targets": [
+        "LeftEyeSocketBind.location.x",
+        "LeftEyeSocketBind.location.y",
+        "LeftEyeSocketBind.location.z",
+        "LeftEyeSocketBind.rotation.x",
+        "LeftEyeSocketBind.rotation.y",
+        "LeftEyeSocketBind.rotation.z",
+        "LeftEyeSocketBind.scale.x",
+        "LeftEyeSocketBind.scale.y",
+        "LeftEyeSocketBind.scale.z"
+      ]
+    },
+    "runner": {
+      "frame_count": 10,
+      "seed": null,
+      "paths": {
+        "fbx": "genericGenie-0013-unified_rig.fbx",
+        "gen13_blend": "gen13.blend",
+        "save_variation_blend": "output-pipeline/Pipeline_01_Variation.blend",
+        "save_eye_bake_blend": "output-pipeline/Pipeline_02_EyeBake.blend",
+        "save_water_tight_blend": "output-pipeline/Pipeline_03_Watertight.blend",
+        "save_export_blend": "output-pipeline/Pipeline_04_Export.blend",
+        "issues_dir": "head-issues",
+        "good_dir": "head-good",
+        "attractive_dir": "head-attractive",
+        "final_output_dir": "output-data-set"
+      },
+      "hideCollection": [
+        "_BrowControlShape",
+        "_eyeControlShape",
+        "_JawControlShape",
+        "_LowerCheek",
+        "_mouthControlShape",
+        "_NoseBSGuideMax",
+        "_NoseBSGuideMin",
+        "_noseControlShape",
+        "_NoseStaticGuideMax",
+        "_NoseStaticGuideMin",
+        "_UpperCheek"
+      ]
+    },
+    "texture_swap": {
+      "channels": {
+        "brow": {
+          "pool_path": "input-pipeline/texture/brow",
+          "sequence_path": "output-pipeline/brow_sequence",
+          "node_name": "brow-sequence",
+          "percentage": 1,
+          "enabled": true
+        },
+        "lash": {
+          "pool_path": "input-pipeline/texture/lash",
+          "sequence_path": "output-pipeline/lash_sequence",
+          "node_name": "lash-sequence",
+          "percentage": 1,
+          "enabled": true
+        },
+        "lip": {
+          "pool_path": "input-pipeline/texture/lip",
+          "sequence_path": "output-pipeline/lip_sequence",
+          "node_name": "lip-sequence",
+          "percentage": 1,
+          "enabled": true
+        },
+        "beard": {
+          "pool_path": "input-pipeline/texture/beard",
+          "sequence_path": "output-pipeline/beard_sequence",
+          "node_name": "beard-sequence",
+          "percentage": 0.8,
+          "enabled": true
+        },
+        "nose": {
+          "pool_path": "input-pipeline/texture/nose",
+          "sequence_path": "output-pipeline/nose_sequence",
+          "node_name": "nose-sequence",
+          "percentage": 1,
+          "enabled": false
+        }
+      }
+    }
+  }
+}

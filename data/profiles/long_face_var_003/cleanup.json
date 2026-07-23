@@ -1,0 +1,29 @@
+{
+  "paths": {
+    "assets_blend_path": "gen13.blend"
+  },
+  "eye_wedge_R_name": "eye_wedge_R",
+  "eye_wedge_L_name": "eye_wedge_L",
+  "mouth_bag_group": "MouthBag",
+  "mouth_sew_indices": {
+    "21": 22,
+    "195": 193,
+    "196": 192,
+    "218": 852,
+    "303": 194,
+    "417": 402,
+    "665": 677,
+    "1075": 1073,
+    "1076": 1072,
+    "1098": 1707,
+    "1183": 1074,
+    "1297": 1282,
+    "1527": 1539
+  },
+  "remove_mouth_bag": true,
+  "sew_lips": false,
+  "snap_lips": true,
+  "join_merge_distance": 1e-07,
+  "lip_sew_merge_distance": 1e-08,
+  "seam_weld_distance": 1e-07
+}

@@ -44,6 +44,7 @@ TraceMode = Literal["randomize_face", "rerandomize"]
 STAGE_GENERATION = "generation"
 STAGE_ATTRACTOR = "attractor"
 STAGE_CONSTRAINTS = "constraints"
+STAGE_EYE_FIT = "eye_fit"
 STAGE_RERANDOMIZE = "rerandomize"
 STAGE_READ = "read"
 STAGE_RESAMPLE = "resample"
@@ -342,6 +343,28 @@ def collect_param_stages(cfg: "PipelineConfig", key: str) -> dict[str, Any]:
         },
         "notes": [],
     })
+
+    eye_fit = cfg.eye_fit
+    if eye_fit.is_depth_param(key):
+        stages.append({
+            "stage_id": STAGE_EYE_FIT,
+            "label": "Eye Fit",
+            "config_file": "eye_fit",
+            "has_config": eye_fit.enabled,
+            "slice": {
+                "enabled": eye_fit.enabled,
+                "depth_axis": eye_fit.depth_axis,
+                "target_inset": eye_fit.target_inset,
+                "max_correction": eye_fit.max_correction,
+                "max_iters": eye_fit.max_iters,
+                "gain": eye_fit.gain,
+            },
+            "notes": (
+                ["Scene-measured socket depth after apply"]
+                if eye_fit.enabled
+                else ["Eye fit disabled"]
+            ),
+        })
 
     lo, hi = param_range(key, cfg) if key in registry else (0.0, 0.0)
     stages.append({
@@ -658,6 +681,21 @@ def simulate_pipeline(
             substeps,
         )
         steps.append(constrain_step)
+
+        if cfg.eye_fit.is_depth_param(key):
+            _append_step(
+                steps,
+                STAGE_EYE_FIT,
+                "Eye Fit",
+                flat,
+                key,
+                skipped=True,
+                detail=(
+                    "Scene-measured — not simulated offline"
+                    if cfg.eye_fit.enabled
+                    else "Eye fit disabled"
+                ),
+            )
 
         final = _step_value(flat, key)
         return {

@@ -26,6 +26,24 @@ DEFAULT_CONFIG_FILES: dict[str, dict[str, Any]] = {
         "hd_eye_bake_resolution": 512,
         "clean_head_on_export": False,
     },
+    "eye_fit": {
+        "enabled": True,
+        "depth_axis": "y",
+        "left_bone": "LeftEyeSocketBind",
+        "right_bone": "RightEyeSocketBind",
+        "target_inset": 0.002,
+        "max_correction": 0.05,
+        "max_iters": 4,
+        "gain": 0.5,
+        "tolerance": 0.0005,
+        "weight_min": 0.1,
+        "weight_max": 0.9,
+        "sample_radius": 0.08,
+        "eye_front_percentile": 0.9,
+        "outward_sign": 1.0,
+        "min_face_samples": 8,
+        "min_eye_samples": 8,
+    },
 }
 
 

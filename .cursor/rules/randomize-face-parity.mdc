@@ -40,6 +40,9 @@ VariationPipeline  ──── inner loop body ────▶  RandomizeFace  
 Both use the same list:
 `reset_frame(chaos_joints, [head_mesh, eye_wedge_R_obj, eye_wedge_L_obj, eye_wedge_R_bake, eye_wedge_L_bake, R_projector, L_projector, hd_eye_R, hd_eye_L, eyebrows_obj, eyelashes_obj], frame)`
 
+### Eye Fit
+After bones/shapes/bone props are applied, both call `fit_eye_sockets_on_frame(...)` when `eye_fit.json` → `enabled` (boolean cutters preferred for sampling). LoadHeadData does **not** run eye fit.
+
 ### Color
 A single shared color is used for both body and eyes — there is no separate eye color.
 

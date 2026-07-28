@@ -58,6 +58,11 @@ class TestCollectStages:
         ids = [s["stage_id"] for s in data["stages"]]
         assert ids == ["generation", "attractor", "constraints", "rerandomize"]
 
+    def test_eye_socket_depth_includes_eye_fit_stage(self, cfg: PipelineConfig):
+        data = collect_param_stages(cfg, "LeftEyeSocketBind.location.y")
+        ids = [s["stage_id"] for s in data["stages"]]
+        assert ids == ["generation", "attractor", "constraints", "eye_fit", "rerandomize"]
+
     def test_variation_shape_has_lottery_note(self, cfg: PipelineConfig):
         shape = cfg.blendshapes.variation_shapes[0]
         data = collect_param_stages(cfg, shape)

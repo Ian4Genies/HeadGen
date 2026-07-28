@@ -31,6 +31,7 @@ from .modifiers import SmoothCorrectiveConfig
 from .attractor import AttractorConfig
 from .texture_swap import TextureSwapConfig, TextureSwapSlot
 from .rerandomize import RerandomizeConfig
+from .eye_fit import EyeFitConfig
 
 
 def _load_json(path: Path) -> dict:
@@ -444,6 +445,7 @@ class PipelineConfig:
     texture_swap: TextureSwapConfig = field(default_factory=TextureSwapConfig)
     drivers: DriversConfig = field(default_factory=DriversConfig)
     rerandomize: RerandomizeConfig = field(default_factory=RerandomizeConfig)
+    eye_fit: EyeFitConfig = field(default_factory=EyeFitConfig)
     feature_flags: FeatureFlagsConfig = field(default_factory=FeatureFlagsConfig)
     chaos_joint_names: frozenset[str] = field(default_factory=lambda: frozenset(CHAOS_JOINT_NAMES))
     config_dir: Path = field(default_factory=lambda: Path("."))
@@ -574,6 +576,13 @@ def load_config(config_dir: str | Path, project_root: str | Path | None = None) 
     else:
         rerandomize = RerandomizeConfig()
 
+    # --- eye fit ---
+    eye_fit_path = d / "eye_fit.json"
+    if eye_fit_path.exists():
+        eye_fit = EyeFitConfig.from_dict(_load_json(eye_fit_path))
+    else:
+        eye_fit = EyeFitConfig()
+
     # --- feature flags ---
     flags_path = d / "featureFlags.json"
     if flags_path.exists():
@@ -595,6 +604,7 @@ def load_config(config_dir: str | Path, project_root: str | Path | None = None) 
         texture_swap=texture_swap,
         drivers=drivers,
         rerandomize=rerandomize,
+        eye_fit=eye_fit,
         feature_flags=feature_flags,
         chaos_joint_names=joint_names,
         config_dir=d,

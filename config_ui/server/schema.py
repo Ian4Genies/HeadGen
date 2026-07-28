@@ -19,6 +19,7 @@ CONFIG_FILES: list[dict[str, str]] = [
     {"id": "export", "label": "Export", "description": "Pipeline 03 GLB export and bake settings"},
     {"id": "texture_swap", "label": "Texture Swap", "description": "Image sequence overlay slots"},
     {"id": "rerandomize", "label": "Rerandomize", "description": "Selective post-pipeline re-randomization — Left* joint targets mirror to Right*"},
+    {"id": "eye_fit", "label": "Eye Fit", "description": "Per-frame socket depth fit after apply — measure rim vs eye, then re-constrain"},
 ]
 
 CONFIG_FILE_IDS = {entry["id"] for entry in CONFIG_FILES}

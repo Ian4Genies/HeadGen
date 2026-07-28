@@ -10,9 +10,9 @@ Before concluding how a flat param gets its final value, check the Value Trace v
 
 ## Canonical execution order
 
-**Randomize Face / Variation Pipeline:** generate → flatten → attract (optional) → constrain → unflatten/apply
+**Randomize Face / Variation Pipeline:** generate → flatten → attract (optional) → constrain → apply → eye fit (scene) → re-constrain → keyframe
 
-**Rerandomize Selected:** read flat → resample targets → constrain (if `reapply_constraints`) → partial apply — **no attractor**
+**Rerandomize Selected:** read flat → resample targets → constrain (if `reapply_constraints`) → partial apply → eye fit (if enabled) — **no attractor**
 
 ## Single source of truth
 

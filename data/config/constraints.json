@@ -30,6 +30,16 @@
       "min": -1,
       "max": 0.4,
       "muted": false
+    },
+    "LeftEyeSocketBind.location.y": {
+      "min": -0.15,
+      "max": 0.2,
+      "muted": false
+    },
+    "RightEyeSocketBind.location.y": {
+      "min": -0.15,
+      "max": 0.2,
+      "muted": false
     }
   },
   "relational_rules": [

@@ -72,6 +72,7 @@ from .core.snapshot import build_snapshot, save_snapshot, load_snapshot
 from .core.config import load_config, PipelineConfig
 from .core.rerandomize import resolve_targets, rerandomize_flat
 from .scene.rerandomize import read_flat_params_at_frame, apply_rerandomized_frame
+from .scene.eye_fit import fit_eye_sockets_on_frame, fit_eye_sockets_from_scene
 from .core.texture_swap import (
     ping_and_sync_sequence,
     load_manifest,
@@ -111,6 +112,23 @@ def _get_config() -> PipelineConfig:
         _debug_config(cfg)
 
     return cfg
+
+
+def _eye_fit_sample_meshes(
+    context,
+    *,
+    hd_eye_L=None,
+    hd_eye_R=None,
+    eye_geo_L=None,
+    eye_geo_R=None,
+):
+    """Prefer boolean cutters, then HD eyes, then geo eyes for gap sampling."""
+    boolean_L = get_ref(context, EYE_BOOLEAN_L)
+    boolean_R = get_ref(context, EYE_BOOLEAN_R)
+    return (
+        boolean_L or hd_eye_L or eye_geo_L,
+        boolean_R or hd_eye_R or eye_geo_R,
+    )
 
 
 def _debug_config(cfg: PipelineConfig) -> None:
@@ -724,6 +742,24 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
 
             #Bone custom properties (iris/pupil) — routed to blendshapes via driver system
             apply_bone_property_values(armature, constrained_bs[frame], cfg.variation.bone_properties, frame)
+
+            eye_sample_L, eye_sample_R = _eye_fit_sample_meshes(
+                context, hd_eye_L=hd_eye_L, hd_eye_R=hd_eye_R,
+                eye_geo_L=L_eye_obj, eye_geo_R=R_eye_obj,
+            )
+            constrained_transforms[frame], constrained_bs[frame] = fit_eye_sockets_on_frame(
+                context,
+                cfg,
+                armature=armature,
+                head_mesh=head_mesh,
+                eye_mesh_L=eye_sample_L,
+                eye_mesh_R=eye_sample_R,
+                transforms=constrained_transforms[frame],
+                shape_weights=constrained_bs[frame],
+                chaos_joints=chaos_joints,
+                frame=frame,
+            )
+
             #Skin / Body Color
             colors = attractive_colors[frame]
             rng_color = (color_rng.random(), color_rng.random(), color_rng.random(), 1.0)
@@ -939,6 +975,23 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
         #See properties in chaos_joints.json and drivers in drivers.json for linkedges
         apply_bone_property_values(armature, bs_weights, cfg.variation.bone_properties, frame)
 
+        eye_sample_L, eye_sample_R = _eye_fit_sample_meshes(
+            context, hd_eye_L=hd_eye_L, hd_eye_R=hd_eye_R,
+            eye_geo_L=get_ref(context, L_EYE), eye_geo_R=get_ref(context, R_EYE),
+        )
+        transforms, bs_weights = fit_eye_sockets_on_frame(
+            context,
+            cfg,
+            armature=armature,
+            head_mesh=head_mesh,
+            eye_mesh_L=eye_sample_L,
+            eye_mesh_R=eye_sample_R,
+            transforms=transforms,
+            shape_weights=bs_weights,
+            chaos_joints=chaos_joints,
+            frame=frame,
+        )
+
         #Skin / Body Color
         rng_color = (attractor_rng.random(), attractor_rng.random(), attractor_rng.random(), 1.0)
         randomize_head_material_color(head_mesh, rng_color, frame)
@@ -1059,6 +1112,30 @@ def _execute_rerandomize(operator, context, frames: list[int]) -> set[str]:
             return {"CANCELLED"}
         flat, apply_keys = rerandomize_flat(flat, resolved, rng, cfg)
         apply_rerandomized_frame(context, cfg, frame, flat, apply_keys)
+
+        if cfg.eye_fit.enabled:
+            armature = get_ref(context, ARMATURE)
+            head_mesh = get_ref(context, MESH)
+            chaos_joints = collect_chaos_joints(armature, cfg.chaos_joint_names)
+            context.scene.frame_set(frame)
+            eye_sample_L, eye_sample_R = _eye_fit_sample_meshes(
+                context,
+                hd_eye_L=get_ref(context, HD_EYE_L),
+                hd_eye_R=get_ref(context, HD_EYE_R),
+                eye_geo_L=get_ref(context, L_EYE),
+                eye_geo_R=get_ref(context, R_EYE),
+            )
+            fit_eye_sockets_from_scene(
+                context,
+                cfg,
+                armature=armature,
+                head_mesh=head_mesh,
+                eye_mesh_L=eye_sample_L,
+                eye_mesh_R=eye_sample_R,
+                chaos_joints=chaos_joints,
+                flat=flat,
+                frame=frame,
+            )
 
     operator.report(
         {"INFO"},

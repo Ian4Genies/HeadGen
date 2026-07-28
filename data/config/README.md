@@ -22,6 +22,7 @@ All paths in `runner.json` are relative to the `data/` directory.
 | `projection.json` | Eye projection bake objects: bake wedges, HD eyes, and projector empties |
 | `export.json` | Pipeline 03 (Export) settings: bake resolutions, GLB format, per-part include flags |
 | `rerandomize.json` | Selective post-pipeline re-randomization targets (joints, properties, shapes) |
+| `eye_fit.json` | Per-frame eye socket depth fit (measure face rim vs eye/cutter, then re-constrain) |
 | `featureFlags.json` | Boolean feature flags that gate optional pipeline behaviours |
 
 ---
@@ -828,6 +829,51 @@ Ranges come from existing `chaos_joints.json` and `blendshapes.json` overrides �
 When `reapply_constraints` is `true`, relational rules in `constraints.json` run after sampling and any params they adjust are written too.
 
 **Not supported in Phase 1:** colors, texture overlays, attractor nudging, or variation group-lottery reroll.
+
+---
+
+## eye_fit.json
+
+Per-frame eye socket depth correction. After joints/shapes are applied, measures the side-view gap between the face orbital rim and the boolean cutter / HD eye, writes a corrected `Left/RightEyeSocketBind.location.<depth_axis>`, then re-runs `constraints.json`.
+
+```json
+{
+  "enabled": true,
+  "depth_axis": "y",
+  "left_bone": "LeftEyeSocketBind",
+  "right_bone": "RightEyeSocketBind",
+  "target_inset": 0.002,
+  "max_correction": 0.05,
+  "max_iters": 4,
+  "gain": 0.5,
+  "tolerance": 0.0005,
+  "weight_min": 0.1,
+  "weight_max": 0.9,
+  "sample_radius": 0.08,
+  "eye_front_percentile": 0.9,
+  "outward_sign": 1.0,
+  "min_face_samples": 8,
+  "min_eye_samples": 8
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `enabled` | bool | When `false`, skip fit (generation + first constrain only) |
+| `depth_axis` | `"x"` \| `"y"` \| `"z"` | Bone local location axis used as depth (default `y`) |
+| `left_bone` / `right_bone` | string | Socket bones to measure and write |
+| `target_inset` | float | Desired recess of eye front behind face rim along outward axis |
+| `max_correction` | float | Per-iteration clamp on bone location delta |
+| `max_iters` | int | Measure → correct loop count before final constrain |
+| `gain` | float | Fraction of error applied each iteration (use `< 1` when bone moves lids and eyes together) |
+| `tolerance` | float | Stop early when `\|gap + target_inset\|` is within this |
+| `weight_min` / `weight_max` | float | Head verts used as rim must have socket bone weight in this range |
+| `sample_radius` | float | World-space radius around bone head for face/eye samples |
+| `eye_front_percentile` | float | 0–1; mean of the outermost eye-sample tail |
+| `outward_sign` | float | Flip to `-1` if increasing bone location pushes inward on your rig |
+| `min_face_samples` / `min_eye_samples` | int | Skip a side when fewer samples are found |
+
+Runs in Variation Pipeline, Randomize Face, and Rerandomize. Does **not** run on Load Head Data (snapshots restore exact poses).
 
 ---
 

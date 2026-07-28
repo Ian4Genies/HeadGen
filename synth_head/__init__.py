@@ -7,6 +7,7 @@ if "bpy" in locals():
     from .core import attractor as core_attractor
     from .core import config as core_config
     from .core import rerandomize as core_rerandomize
+    from .core import eye_fit as core_eye_fit
     from .core import snapshot as core_snapshot
     from .core import export as core_export
     from .core import texture_swap as core_texture_swap
@@ -28,6 +29,7 @@ if "bpy" in locals():
     from .scene import progress_overlay as scene_progress_overlay
     from .scene import export_pipeline as scene_export_pipeline
     from .scene import hide_collection as scene_hide_collection
+    from .scene import eye_fit as scene_eye_fit
 
     from .scene import rerandomize as scene_rerandomize
 
@@ -39,6 +41,7 @@ if "bpy" in locals():
     importlib.reload(constraints)
     importlib.reload(core_attractor)
     importlib.reload(core_texture_swap)
+    importlib.reload(core_eye_fit)
     importlib.reload(core_config)
     importlib.reload(core_rerandomize)
     importlib.reload(core_snapshot)
@@ -64,6 +67,7 @@ if "bpy" in locals():
     importlib.reload(scene_export_pipeline)
     importlib.reload(scene_progress)
     importlib.reload(scene_hide_collection)
+    importlib.reload(scene_eye_fit)
     importlib.reload(scene_rerandomize)
     importlib.reload(scene)
     importlib.reload(operators)

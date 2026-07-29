@@ -22,7 +22,6 @@ def build_snapshot(
     frame: int,
     label: str,
     note: str = "",
-    auth_identity: str | None = None, # For tagging authored heads.
     config_snapshot: dict | None = None,
     rules_raw: dict | None = None,
     skin_color: list[float] | None = None,
@@ -57,7 +56,6 @@ def build_snapshot(
         "timestamp": datetime.now().isoformat(timespec="seconds"),
         "frame": frame,
         "label": label,
-        "auth_identity": auth_identity,
         "note": note,
         "skin_color": skin_color if skin_color is not None else [0.0, 0.0, 0.0, 1.0],
         "texture_code": texture_code,

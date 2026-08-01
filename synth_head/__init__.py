@@ -11,6 +11,7 @@ if "bpy" in locals():
     from .core import snapshot as core_snapshot
     from .core import export as core_export
     from .core import texture_swap as core_texture_swap
+    from .core import brow_texture_fix as core_brow_texture_fix
     from . import scene
     from .scene import armature as scene_armature
     from .scene import drivers as scene_drivers
@@ -25,6 +26,7 @@ if "bpy" in locals():
     from .scene import export_glb as scene_export_glb
     from .scene import projection as scene_projection
     from .scene import texture_swap as scene_texture_swap
+    from .scene import brow_texture_fix as scene_brow_texture_fix
     from .scene import progress as scene_progress
     from .scene import progress_overlay as scene_progress_overlay
     from .scene import export_pipeline as scene_export_pipeline
@@ -41,6 +43,7 @@ if "bpy" in locals():
     importlib.reload(constraints)
     importlib.reload(core_attractor)
     importlib.reload(core_texture_swap)
+    importlib.reload(core_brow_texture_fix)
     importlib.reload(core_eye_fit)
     importlib.reload(core_config)
     importlib.reload(core_rerandomize)
@@ -63,6 +66,7 @@ if "bpy" in locals():
     importlib.reload(scene_export_glb)
     importlib.reload(scene_projection)
     importlib.reload(scene_texture_swap)
+    importlib.reload(scene_brow_texture_fix)
     importlib.reload(scene_progress_overlay)
     importlib.reload(scene_export_pipeline)
     importlib.reload(scene_progress)

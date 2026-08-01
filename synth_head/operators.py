@@ -75,6 +75,7 @@ from .scene.rerandomize import read_flat_params_at_frame, apply_rerandomized_fra
 from .scene.eye_fit import fit_eye_sockets_on_frame, fit_eye_sockets_from_scene
 from .core.texture_swap import (
     ping_and_sync_sequence,
+    rebuild_sequence,
     load_manifest,
     pick_texture_index,
     calc_offset,
@@ -90,6 +91,7 @@ from .scene.texture_swap import (
     read_sequence_offset,
     clear_sequence_offset_keyframes,
 )
+from .scene.brow_texture_fix import remap_brow_pool
 
 import shutil
 import types
@@ -1881,6 +1883,53 @@ class SYNTHHEAD_OT_RebakeEyeFrame(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class SYNTHHEAD_OT_FixBrowTextures(bpy.types.Operator):
+    """Remap brow pool textures from eyebrows_geo's UV onto headOnly_geo's UV"""
+
+    bl_idname = "synth_head.fix_brow_textures"
+    bl_label = "Synth Head: Fix Brow Textures"
+    bl_description = (
+        "Crop each hand-authored brow texture's artwork out of eyebrows_geo's UV "
+        "layout and reposition it to match headOnly_geo's UV, writing the result "
+        "to the brow channel's configured pool directory. The hand-authored "
+        "source PNGs are never modified."
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        cfg = _get_config()
+
+        slot = next((s for s in cfg.texture_swap.slots if s.key == "brow"), None)
+        if slot is None:
+            self.report({"ERROR"}, "No 'brow' channel found in texture_swap config")
+            return {"CANCELLED"}
+
+        source_dir = _PROJECT_DIR / "data" / "input-pipeline" / "texture" / "brow"
+        if not source_dir.is_dir():
+            self.report({"ERROR"}, f"Brow source directory not found: {source_dir}")
+            return {"CANCELLED"}
+
+        output_dir = Path(slot.pool_path)
+        if output_dir == source_dir:
+            self.report(
+                {"ERROR"},
+                "The brow channel's pool_path still points at the hand-authored "
+                f"source directory ({source_dir}). Point it at a separate output "
+                "directory (e.g. input-pipeline/texture/brow_fixed) in "
+                "texture_swap.json before running this operator.",
+            )
+            return {"CANCELLED"}
+
+        processed = remap_brow_pool(source_dir, output_dir)
+        rebuild_sequence(slot)
+
+        self.report(
+            {"INFO"},
+            f"Remapped {len(processed)} brow texture(s) from {source_dir} into {output_dir}",
+        )
+        return {"FINISHED"}
+
+
 class SYNTHHEAD_MT_main_menu(bpy.types.Menu):
     bl_idname = "SYNTHHEAD_MT_main_menu"
     bl_label = "Synth Head"
@@ -1907,6 +1956,8 @@ class SYNTHHEAD_MT_main_menu(bpy.types.Menu):
         layout.operator(SYNTHHEAD_OT_LoadEyeBakeSettings.bl_idname)
         layout.operator(SYNTHHEAD_OT_BakeEyes.bl_idname)
         layout.operator(SYNTHHEAD_OT_RebakeEyeFrame.bl_idname)
+        layout.separator()
+        layout.operator(SYNTHHEAD_OT_FixBrowTextures.bl_idname)
 
 
 def _draw_menu(self, _context):
@@ -1932,5 +1983,6 @@ CLASSES = [
     SYNTHHEAD_OT_LoadEyeBakeSettings,
     SYNTHHEAD_OT_BakeEyes,
     SYNTHHEAD_OT_RebakeEyeFrame,
+    SYNTHHEAD_OT_FixBrowTextures,
     SYNTHHEAD_MT_main_menu,
 ]

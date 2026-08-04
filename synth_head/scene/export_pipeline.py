@@ -110,9 +110,19 @@ def export_pipeline_generator(
                         (refs.hd_eye_L, "L_hd_eye"),
                     ):
                         if obj is not None:
+                            # hd_eye_R/hd_eye_L each carry their own material
+                            # (needed so heterochromia can key each eye's
+                            # color independently) — bake whichever material
+                            # is actually on this object rather than assuming
+                            # both share cfg.export.hd_eye_material_name.
+                            material_name = (
+                                obj.active_material.name
+                                if obj.active_material is not None
+                                else cfg.export.hd_eye_material_name
+                            )
                             p = bake_object_material(
                                 obj,
-                                cfg.export.hd_eye_material_name,
+                                material_name,
                                 suffix,
                                 cfg.export.hd_eye_bake_resolution,
                                 frame_dir,

@@ -1,0 +1,6 @@
+{
+  "enabled": false,
+  "name_prefix": "auth_",
+  "vary_materials": false,
+  "vary_texture_swap": false
+}

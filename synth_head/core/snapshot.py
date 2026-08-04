@@ -12,7 +12,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-SNAPSHOT_VERSION = 6
+SNAPSHOT_VERSION = 7
 
 
 def build_snapshot(
@@ -27,6 +27,9 @@ def build_snapshot(
     skin_color: list[float] | None = None,
     hair_color: list[float] | None = None,
     lip_color: list[float] | None = None,
+    brow_color: list[float] | None = None,
+    lash_color: list[float] | None = None,
+    beard_color: list[float] | None = None,
     texture_code: str = "A",
     texture_overlays: dict[str, str] | None = None,
     bone_properties: dict[str, float] | None = None,
@@ -45,6 +48,9 @@ def build_snapshot(
         skin_color: ``[r, g, b, a]`` floats read from the head material color node (v3+).
         hair_color: ``[r, g, b, a]`` floats read from the hair color node (v5+). ``None`` if node absent.
         lip_color: ``[r, g, b, a]`` floats read from the lip color node (v5+). ``None`` if node absent.
+        brow_color: ``[r, g, b, a]`` floats read from the brow color node (v7+). ``None`` if node absent.
+        lash_color: ``[r, g, b, a]`` floats read from the lash color node (v7+). ``None`` if node absent.
+        beard_color: ``[r, g, b, a]`` floats read from the beard color node (v7+). ``None`` if node absent.
         texture_code: Identifier for the texture set applied to this head (v3+). Defaults to ``"A"``.
         texture_overlays: ``{channel_key: pool_filename_or_"default"}`` mapping the
             active texture overlay per channel (v4+).  ``None`` is stored as ``{}``.
@@ -69,6 +75,12 @@ def build_snapshot(
         snap["hair_color"] = hair_color
     if lip_color is not None:
         snap["lip_color"] = lip_color
+    if brow_color is not None:
+        snap["brow_color"] = brow_color
+    if lash_color is not None:
+        snap["lash_color"] = lash_color
+    if beard_color is not None:
+        snap["beard_color"] = beard_color
     if config_snapshot is not None:
         snap["config_snapshot"] = config_snapshot
     if rules_raw is not None:

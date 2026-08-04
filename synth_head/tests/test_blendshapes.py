@@ -14,6 +14,7 @@ from synth_head.core.blendshapes import (
     classify_expression_shapes,
     generate_blendshape_weights,
     generate_single_frame_blendshape_weights,
+    generate_isolation_weights,
 )
 
 # Subsets for focused tests
@@ -488,3 +489,18 @@ class TestIndependentShapes:
         cfg = self._cfg({})
         result = generate_blendshape_weights(cfg)
         assert len(result) == 10
+
+
+class TestGenerateIsolationWeights:
+    def test_frame_count(self):
+        weights = generate_isolation_weights(["a", "b", "c"])
+        assert set(weights.keys()) == {1, 2, 3}
+
+    def test_one_hot_per_frame(self):
+        weights = generate_isolation_weights(["a", "b", "c"])
+        assert weights[1] == {"a": 1.0, "b": 0.0, "c": 0.0}
+        assert weights[2] == {"a": 0.0, "b": 1.0, "c": 0.0}
+        assert weights[3] == {"a": 0.0, "b": 0.0, "c": 1.0}
+
+    def test_empty_list(self):
+        assert generate_isolation_weights([]) == {}

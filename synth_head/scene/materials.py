@@ -36,7 +36,6 @@ _SHADER_COLOR_HANDLERS: dict[str, callable] = {
 # Label used to locate the skin color RGB node inside head_mat.
 _HEAD_COLOR_NODE_LABEL = "head_color"
 
-
 def _find_node_by_label(
     node_tree: bpy.types.NodeTree,
     label: str,

@@ -43,6 +43,7 @@ class TextureSwapConfig:
     """All overlay swap channels, built from ``texture_swap.json``."""
 
     slots: list[TextureSwapSlot] = field(default_factory=list)
+    random_texture_color: bool = True
 
     @classmethod
     def from_dict(cls, d: dict, default_material: str = "head_mat") -> "TextureSwapConfig":
@@ -62,6 +63,10 @@ class TextureSwapConfig:
 
         Adding a new channel requires only a new entry in ``"channels"`` — no
         code changes needed.
+
+        ``random_texture_color`` (top-level, defaults to ``true``) toggles whether
+        brow/lash/beard get independently randomized colors per frame, or all
+        three share one randomized color per frame (the pre-split behavior).
         """
         slots: list[TextureSwapSlot] = []
         for channel, cfg in sorted(d.get("channels", {}).items()):
@@ -75,7 +80,10 @@ class TextureSwapConfig:
                 enabled=bool(cfg.get("enabled", True)),
             ))
 
-        return cls(slots=slots)
+        return cls(
+            slots=slots,
+            random_texture_color=bool(d.get("random_texture_color", True)),
+        )
 
     def resolve(self, base: Path) -> "TextureSwapConfig":
         """Return a copy with all relative paths resolved against *base*."""
@@ -90,7 +98,7 @@ class TextureSwapConfig:
                 percentage=slot.percentage,
                 enabled=slot.enabled,
             ))
-        return TextureSwapConfig(slots=resolved)
+        return TextureSwapConfig(slots=resolved, random_texture_color=self.random_texture_color)
 
 
 # ---------------------------------------------------------------------------

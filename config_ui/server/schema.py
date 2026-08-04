@@ -17,9 +17,10 @@ CONFIG_FILES: list[dict[str, str]] = [
     {"id": "drivers", "label": "Drivers", "description": "FCurve driver wiring between properties"},
     {"id": "projection", "label": "Projection", "description": "Eye projection bake objects and settings"},
     {"id": "export", "label": "Export", "description": "Pipeline 03 GLB export and bake settings"},
-    {"id": "texture_swap", "label": "Texture Swap", "description": "Image sequence overlay slots"},
+    {"id": "texture_swap", "label": "Texture Swap", "description": "Image sequence overlay slots — random_texture_color toggles independent vs. shared brow/lash/beard color per frame"},
     {"id": "rerandomize", "label": "Rerandomize", "description": "Selective post-pipeline re-randomization — Left* joint targets mirror to Right*"},
     {"id": "eye_fit", "label": "Eye Fit", "description": "Per-frame socket depth fit after apply — measure rim vs eye, then re-constrain"},
+    {"id": "auth_head_variations", "label": "Authored Head Variations", "description": "Isolate each auth_-prefixed preset shape key on its own timeline frame — optionally vary skin/hair/lip color and texture-swap overlays per frame too"},
 ]
 
 CONFIG_FILE_IDS = {entry["id"] for entry in CONFIG_FILES}

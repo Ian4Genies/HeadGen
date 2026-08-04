@@ -44,6 +44,18 @@ DEFAULT_CONFIG_FILES: dict[str, dict[str, Any]] = {
         "min_face_samples": 8,
         "min_eye_samples": 8,
     },
+    "materials": {
+        "heterochromia_probability": 0.0,
+    },
+    "auth_head_variations": {
+        "enabled": False,
+        "name_prefix": "auth_",
+        "vary_materials": False,
+        "vary_texture_swap": False,
+    },
+    "texture_swap": {
+        "random_texture_color": True,
+    },
 }
 
 

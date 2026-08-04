@@ -436,3 +436,15 @@ def generate_single_frame_blendshape_weights(
         config.variation_overrides, config.expression_overrides,
         config.independent_shapes,
     )
+
+
+def generate_isolation_weights(shape_names: list[str]) -> dict[int, dict[str, float]]:
+    """One frame per name in *shape_names*, isolating it at weight 1.0.
+
+    Frame N (1-indexed) sets ``shape_names[N-1]`` to 1.0 and every other name
+    in the list to 0.0 on that same frame.
+    """
+    return {
+        frame: {name: (1.0 if name == target else 0.0) for name in shape_names}
+        for frame, target in enumerate(shape_names, start=1)
+    }

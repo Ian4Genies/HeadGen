@@ -79,6 +79,12 @@ export const FILE_LAYOUTS = {
       { keys: ["paths"], full: true },
       { keys: ["skin_material_name", "eye_material_name", "final_color_randomness"], cols: 3 },
       {
+        keys: ["heterochromia_probability"],
+        cols: 1,
+        title: "Eyes",
+        hint: "Probability [0-1] that the left eye rolls an independent iris color instead of matching the right eye.",
+      },
+      {
         keys: ["hair-color-node", "hair_color_randomness", "hair_color_defaults"],
         full: true,
         title: "Hair",

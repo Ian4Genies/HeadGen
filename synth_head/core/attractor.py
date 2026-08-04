@@ -139,11 +139,14 @@ class AttractiveColors:
     """Weighted-average colors blended from the selected pool heads.
 
     Each field is ``None`` when the pool has no valid data for that channel
-    (e.g. old snapshots without hair_color/lip_color).
+    (e.g. old snapshots without hair_color/lip_color/brow_color/lash_color/beard_color).
     """
     body: list[float] | None
     hair: list[float] | None
     lip: list[float] | None
+    brow: list[float] | None
+    lash: list[float] | None
+    beard: list[float] | None
 
 
 class PoolCache:
@@ -162,6 +165,12 @@ class PoolCache:
         self.hair_color_valid: np.ndarray | None = None   # shape (N,) bool
         self.lip_color_matrix: np.ndarray | None = None   # shape (N, 4), placeholder when missing
         self.lip_color_valid: np.ndarray | None = None    # shape (N,) bool
+        self.brow_color_matrix: np.ndarray | None = None  # shape (N, 4), placeholder when missing
+        self.brow_color_valid: np.ndarray | None = None   # shape (N,) bool
+        self.lash_color_matrix: np.ndarray | None = None  # shape (N, 4), placeholder when missing
+        self.lash_color_valid: np.ndarray | None = None   # shape (N,) bool
+        self.beard_color_matrix: np.ndarray | None = None  # shape (N, 4), placeholder when missing
+        self.beard_color_valid: np.ndarray | None = None   # shape (N,) bool
         self.filenames: list[str] = []
         self.param_keys: list[str] = []
         self._dir_path: str = ""
@@ -212,6 +221,12 @@ class PoolCache:
                 self.hair_color_valid = self.hair_color_valid[keep_indices] if self.hair_color_valid is not None else None
                 self.lip_color_matrix = self.lip_color_matrix[keep_indices] if self.lip_color_matrix is not None else None
                 self.lip_color_valid = self.lip_color_valid[keep_indices] if self.lip_color_valid is not None else None
+                self.brow_color_matrix = self.brow_color_matrix[keep_indices] if self.brow_color_matrix is not None else None
+                self.brow_color_valid = self.brow_color_valid[keep_indices] if self.brow_color_valid is not None else None
+                self.lash_color_matrix = self.lash_color_matrix[keep_indices] if self.lash_color_matrix is not None else None
+                self.lash_color_valid = self.lash_color_valid[keep_indices] if self.lash_color_valid is not None else None
+                self.beard_color_matrix = self.beard_color_matrix[keep_indices] if self.beard_color_matrix is not None else None
+                self.beard_color_valid = self.beard_color_valid[keep_indices] if self.beard_color_valid is not None else None
             elif not keep_indices:
                 self.matrix = None
                 self.color_matrix = None
@@ -219,6 +234,12 @@ class PoolCache:
                 self.hair_color_valid = None
                 self.lip_color_matrix = None
                 self.lip_color_valid = None
+                self.brow_color_matrix = None
+                self.brow_color_valid = None
+                self.lash_color_matrix = None
+                self.lash_color_valid = None
+                self.beard_color_matrix = None
+                self.beard_color_valid = None
 
         for fname in added:
             path = d / fname
@@ -276,6 +297,48 @@ class PoolCache:
             else:
                 self.lip_color_matrix = np.vstack([self.lip_color_matrix, lip_row])
                 self.lip_color_valid = np.append(self.lip_color_valid, lip_valid)
+
+            raw_brow = snap.get("brow_color")
+            brow_valid = raw_brow is not None and len(raw_brow) >= 4
+            brow_row = (
+                np.array(raw_brow[:4], dtype=np.float64)
+                if brow_valid
+                else _DEFAULT_COLOR.copy()
+            )
+            if self.brow_color_matrix is None:
+                self.brow_color_matrix = brow_row.reshape(1, -1)
+                self.brow_color_valid = np.array([brow_valid], dtype=bool)
+            else:
+                self.brow_color_matrix = np.vstack([self.brow_color_matrix, brow_row])
+                self.brow_color_valid = np.append(self.brow_color_valid, brow_valid)
+
+            raw_lash = snap.get("lash_color")
+            lash_valid = raw_lash is not None and len(raw_lash) >= 4
+            lash_row = (
+                np.array(raw_lash[:4], dtype=np.float64)
+                if lash_valid
+                else _DEFAULT_COLOR.copy()
+            )
+            if self.lash_color_matrix is None:
+                self.lash_color_matrix = lash_row.reshape(1, -1)
+                self.lash_color_valid = np.array([lash_valid], dtype=bool)
+            else:
+                self.lash_color_matrix = np.vstack([self.lash_color_matrix, lash_row])
+                self.lash_color_valid = np.append(self.lash_color_valid, lash_valid)
+
+            raw_beard = snap.get("beard_color")
+            beard_valid = raw_beard is not None and len(raw_beard) >= 4
+            beard_row = (
+                np.array(raw_beard[:4], dtype=np.float64)
+                if beard_valid
+                else _DEFAULT_COLOR.copy()
+            )
+            if self.beard_color_matrix is None:
+                self.beard_color_matrix = beard_row.reshape(1, -1)
+                self.beard_color_valid = np.array([beard_valid], dtype=bool)
+            else:
+                self.beard_color_matrix = np.vstack([self.beard_color_matrix, beard_row])
+                self.beard_color_valid = np.append(self.beard_color_valid, beard_valid)
 
             self.filenames.append(fname)
 
@@ -528,18 +591,19 @@ def attract(
     2. Compute a weighted-average target from those heads (same weights used for
        shape/joint params and all color channels).
     3. Nudge each parameter toward the target by max_influence.
-    4. Blend the same pool heads' body/hair/lip colors with the same weights.
+    4. Blend the same pool heads' body/hair/lip/brow/lash/beard colors with the same weights.
 
     Returns ``(nudged_flat, AttractiveColors, debug_info)``.
 
     Each color field in ``AttractiveColors`` is a ``[r, g, b, a]`` list when the
     attractor is active and the pool has valid data for that channel, otherwise
-    ``None``.  Hair and lip colors use masked averaging — pool heads without that
-    color recorded contribute zero weight so the average is over valid heads only.
+    ``None``.  Hair, lip, brow, lash, and beard colors use masked averaging — pool
+    heads without that color recorded contribute zero weight so the average is
+    over valid heads only.
 
     ``debug_info`` is a dict when ``config.debug`` is True, otherwise ``None``.
     """
-    _no_colors = AttractiveColors(body=None, hair=None, lip=None)
+    _no_colors = AttractiveColors(body=None, hair=None, lip=None, brow=None, lash=None, beard=None)
 
     if not config.enabled:
         return flat_params, _no_colors, None
@@ -593,7 +657,28 @@ def attract(
             pool.lip_color_matrix, pool.lip_color_valid, weights, indices
         )
 
-    colors = AttractiveColors(body=body_color, hair=hair_color, lip=lip_color)
+    brow_color: list[float] | None = None
+    if pool.brow_color_matrix is not None and pool.brow_color_valid is not None:
+        brow_color = _blend_masked_color_matrix(
+            pool.brow_color_matrix, pool.brow_color_valid, weights, indices
+        )
+
+    lash_color: list[float] | None = None
+    if pool.lash_color_matrix is not None and pool.lash_color_valid is not None:
+        lash_color = _blend_masked_color_matrix(
+            pool.lash_color_matrix, pool.lash_color_valid, weights, indices
+        )
+
+    beard_color: list[float] | None = None
+    if pool.beard_color_matrix is not None and pool.beard_color_valid is not None:
+        beard_color = _blend_masked_color_matrix(
+            pool.beard_color_matrix, pool.beard_color_valid, weights, indices
+        )
+
+    colors = AttractiveColors(
+        body=body_color, hair=hair_color, lip=lip_color,
+        brow=brow_color, lash=lash_color, beard=beard_color,
+    )
 
     debug_info: dict | None = None
     if config.debug:

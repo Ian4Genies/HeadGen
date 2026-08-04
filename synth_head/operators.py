@@ -8,7 +8,7 @@ import bpy
 from pathlib import Path
 
 from .core.math import clamp
-from .core.ref_keys import MESH, BODY_GEO, ARMATURE, HEAD_MAT, L_EYE, R_EYE, EYEBROWS, EYELASHES, EYE_MAT, EYE_WEDGE_R, EYE_WEDGE_L, EYE_WEDGE_R_BAKE, EYE_WEDGE_L_BAKE, HD_EYE_R, HD_EYE_L, R_PROJECTOR, L_PROJECTOR, EYE_BOOLEAN_L, EYE_BOOLEAN_R, WEDGE_PROJECTION
+from .core.ref_keys import MESH, BODY_GEO, ARMATURE, HEAD_MAT, L_EYE, R_EYE, EYEBROWS, EYELASHES, EYE_MAT, EYE_MAT_L, EYE_WEDGE_R, EYE_WEDGE_L, EYE_WEDGE_R_BAKE, EYE_WEDGE_L_BAKE, HD_EYE_R, HD_EYE_L, R_PROJECTOR, L_PROJECTOR, EYE_BOOLEAN_L, EYE_BOOLEAN_R, WEDGE_PROJECTION
 from .core.variation import (
     generate_chaos_transforms,
     generate_single_frame_transforms,
@@ -20,6 +20,7 @@ from .scene.refs import get_ref, set_ref, get_material_ref, set_material_ref, se
 from .core.blendshapes import (
     generate_blendshape_weights,
     generate_single_frame_blendshape_weights,
+    generate_isolation_weights,
 )
 from .core.constraints import flatten_params, unflatten_params, constrain
 from .core.attractor import get_pool_cache, attract, update_manifest, AttractiveColors
@@ -225,6 +226,15 @@ def _debug_config(cfg: PipelineConfig) -> None:
     p(f"  lip_color_node:           {cfg.materials.lip_color_node}")
     p(f"  lip_color_randomness:     {cfg.materials.lip_color_randomness}")
     p(f"  lip_color_override:       {cfg.materials.lip_color_override}")
+    p(f"  brow_color_node:          {cfg.materials.brow_color_node}")
+    p(f"  brow_color_randomness:    {cfg.materials.brow_color_randomness}")
+    p(f"  brow_color_defaults:      {len(cfg.materials.brow_color_defaults)} entries")
+    p(f"  lash_color_node:          {cfg.materials.lash_color_node}")
+    p(f"  lash_color_randomness:    {cfg.materials.lash_color_randomness}")
+    p(f"  lash_color_defaults:      {len(cfg.materials.lash_color_defaults)} entries")
+    p(f"  beard_color_node:         {cfg.materials.beard_color_node}")
+    p(f"  beard_color_randomness:   {cfg.materials.beard_color_randomness}")
+    p(f"  beard_color_defaults:     {len(cfg.materials.beard_color_defaults)} entries")
 
     p(f"--- ATTRACTOR ---")
     p(f"  enabled:              {cfg.attractor.enabled}")
@@ -321,6 +331,12 @@ class SYNTHHEAD_PG_PipelineRefs(bpy.types.PropertyGroup):
     # Eye material
     eye_mat: bpy.props.PointerProperty(
         name="Eye Material",
+        type=bpy.types.Material,
+    )
+    # Eye material — left-eye copy, so hd_eye_L can hold an independent
+    # iris color from hd_eye_R (heterochromia) in the non-wedge HD-eyes-only pipeline
+    eye_mat_L: bpy.props.PointerProperty(
+        name="Eye Material L",
         type=bpy.types.Material,
     )
     # Eye wedge R
@@ -625,8 +641,16 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
             attach_constrained_object_to_armature(hd_eye_R, armature_obj)
             attach_constrained_object_to_armature(hd_eye_L, armature_obj)
             remove_non_canonical_armatures(armature_obj)
+            # hd_eye_R and hd_eye_L each need their OWN material datablock —
+            # sharing one (the old behavior) means keying the eye-color node
+            # for one side always overwrites the other, making heterochromia
+            # impossible since both eyes read the same node.
+            eye_mat_L = get_material_ref(context, EYE_MAT_L)
+            if eye_mat_L is None:
+                eye_mat_L = eye_mat.copy()
+                set_material_ref(context, EYE_MAT_L, eye_mat_L)
             assign_exclusive_material(hd_eye_R, eye_mat)
-            assign_exclusive_material(hd_eye_L, eye_mat)
+            assign_exclusive_material(hd_eye_L, eye_mat_L)
 
         # --- 2b. RIG SETUP — rebuild drivers from config ---
         build_drivers(armature_obj, cfg.drivers)
@@ -717,6 +741,10 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
         texture_rng = _random.Random(cfg.runner.seed + 2 if cfg.runner.seed is not None else None)
         hair_rng = _random.Random(cfg.runner.seed + 3 if cfg.runner.seed is not None else None)
         lip_rng = _random.Random(cfg.runner.seed + 4 if cfg.runner.seed is not None else None)
+        brow_rng = _random.Random(cfg.runner.seed + 5 if cfg.runner.seed is not None else None)
+        lash_rng = _random.Random(cfg.runner.seed + 6 if cfg.runner.seed is not None else None)
+        beard_rng = _random.Random(cfg.runner.seed + 7 if cfg.runner.seed is not None else None)
+        heterochromia_rng = _random.Random(cfg.runner.seed + 8 if cfg.runner.seed is not None else None)
         for frame in range(1, fc + 1):
             context.scene.frame_set(frame)
             if (cfg.feature_flags.wedge_projection):
@@ -766,13 +794,18 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
             colors = attractive_colors[frame]
             rng_color = (color_rng.random(), color_rng.random(), color_rng.random(), 1.0)
             randomize_head_material_color(head_mesh, rng_color, frame)
-            #add color to eye wedge bake meshes
+            #add color to eye wedge bake meshes — left eye may roll an independent
+            #iris color (heterochromia), gated by cfg.materials.heterochromia_probability
+            eye_color_R = rng_color
+            eye_color_L = rng_color
+            if heterochromia_rng.random() < cfg.materials.heterochromia_probability:
+                eye_color_L = (heterochromia_rng.random(), heterochromia_rng.random(), heterochromia_rng.random(), 1.0)
             if (cfg.feature_flags.wedge_projection):
-                assign_eye_color(eye_wedge_R_bake, cfg.projection.eye_wedge_R_bake_name, cfg.projection.eye_color_name, rng_color, frame)
-                assign_eye_color(eye_wedge_L_bake, cfg.projection.eye_wedge_L_bake_name, cfg.projection.eye_color_name, rng_color, frame)
+                assign_eye_color(eye_wedge_R_bake, cfg.projection.eye_wedge_R_bake_name, cfg.projection.eye_color_name, eye_color_R, frame)
+                assign_eye_color(eye_wedge_L_bake, cfg.projection.eye_wedge_L_bake_name, cfg.projection.eye_color_name, eye_color_L, frame)
             else:
-                assign_eye_color(hd_eye_R, eye_mat.name, cfg.projection.eye_color_name, rng_color, frame)
-                assign_eye_color(hd_eye_L, eye_mat.name, cfg.projection.eye_color_name, rng_color, frame)
+                assign_eye_color(hd_eye_R, eye_mat.name, cfg.projection.eye_color_name, eye_color_R, frame)
+                assign_eye_color(hd_eye_L, eye_mat_L.name, cfg.projection.eye_color_name, eye_color_L, frame)
             attr_color = colors.body
             if attr_color is not None:
                 final_skin_color = _blend_colors(attr_color, rng_color, cfg.materials.final_color_randomness)
@@ -800,6 +833,49 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
                 rng_lip = (lip_rng.random(), lip_rng.random(), lip_rng.random(), 1.0)
                 final_lip = _blend_colors(base_lip, rng_lip, cfg.materials.lip_color_randomness)
             apply_named_node_color(head_mesh, cfg.materials.lip_color_node, final_lip, frame)
+            #Brow / Lash / Beard Color
+            if cfg.texture_swap.random_texture_color:
+                # Independent color per channel.
+                attractive_brow = colors.brow
+                if attractive_brow is None:
+                    if cfg.materials.brow_color_defaults:
+                        base_brow = hex_to_linear_rgba(brow_rng.choice(cfg.materials.brow_color_defaults))
+                    else:
+                        base_brow = [0.02, 0.01, 0.005, 1.0]
+                else:
+                    base_brow = attractive_brow
+                rng_brow = (brow_rng.random(), brow_rng.random(), brow_rng.random(), 1.0)
+                final_brow = _blend_colors(base_brow, rng_brow, cfg.materials.brow_color_randomness)
+                apply_named_node_color(head_mesh, cfg.materials.brow_color_node, final_brow, frame)
+
+                attractive_lash = colors.lash
+                if attractive_lash is None:
+                    if cfg.materials.lash_color_defaults:
+                        base_lash = hex_to_linear_rgba(lash_rng.choice(cfg.materials.lash_color_defaults))
+                    else:
+                        base_lash = [0.02, 0.01, 0.005, 1.0]
+                else:
+                    base_lash = attractive_lash
+                rng_lash = (lash_rng.random(), lash_rng.random(), lash_rng.random(), 1.0)
+                final_lash = _blend_colors(base_lash, rng_lash, cfg.materials.lash_color_randomness)
+                apply_named_node_color(head_mesh, cfg.materials.lash_color_node, final_lash, frame)
+
+                attractive_beard = colors.beard
+                if attractive_beard is None:
+                    if cfg.materials.beard_color_defaults:
+                        base_beard = hex_to_linear_rgba(beard_rng.choice(cfg.materials.beard_color_defaults))
+                    else:
+                        base_beard = [0.02, 0.01, 0.005, 1.0]
+                else:
+                    base_beard = attractive_beard
+                rng_beard = (beard_rng.random(), beard_rng.random(), beard_rng.random(), 1.0)
+                final_beard = _blend_colors(base_beard, rng_beard, cfg.materials.beard_color_randomness)
+                apply_named_node_color(head_mesh, cfg.materials.beard_color_node, final_beard, frame)
+            else:
+                # One shared color (the pre-split hair-color-drives-everything behavior).
+                apply_named_node_color(head_mesh, cfg.materials.brow_color_node, final_hair, frame)
+                apply_named_node_color(head_mesh, cfg.materials.lash_color_node, final_hair, frame)
+                apply_named_node_color(head_mesh, cfg.materials.beard_color_node, final_hair, frame)
             # Texture overlay offset keying
             for slot in cfg.texture_swap.slots:
                 slot_manifest = slot_manifests.get(slot.key)
@@ -896,6 +972,10 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
             eye_mat = get_material_ref(context, EYE_MAT)
             if not eye_mat:
                 self.report({"ERROR"}, "No eye material stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+            eye_mat_L = get_material_ref(context, EYE_MAT_L)
+            if not eye_mat_L:
+                self.report({"ERROR"}, "No eye material L stored — run Variation Pipeline first")
                 return {"CANCELLED"}
 
         hd_eye_R = get_ref(context, HD_EYE_R)
@@ -1002,7 +1082,7 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
             assign_eye_color(eye_wedge_L_bake, cfg.projection.eye_wedge_L_bake_name, cfg.projection.eye_color_name, rng_color, frame)
         else:
             assign_eye_color(hd_eye_R, eye_mat.name, cfg.projection.eye_color_name, rng_color, frame)
-            assign_eye_color(hd_eye_L, eye_mat.name, cfg.projection.eye_color_name, rng_color, frame)
+            assign_eye_color(hd_eye_L, eye_mat_L.name, cfg.projection.eye_color_name, rng_color, frame)
         attr_color = colors.body
         if attr_color is not None:
             final_skin_color = _blend_colors(attr_color, rng_color, cfg.materials.final_color_randomness)
@@ -1030,6 +1110,49 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
             rng_lip = (attractor_rng.random(), attractor_rng.random(), attractor_rng.random(), 1.0)
             final_lip = _blend_colors(base_lip, rng_lip, cfg.materials.lip_color_randomness)
         apply_named_node_color(head_mesh, cfg.materials.lip_color_node, final_lip, frame)
+        #Brow / Lash / Beard Color
+        if cfg.texture_swap.random_texture_color:
+            # Independent color per channel.
+            attractive_brow = colors.brow
+            if attractive_brow is None:
+                if cfg.materials.brow_color_defaults:
+                    base_brow = hex_to_linear_rgba(attractor_rng.choice(cfg.materials.brow_color_defaults))
+                else:
+                    base_brow = [0.02, 0.01, 0.005, 1.0]
+            else:
+                base_brow = attractive_brow
+            rng_brow = (attractor_rng.random(), attractor_rng.random(), attractor_rng.random(), 1.0)
+            final_brow = _blend_colors(base_brow, rng_brow, cfg.materials.brow_color_randomness)
+            apply_named_node_color(head_mesh, cfg.materials.brow_color_node, final_brow, frame)
+
+            attractive_lash = colors.lash
+            if attractive_lash is None:
+                if cfg.materials.lash_color_defaults:
+                    base_lash = hex_to_linear_rgba(attractor_rng.choice(cfg.materials.lash_color_defaults))
+                else:
+                    base_lash = [0.02, 0.01, 0.005, 1.0]
+            else:
+                base_lash = attractive_lash
+            rng_lash = (attractor_rng.random(), attractor_rng.random(), attractor_rng.random(), 1.0)
+            final_lash = _blend_colors(base_lash, rng_lash, cfg.materials.lash_color_randomness)
+            apply_named_node_color(head_mesh, cfg.materials.lash_color_node, final_lash, frame)
+
+            attractive_beard = colors.beard
+            if attractive_beard is None:
+                if cfg.materials.beard_color_defaults:
+                    base_beard = hex_to_linear_rgba(attractor_rng.choice(cfg.materials.beard_color_defaults))
+                else:
+                    base_beard = [0.02, 0.01, 0.005, 1.0]
+            else:
+                base_beard = attractive_beard
+            rng_beard = (attractor_rng.random(), attractor_rng.random(), attractor_rng.random(), 1.0)
+            final_beard = _blend_colors(base_beard, rng_beard, cfg.materials.beard_color_randomness)
+            apply_named_node_color(head_mesh, cfg.materials.beard_color_node, final_beard, frame)
+        else:
+            # One shared color (the pre-split hair-color-drives-everything behavior).
+            apply_named_node_color(head_mesh, cfg.materials.brow_color_node, final_hair, frame)
+            apply_named_node_color(head_mesh, cfg.materials.lash_color_node, final_hair, frame)
+            apply_named_node_color(head_mesh, cfg.materials.beard_color_node, final_hair, frame)
 
         # Texture overlay — read existing manifests, pick and key offsets
         import random as _tex_random
@@ -1046,6 +1169,234 @@ class SYNTHHEAD_OT_RandomizeFace(bpy.types.Operator):
             key_sequence_offset(mat, slot.node_name, calc_offset(idx, frame), frame)
 
         self.report({"INFO"}, f"Randomized {len(chaos_joints)} joints + blendshapes on frame {frame}")
+        return {"FINISHED"}
+
+
+class SYNTHHEAD_OT_GenerateAuthHeadVariations(bpy.types.Operator):
+    """Isolate each auth_-prefixed preset shape key at weight 1.0 on its own frame."""
+
+    bl_idname = "synth_head.generate_auth_head_variations"
+    bl_label = "Generate Authored Head Variations"
+
+    def execute(self, context):
+        cfg = _get_config()
+        avc = cfg.auth_head_variations
+        if not avc.enabled:
+            self.report({"WARNING"}, "Authored Head Variations disabled in config")
+            return {"CANCELLED"}
+
+        head_mesh = get_ref(context, MESH)
+        if head_mesh is None or head_mesh.data.shape_keys is None:
+            self.report({"ERROR"}, "No head mesh with shape keys — run Variation Pipeline first")
+            return {"CANCELLED"}
+
+        auth_shapes = [
+            kb.name for kb in head_mesh.data.shape_keys.key_blocks
+            if kb.name.startswith(avc.name_prefix)
+        ]
+        if not auth_shapes:
+            self.report({"WARNING"}, f"No shape keys matching prefix '{avc.name_prefix}'")
+            return {"CANCELLED"}
+
+        armature = get_ref(context, ARMATURE)
+        chaos_joints = collect_chaos_joints(armature, cfg.chaos_joint_names)
+        weights_by_frame = generate_isolation_weights(auth_shapes)
+        n = len(auth_shapes)
+
+        # --- eye refs, needed for eye color when varying materials ---
+        wedge_projection = get_flag(context, WEDGE_PROJECTION)
+        hd_eye_R = hd_eye_L = eye_wedge_R_bake = eye_wedge_L_bake = eye_mat = eye_mat_L = None
+        if avc.vary_materials:
+            hd_eye_R = get_ref(context, HD_EYE_R)
+            if not hd_eye_R:
+                self.report({"ERROR"}, "No HD eye R stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+            hd_eye_L = get_ref(context, HD_EYE_L)
+            if not hd_eye_L:
+                self.report({"ERROR"}, "No HD eye L stored — run Variation Pipeline first")
+                return {"CANCELLED"}
+            if wedge_projection:
+                eye_wedge_R_bake = get_ref(context, EYE_WEDGE_R_BAKE)
+                if not eye_wedge_R_bake:
+                    self.report({"ERROR"}, "No eye wedge R bake mesh stored — run Variation Pipeline first")
+                    return {"CANCELLED"}
+                eye_wedge_L_bake = get_ref(context, EYE_WEDGE_L_BAKE)
+                if not eye_wedge_L_bake:
+                    self.report({"ERROR"}, "No eye wedge L bake mesh stored — run Variation Pipeline first")
+                    return {"CANCELLED"}
+            else:
+                eye_mat = get_material_ref(context, EYE_MAT)
+                if not eye_mat:
+                    self.report({"ERROR"}, "No eye material stored — run Variation Pipeline first")
+                    return {"CANCELLED"}
+                eye_mat_L = get_material_ref(context, EYE_MAT_L)
+                if not eye_mat_L:
+                    self.report({"ERROR"}, "No eye material L stored — run Variation Pipeline first")
+                    return {"CANCELLED"}
+
+        context.scene.frame_start = 1
+        context.scene.frame_end = n
+
+        # --- optional texture-swap setup (once, before the per-frame loop) ---
+        slot_manifests: dict = {}
+        if avc.vary_texture_swap and cfg.texture_swap.slots:
+            tex_frame_duration = n + 100
+            for slot in cfg.texture_swap.slots:
+                manifest = ping_and_sync_sequence(slot)
+                slot_manifests[slot.key] = manifest
+                mat = bpy.data.materials.get(slot.material_name)
+                if mat:
+                    first_file = Path(slot.sequence_path) / sequence_filename(sequence_prefix(slot), 1)
+                    point_texture_sequence_node(mat, slot.node_name, first_file, 1, tex_frame_duration)
+                    set_sequence_frames(mat, slot.node_name, tex_frame_duration)
+                    clear_sequence_offset_keyframes(mat, slot.node_name)
+
+        # --- optional attractor-pool setup for skin/hair/lip/brow/lash/beard color (once) ---
+        # Same pool VariationPipeline draws attractive colors from. Unlike the
+        # pipeline, we don't nearest-neighbor-match against a live head vector
+        # here (this sweep has no chaos-joint/blendshape variation to compare
+        # against — that vector would be constant every frame, so "nearest"
+        # would just pick an arbitrary, coincidentally-fixed small subset of
+        # the pool and swing wildly between their colors on every random
+        # re-weighting). Instead each frame draws one real pool head's color
+        # directly and blends it lightly with a touch of randomness — same
+        # blend math as the pipeline, but without the meaningless distance
+        # search that a static baseline would produce.
+        pool = get_pool_cache()
+        hair_valid_indices: list[int] = []
+        lip_valid_indices: list[int] = []
+        brow_valid_indices: list[int] = []
+        lash_valid_indices: list[int] = []
+        beard_valid_indices: list[int] = []
+        if avc.vary_materials and cfg.attractor.enabled:
+            pool.sync(cfg.attractor.attractive_heads_dir, [b.name for b in chaos_joints])
+            if pool.hair_color_valid is not None:
+                hair_valid_indices = [i for i, v in enumerate(pool.hair_color_valid.tolist()) if v]
+            if pool.lip_color_valid is not None:
+                lip_valid_indices = [i for i, v in enumerate(pool.lip_color_valid.tolist()) if v]
+            if pool.brow_color_valid is not None:
+                brow_valid_indices = [i for i, v in enumerate(pool.brow_color_valid.tolist()) if v]
+            if pool.lash_color_valid is not None:
+                lash_valid_indices = [i for i, v in enumerate(pool.lash_color_valid.tolist()) if v]
+            if pool.beard_color_valid is not None:
+                beard_valid_indices = [i for i, v in enumerate(pool.beard_color_valid.tolist()) if v]
+
+        import random as _random
+        color_rng = _random.Random(cfg.runner.seed + 10 if cfg.runner.seed is not None else None)
+        hair_rng = _random.Random(cfg.runner.seed + 11 if cfg.runner.seed is not None else None)
+        lip_rng = _random.Random(cfg.runner.seed + 12 if cfg.runner.seed is not None else None)
+        texture_rng = _random.Random(cfg.runner.seed + 13 if cfg.runner.seed is not None else None)
+        brow_rng = _random.Random(cfg.runner.seed + 14 if cfg.runner.seed is not None else None)
+        lash_rng = _random.Random(cfg.runner.seed + 15 if cfg.runner.seed is not None else None)
+        beard_rng = _random.Random(cfg.runner.seed + 16 if cfg.runner.seed is not None else None)
+        heterochromia_rng = _random.Random(cfg.runner.seed + 17 if cfg.runner.seed is not None else None)
+
+        for frame, weights in weights_by_frame.items():
+            context.scene.frame_set(frame)
+            reset_frame(chaos_joints, head_mesh, frame)
+            _apply_weights_to_shape_keys(head_mesh, weights, frame)
+
+            if avc.vary_materials:
+                # Skin / body color — one real pool skin tone, lightly randomized.
+                rng_color = (color_rng.random(), color_rng.random(), color_rng.random(), 1.0)
+                randomize_head_material_color(head_mesh, rng_color, frame)
+                eye_color_R = rng_color
+                eye_color_L = rng_color
+                if heterochromia_rng.random() < cfg.materials.heterochromia_probability:
+                    eye_color_L = (heterochromia_rng.random(), heterochromia_rng.random(), heterochromia_rng.random(), 1.0)
+                if wedge_projection:
+                    assign_eye_color(eye_wedge_R_bake, cfg.projection.eye_wedge_R_bake_name, cfg.projection.eye_color_name, eye_color_R, frame)
+                    assign_eye_color(eye_wedge_L_bake, cfg.projection.eye_wedge_L_bake_name, cfg.projection.eye_color_name, eye_color_L, frame)
+                else:
+                    assign_eye_color(hd_eye_R, eye_mat.name, cfg.projection.eye_color_name, eye_color_R, frame)
+                    assign_eye_color(hd_eye_L, eye_mat_L.name, cfg.projection.eye_color_name, eye_color_L, frame)
+                if pool.pool_size > 0 and pool.color_matrix is not None:
+                    attr_color = pool.color_matrix[color_rng.randrange(pool.pool_size)].tolist()
+                else:
+                    attr_color = None
+                if attr_color is not None:
+                    final_skin_color = _blend_colors(attr_color, rng_color, cfg.materials.final_color_randomness)
+                    apply_attractive_color(head_mesh, attr_color, rng_color, cfg.materials.final_color_randomness, frame)
+                else:
+                    final_skin_color = rng_color
+
+                # Hair color — a real pool hair tone when one is recorded, else the defaults list.
+                if hair_valid_indices:
+                    base_hair = pool.hair_color_matrix[hair_rng.choice(hair_valid_indices)].tolist()
+                elif cfg.materials.hair_color_defaults:
+                    base_hair = hex_to_linear_rgba(hair_rng.choice(cfg.materials.hair_color_defaults))
+                else:
+                    base_hair = [0.02, 0.01, 0.005, 1.0]
+                rng_hair = (hair_rng.random(), hair_rng.random(), hair_rng.random(), 1.0)
+                final_hair = _blend_colors(base_hair, rng_hair, cfg.materials.hair_color_randomness)
+                apply_named_node_color(head_mesh, cfg.materials.hair_color_node, final_hair, frame)
+
+                # Lip color
+                if lip_rng.random() < cfg.materials.lip_color_override:
+                    final_lip = random_saturated_color(lip_rng)
+                else:
+                    if lip_valid_indices:
+                        base_lip = pool.lip_color_matrix[lip_rng.choice(lip_valid_indices)].tolist()
+                    else:
+                        base_lip = final_skin_color
+                    rng_lip = (lip_rng.random(), lip_rng.random(), lip_rng.random(), 1.0)
+                    final_lip = _blend_colors(base_lip, rng_lip, cfg.materials.lip_color_randomness)
+                apply_named_node_color(head_mesh, cfg.materials.lip_color_node, final_lip, frame)
+
+                if cfg.texture_swap.random_texture_color:
+                    # Independent color per channel — a real pool tone when one is
+                    # recorded for that channel, else the defaults list.
+                    if brow_valid_indices:
+                        base_brow = pool.brow_color_matrix[brow_rng.choice(brow_valid_indices)].tolist()
+                    elif cfg.materials.brow_color_defaults:
+                        base_brow = hex_to_linear_rgba(brow_rng.choice(cfg.materials.brow_color_defaults))
+                    else:
+                        base_brow = [0.02, 0.01, 0.005, 1.0]
+                    rng_brow = (brow_rng.random(), brow_rng.random(), brow_rng.random(), 1.0)
+                    final_brow = _blend_colors(base_brow, rng_brow, cfg.materials.brow_color_randomness)
+                    apply_named_node_color(head_mesh, cfg.materials.brow_color_node, final_brow, frame)
+
+                    if lash_valid_indices:
+                        base_lash = pool.lash_color_matrix[lash_rng.choice(lash_valid_indices)].tolist()
+                    elif cfg.materials.lash_color_defaults:
+                        base_lash = hex_to_linear_rgba(lash_rng.choice(cfg.materials.lash_color_defaults))
+                    else:
+                        base_lash = [0.02, 0.01, 0.005, 1.0]
+                    rng_lash = (lash_rng.random(), lash_rng.random(), lash_rng.random(), 1.0)
+                    final_lash = _blend_colors(base_lash, rng_lash, cfg.materials.lash_color_randomness)
+                    apply_named_node_color(head_mesh, cfg.materials.lash_color_node, final_lash, frame)
+
+                    if beard_valid_indices:
+                        base_beard = pool.beard_color_matrix[beard_rng.choice(beard_valid_indices)].tolist()
+                    elif cfg.materials.beard_color_defaults:
+                        base_beard = hex_to_linear_rgba(beard_rng.choice(cfg.materials.beard_color_defaults))
+                    else:
+                        base_beard = [0.02, 0.01, 0.005, 1.0]
+                    rng_beard = (beard_rng.random(), beard_rng.random(), beard_rng.random(), 1.0)
+                    final_beard = _blend_colors(base_beard, rng_beard, cfg.materials.beard_color_randomness)
+                    apply_named_node_color(head_mesh, cfg.materials.beard_color_node, final_beard, frame)
+                else:
+                    # One shared color (the pre-split hair-color-drives-everything behavior).
+                    apply_named_node_color(head_mesh, cfg.materials.brow_color_node, final_hair, frame)
+                    apply_named_node_color(head_mesh, cfg.materials.lash_color_node, final_hair, frame)
+                    apply_named_node_color(head_mesh, cfg.materials.beard_color_node, final_hair, frame)
+
+            if avc.vary_texture_swap:
+                for slot in cfg.texture_swap.slots:
+                    slot_manifest = slot_manifests.get(slot.key)
+                    if slot_manifest is None:
+                        continue
+                    mat = bpy.data.materials.get(slot.material_name)
+                    if mat is None:
+                        continue
+                    idx = 1 if not slot.enabled else pick_texture_index(slot_manifest, slot.percentage, texture_rng)
+                    key_sequence_offset(mat, slot.node_name, calc_offset(idx, frame), frame)
+
+        self.report(
+            {"INFO"},
+            f"{n} authored variations set on frames 1..{n}. "
+            f"Set Export's frame_range to [1, {n}] in config_ui before exporting.",
+        )
         return {"FINISHED"}
 
 
@@ -1211,6 +1562,9 @@ def _save_head_snapshot(operator, context, label: str, directory: Path) -> set[s
     skin_color = read_material_color(head_mesh)
     hair_color = read_named_node_color(head_mesh, cfg.materials.hair_color_node)
     lip_color = read_named_node_color(head_mesh, cfg.materials.lip_color_node)
+    brow_color = read_named_node_color(head_mesh, cfg.materials.brow_color_node)
+    lash_color = read_named_node_color(head_mesh, cfg.materials.lash_color_node)
+    beard_color = read_named_node_color(head_mesh, cfg.materials.beard_color_node)
 
     config_raw = _load_config_dir_raw(cfg)
 
@@ -1239,6 +1593,9 @@ def _save_head_snapshot(operator, context, label: str, directory: Path) -> set[s
         skin_color=skin_color,
         hair_color=hair_color,
         lip_color=lip_color,
+        brow_color=brow_color,
+        lash_color=lash_color,
+        beard_color=beard_color,
         texture_overlays=texture_overlays if texture_overlays else None,
     )
 
@@ -1388,6 +1745,10 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
             if not eye_mat:
                 self.report({"ERROR"}, "No eye material stored — run Variation Pipeline first")
                 return {"CANCELLED"}
+            eye_mat_L = get_material_ref(context, EYE_MAT_L)
+            if not eye_mat_L:
+                self.report({"ERROR"}, "No eye material L stored — run Variation Pipeline first")
+                return {"CANCELLED"}
 
         eyebrows_obj = get_ref(context, EYEBROWS)
         if not eyebrows_obj:
@@ -1433,7 +1794,7 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
                 assign_eye_color(eye_wedge_L_bake, cfg.projection.eye_wedge_L_bake_name, cfg.projection.eye_color_name, skin_color, frame)
             else:
                 assign_eye_color(hd_eye_R, eye_mat.name, cfg.projection.eye_color_name, skin_color, frame)
-                assign_eye_color(hd_eye_L, eye_mat.name, cfg.projection.eye_color_name, skin_color, frame)
+                assign_eye_color(hd_eye_L, eye_mat_L.name, cfg.projection.eye_color_name, skin_color, frame)
 
         hair_color = snapshot.get("hair_color")
         if hair_color:
@@ -1442,6 +1803,18 @@ class SYNTHHEAD_OT_LoadHeadData(bpy.types.Operator):
         lip_color = snapshot.get("lip_color")
         if lip_color:
             apply_named_node_color(head_mesh, cfg.materials.lip_color_node, lip_color, frame)
+
+        brow_color = snapshot.get("brow_color")
+        if brow_color:
+            apply_named_node_color(head_mesh, cfg.materials.brow_color_node, brow_color, frame)
+
+        lash_color = snapshot.get("lash_color")
+        if lash_color:
+            apply_named_node_color(head_mesh, cfg.materials.lash_color_node, lash_color, frame)
+
+        beard_color = snapshot.get("beard_color")
+        if beard_color:
+            apply_named_node_color(head_mesh, cfg.materials.beard_color_node, beard_color, frame)
 
         # Restore texture overlays from snapshot
         overlays = snapshot.get("texture_overlays", {})
@@ -1595,6 +1968,9 @@ def _write_export_snapshot(
     skin_color = read_material_color(head_mesh)
     hair_color = read_named_node_color(head_mesh, cfg.materials.hair_color_node)
     lip_color = read_named_node_color(head_mesh, cfg.materials.lip_color_node)
+    brow_color = read_named_node_color(head_mesh, cfg.materials.brow_color_node)
+    lash_color = read_named_node_color(head_mesh, cfg.materials.lash_color_node)
+    beard_color = read_named_node_color(head_mesh, cfg.materials.beard_color_node)
     config_raw = _load_config_dir_raw(cfg)
 
     # Capture active texture overlay names from image sequence nodes
@@ -1621,6 +1997,9 @@ def _write_export_snapshot(
         skin_color=skin_color,
         hair_color=hair_color,
         lip_color=lip_color,
+        brow_color=brow_color,
+        lash_color=lash_color,
+        beard_color=beard_color,
         texture_overlays=texture_overlays if texture_overlays else None,
     )
     return save_snapshot(snapshot, out_dir)
@@ -1947,6 +2326,7 @@ class SYNTHHEAD_MT_main_menu(bpy.types.Menu):
         layout.operator(SYNTHHEAD_OT_RandomizeFace.bl_idname)
         layout.operator(SYNTHHEAD_OT_RerandomizeSelected.bl_idname)
         layout.operator(SYNTHHEAD_OT_RerandomizeSelectedFrame.bl_idname)
+        layout.operator(SYNTHHEAD_OT_GenerateAuthHeadVariations.bl_idname)
         layout.separator()
         layout.operator(SYNTHHEAD_OT_SaveHeadIssue.bl_idname)
         layout.operator(SYNTHHEAD_OT_SaveGoodHead.bl_idname)
@@ -1976,6 +2356,7 @@ CLASSES = [
     SYNTHHEAD_OT_RandomizeFace,
     SYNTHHEAD_OT_RerandomizeSelected,
     SYNTHHEAD_OT_RerandomizeSelectedFrame,
+    SYNTHHEAD_OT_GenerateAuthHeadVariations,
     SYNTHHEAD_OT_SaveHeadIssue,
     SYNTHHEAD_OT_SaveGoodHead,
     SYNTHHEAD_OT_SaveHeadAttractive,

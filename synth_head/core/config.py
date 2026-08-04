@@ -45,12 +45,22 @@ class MaterialsConfig:
     skin_material_name: str = "head_mat"
     eye_material_name: str = "eye_mat"
     final_color_randomness: float = 0.1
+    heterochromia_probability: float = 0.0
     hair_color_node: str = "hair-color"
     hair_color_randomness: float = 0.05
     hair_color_defaults: list = field(default_factory=list)
     lip_color_node: str = "lip-color"
     lip_color_randomness: float = 0.05
     lip_color_override: float = 0.2
+    brow_color_node: str = "brow-color"
+    brow_color_randomness: float = 0.05
+    brow_color_defaults: list = field(default_factory=list)
+    lash_color_node: str = "lash-color"
+    lash_color_randomness: float = 0.05
+    lash_color_defaults: list = field(default_factory=list)
+    beard_color_node: str = "beard-color"
+    beard_color_randomness: float = 0.05
+    beard_color_defaults: list = field(default_factory=list)
 
     @classmethod
     def from_dict(cls, d: dict) -> "MaterialsConfig":
@@ -60,12 +70,22 @@ class MaterialsConfig:
             skin_material_name=d.get("skin_material_name", "head_mat"),
             eye_material_name=d.get("eye_material_name", "eye_mat"),
             final_color_randomness=float(d.get("final_color_randomness", 0.1)),
+            heterochromia_probability=float(d.get("heterochromia_probability", 0.0)),
             hair_color_node=d.get("hair-color-node", "hair-color"),
             hair_color_randomness=float(d.get("hair_color_randomness", 0.05)),
             hair_color_defaults=list(d.get("hair_color_defaults", [])),
             lip_color_node=d.get("lip-color-node", "lip-color"),
             lip_color_randomness=float(d.get("lip_color_randomness", 0.05)),
             lip_color_override=float(d.get("lip_color_override", 0.2)),
+            brow_color_node=d.get("brow-color-node", "brow-color"),
+            brow_color_randomness=float(d.get("brow_color_randomness", 0.05)),
+            brow_color_defaults=list(d.get("brow_color_defaults", [])),
+            lash_color_node=d.get("lash-color-node", "lash-color"),
+            lash_color_randomness=float(d.get("lash_color_randomness", 0.05)),
+            lash_color_defaults=list(d.get("lash_color_defaults", [])),
+            beard_color_node=d.get("beard-color-node", "beard-color"),
+            beard_color_randomness=float(d.get("beard_color_randomness", 0.05)),
+            beard_color_defaults=list(d.get("beard_color_defaults", [])),
         )
 
     def resolve(self, base: Path) -> "MaterialsConfig":
@@ -77,12 +97,22 @@ class MaterialsConfig:
             skin_material_name=self.skin_material_name,
             eye_material_name=self.eye_material_name,
             final_color_randomness=self.final_color_randomness,
+            heterochromia_probability=self.heterochromia_probability,
             hair_color_node=self.hair_color_node,
             hair_color_randomness=self.hair_color_randomness,
             hair_color_defaults=list(self.hair_color_defaults),
             lip_color_node=self.lip_color_node,
             lip_color_randomness=self.lip_color_randomness,
             lip_color_override=self.lip_color_override,
+            brow_color_node=self.brow_color_node,
+            brow_color_randomness=self.brow_color_randomness,
+            brow_color_defaults=list(self.brow_color_defaults),
+            lash_color_node=self.lash_color_node,
+            lash_color_randomness=self.lash_color_randomness,
+            lash_color_defaults=list(self.lash_color_defaults),
+            beard_color_node=self.beard_color_node,
+            beard_color_randomness=self.beard_color_randomness,
+            beard_color_defaults=list(self.beard_color_defaults),
         )
 
 @dataclass
@@ -431,6 +461,25 @@ class FeatureFlagsConfig:
 
 
 @dataclass
+class AuthHeadVariationsConfig:
+    """Isolate each auth_-prefixed preset shape key on its own timeline frame."""
+
+    enabled: bool = False
+    name_prefix: str = "auth_"
+    vary_materials: bool = False
+    vary_texture_swap: bool = False
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "AuthHeadVariationsConfig":
+        return cls(
+            enabled=bool(d.get("enabled", False)),
+            name_prefix=str(d.get("name_prefix", "auth_")),
+            vary_materials=bool(d.get("vary_materials", False)),
+            vary_texture_swap=bool(d.get("vary_texture_swap", False)),
+        )
+
+
+@dataclass
 class PipelineConfig:
     runner: RunnerConfig = field(default_factory=RunnerConfig)
     cleanup: CleanupConfig = field(default_factory=CleanupConfig)
@@ -447,6 +496,7 @@ class PipelineConfig:
     rerandomize: RerandomizeConfig = field(default_factory=RerandomizeConfig)
     eye_fit: EyeFitConfig = field(default_factory=EyeFitConfig)
     feature_flags: FeatureFlagsConfig = field(default_factory=FeatureFlagsConfig)
+    auth_head_variations: AuthHeadVariationsConfig = field(default_factory=AuthHeadVariationsConfig)
     chaos_joint_names: frozenset[str] = field(default_factory=lambda: frozenset(CHAOS_JOINT_NAMES))
     config_dir: Path = field(default_factory=lambda: Path("."))
 
@@ -590,6 +640,13 @@ def load_config(config_dir: str | Path, project_root: str | Path | None = None) 
     else:
         feature_flags = FeatureFlagsConfig()
 
+    # --- auth head variations ---
+    auth_head_variations_path = d / "auth_head_variations.json"
+    if auth_head_variations_path.exists():
+        auth_head_variations = AuthHeadVariationsConfig.from_dict(_load_json(auth_head_variations_path))
+    else:
+        auth_head_variations = AuthHeadVariationsConfig()
+
     return PipelineConfig(
         runner=runner,
         cleanup=cleanup,
@@ -606,6 +663,7 @@ def load_config(config_dir: str | Path, project_root: str | Path | None = None) 
         rerandomize=rerandomize,
         eye_fit=eye_fit,
         feature_flags=feature_flags,
+        auth_head_variations=auth_head_variations,
         chaos_joint_names=joint_names,
         config_dir=d,
     )

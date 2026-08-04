@@ -35,5 +35,6 @@
       "percentage": 1,
       "enabled": false
     }
-  }
+  },
+  "random_texture_color": true
 }

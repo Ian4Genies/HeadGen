@@ -325,6 +325,7 @@ class ExportConfig:
     bake_margin: int = 8
     glb_format: str = "GLB"
     frame_range: tuple[int, int] | None = None
+    include_frame_in_folder_name: bool = True
 
     head_bake_material_name: str = "head_mat"
     eye_wedge_R_material_name: str = "eye_mat.001"
@@ -364,6 +365,7 @@ class ExportConfig:
             bake_margin=int(d.get("bake_margin", 8)),
             glb_format=str(d.get("glb_format", "GLB")),
             frame_range=frame_range,
+            include_frame_in_folder_name=bool(d.get("include_frame_in_folder_name", True)),
             head_bake_material_name=str(d.get("head_bake_material_name", "head_mat")),
             eye_wedge_R_material_name=str(d.get("eye_wedge_R_material_name", "eye_mat.001")),
             eye_wedge_L_material_name=str(d.get("eye_wedge_L_material_name", "eye_mat.002")),

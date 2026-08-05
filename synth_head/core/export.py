@@ -26,9 +26,25 @@ def frame_glb_name(frame: int) -> str:
     return f"frame_{frame:0{FRAME_PAD}d}.glb"
 
 
-def frame_dir_name(frame: int) -> str:
-    """Return ``"frame_0007"`` for ``frame=7`` — the per-frame output directory."""
-    return f"frame_{frame:0{FRAME_PAD}d}"
+def frame_dir_name(frame: int, auth_head_name: str | None = None, include_frame: bool = True) -> str:
+    """Return the per-frame output directory name.
+
+    ``auth_head_name=None`` — legacy/no-authored-head case: ``"frame_0007"``.
+    ``auth_head_name`` set, ``include_frame=True`` (Variation Pipeline — one
+    authored head held constant across many frames, so the frame number is
+    still needed to disambiguate): ``"auth_Warrior_frame_0007"``.
+    ``auth_head_name`` set, ``include_frame=False`` (Generate Authored Head
+    Variations — each frame is already a distinct, uniquely-named head, so no
+    frame suffix is needed): ``"auth_Warrior"``. ``include_frame`` is kept as a
+    real parameter rather than removed so a frame suffix can be reinstated here
+    later without re-deriving this logic.
+    """
+    frame_part = f"frame_{frame:0{FRAME_PAD}d}"
+    if auth_head_name is None:
+        return frame_part
+    if include_frame:
+        return f"{auth_head_name}_{frame_part}"
+    return auth_head_name
 
 
 def frame_png_name(suffix: str) -> str:

@@ -29,6 +29,27 @@ def _apply_weights_to_shape_keys(
         sk.keyframe_insert(data_path="value", frame=frame)
 
 
+def active_auth_head_name(
+    mesh_obj: bpy.types.Object,
+    name_prefix: str,
+    threshold: float = 0.5,
+) -> str | None:
+    """Return the *name_prefix*-ed shape key currently at weight >= *threshold*.
+
+    Identifies which authored head preset is isolated at the current frame:
+    Generate Authored Head Variations isolates a different one on every frame,
+    Variation Pipeline holds one isolated for its whole run. Returns None if
+    no such shape key is set (e.g. no authored head is in use).
+    """
+    shape_keys = mesh_obj.data.shape_keys
+    if shape_keys is None:
+        return None
+    for kb in shape_keys.key_blocks:
+        if kb.name.startswith(name_prefix) and kb.value >= threshold:
+            return kb.name
+    return None
+
+
 def apply_blendshape_keyframes(
     context: bpy.types.Context,
     mesh_obj: bpy.types.Object,

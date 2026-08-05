@@ -117,6 +117,25 @@ def _get_config() -> PipelineConfig:
     return cfg
 
 
+def _set_export_frame_range(start: int, end: int, *, include_frame_in_folder_name: bool = True) -> None:
+    """Persist export.json's frame_range (+ folder-naming mode) for the next Export Pipeline run.
+
+    Config is reloaded fresh from disk on every operator run (see _get_config),
+    so writing here is what makes the next Export Pipeline run see [start, end]
+    without a manual config_ui edit — mirroring how Variation Pipeline's frame
+    count already flows into export's frame_range fallback for free.
+    include_frame_in_folder_name controls whether exported per-frame folders
+    keep a frame_NNNN suffix alongside any active authored-head name (Variation
+    Pipeline wants both; Generate Authored Head Variations wants the head name
+    alone, since each frame is already uniquely named).
+    """
+    export_path = _CONFIG_DIR / "export.json"
+    data = json.loads(export_path.read_text(encoding="utf-8")) if export_path.exists() else {}
+    data["frame_range"] = [start, end]
+    data["include_frame_in_folder_name"] = include_frame_in_folder_name
+    export_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+
 def _eye_fit_sample_meshes(
     context,
     *,
@@ -162,6 +181,7 @@ def _debug_config(cfg: PipelineConfig) -> None:
     p(f"  bake_margin:               {cfg.export.bake_margin}")
     p(f"  glb_format:                {cfg.export.glb_format}")
     p(f"  frame_range:               {cfg.export.frame_range}")
+    p(f"  include_frame_in_folder_name: {cfg.export.include_frame_in_folder_name}")
     p(f"  head_bake_material_name:        {cfg.export.head_bake_material_name}")
     p(f"  eye_wedge_R_material_name:     {cfg.export.eye_wedge_R_material_name}")
     p(f"  eye_wedge_L_material_name:     {cfg.export.eye_wedge_L_material_name}")
@@ -916,6 +936,10 @@ class SYNTHHEAD_OT_VariationPipeline(bpy.types.Operator):
 
         hide_objects_in_collection(context.scene, cfg.runner.hide_collection)
 
+        context.scene.frame_start = 1
+        context.scene.frame_end = fc
+        _set_export_frame_range(1, fc, include_frame_in_folder_name=True)
+
         Path(cfg.runner.save_variation_blend_path).parent.mkdir(parents=True, exist_ok=True)
         bpy.ops.wm.save_as_mainfile(filepath=cfg.runner.save_variation_blend_path)
         return {"FINISHED"}
@@ -1236,6 +1260,7 @@ class SYNTHHEAD_OT_GenerateAuthHeadVariations(bpy.types.Operator):
 
         context.scene.frame_start = 1
         context.scene.frame_end = n
+        _set_export_frame_range(1, n, include_frame_in_folder_name=False)
 
         # --- optional texture-swap setup (once, before the per-frame loop) ---
         slot_manifests: dict = {}
@@ -1395,7 +1420,7 @@ class SYNTHHEAD_OT_GenerateAuthHeadVariations(bpy.types.Operator):
         self.report(
             {"INFO"},
             f"{n} authored variations set on frames 1..{n}. "
-            f"Set Export's frame_range to [1, {n}] in config_ui before exporting.",
+            f"Export's frame_range has been set to [1, {n}] — ready to run Export Pipeline.",
         )
         return {"FINISHED"}
 

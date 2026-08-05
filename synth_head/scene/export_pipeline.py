@@ -11,6 +11,7 @@ import bpy
 
 from ..core.config import PipelineConfig
 from ..core.export import eye_bake_seq_png_name, frame_dir_name, frame_glb_name, frame_png_name
+from .blendshapes import active_auth_head_name
 from .export_bake import bake_head_materials, bake_object_material, scope_bake_environment
 from .export_glb import export_glb, rewrite_head_material_slots, staging_scene, stamp_frame_names
 from .mesh import cut_and_sew, join_and_merge
@@ -63,7 +64,12 @@ def export_pipeline_generator(
         with scope_bake_environment(refs.head_geo, cfg.export) as bake_ctx:
             for frame in range(start, end + 1):
                 context.scene.frame_set(frame)
-                frame_dir = out_dir / frame_dir_name(frame)
+                auth_head_name = active_auth_head_name(refs.head_geo, cfg.auth_head_variations.name_prefix)
+                frame_dir = out_dir / frame_dir_name(
+                    frame,
+                    auth_head_name,
+                    include_frame=cfg.export.include_frame_in_folder_name,
+                )
                 frame_dir.mkdir(parents=True, exist_ok=True)
 
                 if not prog.advance("Bake head textures", frame=frame, frame_end=end):

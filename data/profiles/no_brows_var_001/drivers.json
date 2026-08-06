@@ -1363,6 +1363,5662 @@
         "property": "eyes_male_varGp01L",
         "shape_key": true
       }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_african_f_0012",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0012",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_african_f_0012",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0012",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_f_0012",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0012",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_f_0012",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0012",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_african_f_0019",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0019",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_african_f_0019",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0019",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_f_0019",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0019",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_f_0019",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0019",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_african_f_0020",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0020",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_african_f_0020",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0020",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_f_0020",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0020",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_f_0020",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0020",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_african_f_0024",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0024",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_african_f_0024",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0024",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_f_0024",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0024",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_f_0024",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0024",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_african_f_0037",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0037",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_african_f_0037",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0037",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_f_0037",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0037",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_f_0037",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0037",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_african_f_0056",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0056",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_african_f_0056",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0056",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_f_0056",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0056",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_f_0056",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0056",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_african_f_0061",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0061",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_african_f_0061",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0061",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_f_0061",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0061",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_f_0061",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_f_0061",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_african_m_0001",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_m_0001",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_african_m_0001",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_m_0001",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_m_0001",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_m_0001",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_m_0001",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_m_0001",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_african_m_0003",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_m_0003",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_african_m_0003",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_m_0003",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_m_0003",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_m_0003",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_m_0003",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_m_0003",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_african_m_0004",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_m_0004",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_african_m_0004",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_m_0004",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_m_0004",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_m_0004",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_m_0004",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_m_0004",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_african_m_0005",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_m_0005",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_african_m_0005",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_m_0005",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_m_0005",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_m_0005",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_m_0005",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_m_0005",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_african_m_0026",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_m_0026",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_african_m_0026",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_m_0026",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_m_0026",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_m_0026",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_african_m_0026",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_african_m_0026",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0001",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0001",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0001",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0001",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0001",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0001",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0001",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0001",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0003",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0003",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0003",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0003",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0003",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0003",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0003",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0003",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0008",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0008",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0008",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0008",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0008",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0008",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0008",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0008",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0009",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0009",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0009",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0009",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0009",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0009",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0009",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0009",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0010",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0010",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0010",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0010",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0010",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0010",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0010",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0010",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0011",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0011",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0011",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0011",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0011",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0011",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0011",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0011",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0016",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0016",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0016",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0016",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0016",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0016",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0016",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0016",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0018",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0018",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0018",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0018",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0018",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0018",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0018",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0018",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0021",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0021",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0021",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0021",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0021",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0021",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0021",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0021",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0026",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0026",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0026",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0026",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0026",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0026",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0026",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0026",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0029",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0029",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0029",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0029",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0029",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0029",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0029",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0029",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0033",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0033",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0033",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0033",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0033",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0033",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0033",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0033",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0034",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0034",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0034",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0034",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0034",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0034",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0034",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0034",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0035",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0035",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0035",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0035",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0035",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0035",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0035",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0035",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0036",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0036",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0036",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0036",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0036",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0036",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0036",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0036",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0039",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0039",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0039",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0039",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0039",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0039",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0039",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0039",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0040",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0040",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0040",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0040",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0040",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0040",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0040",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0040",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0041",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0041",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0041",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0041",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0041",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0041",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0041",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0041",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0049",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0049",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0049",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0049",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0049",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0049",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0049",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0049",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0054",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0054",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0054",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0054",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0054",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0054",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0054",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0054",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0061",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0061",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0061",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0061",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0061",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0061",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0061",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0061",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0069",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0069",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_f_0069",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0069",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0069",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0069",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_f_0069",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_f_0069",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0011",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0011",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0011",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0011",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0011",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0011",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0011",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0011",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0014",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0014",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0014",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0014",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0014",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0014",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0014",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0014",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0017",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0017",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0017",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0017",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0017",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0017",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0017",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0017",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0019",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0019",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0019",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0019",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0019",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0019",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0019",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0019",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0023",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0023",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0023",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0023",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0023",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0023",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0023",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0023",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0025",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0025",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0025",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0025",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0025",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0025",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0025",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0025",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0027",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0027",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0027",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0027",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0027",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0027",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0027",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0027",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0029",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0029",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0029",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0029",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0029",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0029",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0029",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0029",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0033",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0033",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0033",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0033",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0033",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0033",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0033",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0033",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0034",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0034",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0034",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0034",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0034",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0034",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0034",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0034",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0035",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0035",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0035",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0035",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0035",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0035",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0035",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0035",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0037",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0037",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0037",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0037",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0037",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0037",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0037",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0037",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0042",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0042",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0042",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0042",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0042",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0042",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0042",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0042",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0043",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0043",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0043",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0043",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0043",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0043",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0043",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0043",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0048",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0048",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0048",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0048",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0048",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0048",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0048",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0048",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0051",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0051",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0051",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0051",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0051",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0051",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0051",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0051",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0062",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0062",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0062",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0062",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0062",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0062",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0062",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0062",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0068",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0068",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_asian_m_0068",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0068",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0068",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0068",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_asian_m_0068",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_asian_m_0068",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_caucasian_f_0002",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0002",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_caucasian_f_0002",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0002",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_caucasian_f_0002",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0002",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_caucasian_f_0002",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0002",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_caucasian_f_0003",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0003",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_caucasian_f_0003",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0003",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_caucasian_f_0003",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0003",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_caucasian_f_0003",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0003",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_caucasian_f_0007",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0007",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_caucasian_f_0007",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0007",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_caucasian_f_0007",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0007",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_caucasian_f_0007",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0007",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_caucasian_f_0008",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0008",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_caucasian_f_0008",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0008",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_caucasian_f_0008",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0008",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_caucasian_f_0008",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0008",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_caucasian_f_0009",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0009",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_caucasian_f_0009",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0009",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_caucasian_f_0009",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0009",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_caucasian_f_0009",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0009",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_caucasian_f_0028",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0028",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_caucasian_f_0028",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0028",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_caucasian_f_0028",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0028",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_caucasian_f_0028",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0028",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_caucasian_f_0031",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0031",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_caucasian_f_0031",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0031",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_caucasian_f_0031",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0031",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_caucasian_f_0031",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_f_0031",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_caucasian_m_0016",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_m_0016",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_caucasian_m_0016",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_m_0016",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_caucasian_m_0016",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_m_0016",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_caucasian_m_0016",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_m_0016",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_caucasian_m_0024",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_m_0024",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_caucasian_m_0024",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_m_0024",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_caucasian_m_0024",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_m_0024",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_caucasian_m_0024",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_m_0024",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_caucasian_m_0028",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_m_0028",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_caucasian_m_0028",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_m_0028",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_caucasian_m_0028",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_m_0028",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_caucasian_m_0028",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_m_0028",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_caucasian_m_0034",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_m_0034",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_caucasian_m_0034",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_m_0034",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_caucasian_m_0034",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_m_0034",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_caucasian_m_0034",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_caucasian_m_0034",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_latino_f_0005",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0005",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_latino_f_0005",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0005",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_f_0005",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0005",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_f_0005",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0005",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_latino_f_0014",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0014",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_latino_f_0014",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0014",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_f_0014",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0014",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_f_0014",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0014",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_latino_f_0018",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0018",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_latino_f_0018",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0018",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_f_0018",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0018",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_f_0018",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0018",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_latino_f_0027",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0027",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_latino_f_0027",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0027",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_f_0027",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0027",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_f_0027",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0027",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_latino_f_0031",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0031",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_latino_f_0031",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0031",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_f_0031",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0031",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_f_0031",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0031",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_latino_f_0032",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0032",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_latino_f_0032",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0032",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_f_0032",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0032",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_f_0032",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0032",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_latino_f_0036",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0036",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_latino_f_0036",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0036",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_f_0036",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0036",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_f_0036",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0036",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_latino_f_0040",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0040",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_latino_f_0040",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0040",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_f_0040",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0040",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_f_0040",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0040",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_latino_f_0041",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0041",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_latino_f_0041",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0041",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_f_0041",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0041",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_f_0041",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0041",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_latino_f_0047",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0047",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_latino_f_0047",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0047",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_f_0047",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0047",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_f_0047",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0047",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_latino_f_0048",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0048",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_latino_f_0048",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0048",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_f_0048",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0048",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_f_0048",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_f_0048",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_latino_m_0002",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0002",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_latino_m_0002",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0002",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_m_0002",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0002",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_m_0002",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0002",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_latino_m_0036",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0036",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_latino_m_0036",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0036",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_m_0036",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0036",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_m_0036",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0036",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_latino_m_0041",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0041",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_latino_m_0041",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0041",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_m_0041",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0041",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_m_0041",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0041",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_latino_m_0042",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0042",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_latino_m_0042",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0042",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_m_0042",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0042",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_m_0042",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0042",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_latino_m_0043",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0043",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_latino_m_0043",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0043",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_m_0043",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0043",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_m_0043",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0043",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_latino_m_0058",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0058",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_latino_m_0058",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0058",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_m_0058",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0058",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_m_0058",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0058",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_latino_m_0064",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0064",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_latino_m_0064",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0064",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_m_0064",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0064",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_latino_m_0064",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_latino_m_0064",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0005",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0005",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0005",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0005",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0005",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0005",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0005",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0005",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0006",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0006",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0006",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0006",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0006",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0006",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0006",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0006",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0011",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0011",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0011",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0011",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0011",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0011",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0011",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0011",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0013",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0013",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0013",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0013",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0013",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0013",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0013",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0013",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0015",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0015",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0015",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0015",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0015",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0015",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0015",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0015",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0016",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0016",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0016",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0016",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0016",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0016",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0016",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0016",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0021",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0021",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0021",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0021",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0021",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0021",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0021",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0021",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0032",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0032",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0032",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0032",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0032",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0032",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0032",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0032",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0036",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0036",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0036",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0036",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0036",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0036",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0036",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0036",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0041",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0041",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0041",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0041",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0041",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0041",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0041",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0041",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0042",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0042",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0042",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0042",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0042",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0042",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0042",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0042",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0045",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0045",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0045",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0045",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0045",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0045",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0045",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0045",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0064",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0064",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_middleeast_f_0064",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0064",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0064",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0064",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_f_0064",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_f_0064",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_middleeast_m_0005",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0005",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_middleeast_m_0005",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0005",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_m_0005",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0005",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_m_0005",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0005",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_middleeast_m_0006",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0006",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_middleeast_m_0006",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0006",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_m_0006",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0006",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_m_0006",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0006",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_middleeast_m_0008",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0008",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_middleeast_m_0008",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0008",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_m_0008",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0008",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_m_0008",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0008",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_middleeast_m_0012",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0012",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_middleeast_m_0012",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0012",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_m_0012",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0012",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_m_0012",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0012",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_middleeast_m_0033",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0033",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_middleeast_m_0033",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0033",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_m_0033",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0033",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_m_0033",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0033",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_middleeast_m_0043",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0043",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_middleeast_m_0043",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0043",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_m_0043",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0043",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_m_0043",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0043",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_boolean",
+        "bone": null,
+        "property": "auth_middleeast_m_0069",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0069",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_boolean",
+        "bone": null,
+        "property": "auth_middleeast_m_0069",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0069",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_L_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_m_0069",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0069",
+        "shape_key": true
+      }
+    },
+    {
+      "target": {
+        "object": "eye_R_geo_hd_target",
+        "bone": null,
+        "property": "auth_middleeast_m_0069",
+        "shape_key": true
+      },
+      "source": {
+        "object": "headOnly_geo",
+        "bone": null,
+        "property": "auth_middleeast_m_0069",
+        "shape_key": true
+      }
     }
   ]
 }

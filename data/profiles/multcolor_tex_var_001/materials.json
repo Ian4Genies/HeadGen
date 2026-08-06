@@ -1,0 +1,26 @@
+{
+  "paths": {
+    "skin_material_blend": "gen13.blend"
+  },
+  "skin_material_name": "head_mat",
+  "eye_material_name": "eye_mat",
+  "final_color_randomness": 0.05,
+  "hair-color-node": "hair-color",
+  "hair_color_randomness": 0.05,
+  "hair_color_defaults": [
+    "#000000",
+    "#321608",
+    "#5E2C05",
+    "#87580A",
+    "#EFBC78",
+    "#E9E095",
+    "#321608",
+    "#F4F4CF",
+    "#963624",
+    "#AF2E1A"
+  ],
+  "lip-color-node": "lip-color",
+  "lip_color_randomness": 0.6,
+  "lip_color_override": 0,
+  "heterochromia_probability": 0.5
+}

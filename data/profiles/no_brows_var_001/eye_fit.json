@@ -1,5 +1,5 @@
 {
-  "enabled": true,
+  "enabled": false,
   "depth_axis": "y",
   "left_bone": "LeftEyeSocketBind",
   "right_bone": "RightEyeSocketBind",

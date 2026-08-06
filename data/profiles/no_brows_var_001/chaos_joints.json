@@ -19,141 +19,141 @@
   "scale_max": 0.2,
   "enable_scale": true,
   "overrides": {
-    "FaceBind.location": 0.005,
+    "FaceBind.location": 0,
     "FaceBind.rotation": 0,
-    "FaceBind.scale": 0.02,
+    "FaceBind.scale": 0,
     "JawBind.scale.x": {
-      "min": -0.05,
-      "max": 0.05
+      "min": 0,
+      "max": 0
     },
     "JawBind.scale.y": {
       "min": 0,
-      "max": 0.1
+      "max": 0
     },
     "JawBind.scale.z": {
       "min": 0,
-      "max": 0.05
+      "max": 0
     },
     "JawBind.location.x": 0,
     "JawBind.location.y": {
-      "min": -0.05,
-      "max": 0.05
+      "min": 0,
+      "max": 0
     },
     "JawBind.location.z": 0,
-    "JawBind.rotation.x": 0.015,
+    "JawBind.rotation.x": 0,
     "JawBind.rotation.y": 0,
     "JawBind.rotation.z": 0,
     "MouthBind.scale.x": {
-      "min": -0.1,
-      "max": 0.1
+      "min": 0,
+      "max": 0
     },
     "MouthBind.scale.y": {
-      "min": -0.05,
-      "max": 0.05
+      "min": 0,
+      "max": 0
     },
     "MouthBind.scale.z": {
-      "min": -0.1,
-      "max": 0.1
+      "min": 0,
+      "max": 0
     },
     "MouthBind.location.x": 0,
-    "MouthBind.location.y": 0.05,
-    "MouthBind.location.z": 0.15,
+    "MouthBind.location.y": 0,
+    "MouthBind.location.z": 0,
     "MouthBind.rotation": 0,
     "MouthInnerBind.scale.x": {
-      "min": -0.1,
-      "max": 0.1
+      "min": 0,
+      "max": 0
     },
     "MouthInnerBind.scale.y": {
-      "min": -0.075,
-      "max": 0.075
+      "min": 0,
+      "max": 0
     },
     "MouthInnerBind.scale.z": 0,
     "MouthInnerBind.location.x": 0,
-    "MouthInnerBind.location.y": 0.0025,
+    "MouthInnerBind.location.y": 0,
     "MouthInnerBind.location.z": 0,
     "MouthInnerBind.rotation": 0,
     "NoseBind.scale.x": {
-      "min": -0.1,
-      "max": 0.1
+      "min": 0,
+      "max": 0
     },
     "NoseBind.scale.y": {
       "min": 0,
-      "max": 0.1
+      "max": 0
     },
     "NoseBind.scale.z": {
       "min": 0,
-      "max": 0.1
+      "max": 0
     },
     "NoseBind.location.x": 0,
     "NoseBind.location.y": {
-      "min": -0.1,
-      "max": 0.1
+      "min": 0,
+      "max": 0
     },
-    "NoseBind.location.z": 0.0325,
+    "NoseBind.location.z": 0,
     "NoseBind.rotation.x": {
-      "min": -4,
+      "min": 0,
       "max": 0
     },
     "NoseBind.rotation.y": 0,
     "NoseBind.rotation.z": 0,
     "LeftBrowBind.scale.x": {
-      "min": -0.1,
-      "max": 0.1
+      "min": 0,
+      "max": 0
     },
     "LeftBrowBind.scale.y": {
-      "min": -0.25,
-      "max": 0.25
+      "min": 0,
+      "max": 0
     },
     "LeftBrowBind.scale.z": 0,
-    "LeftBrowBind.location.x": 0.001,
+    "LeftBrowBind.location.x": 0,
     "LeftBrowBind.location.y": 0,
     "LeftBrowBind.location.z": 0,
     "LeftBrowBind.rotation.x": 0,
     "LeftBrowBind.rotation.y": 0,
     "LeftBrowBind.rotation.z": 0,
     "LeftEyeSocketBind.scale.x": {
-      "min": -0.05,
-      "max": 0.05
+      "min": 0,
+      "max": 0
     },
     "LeftEyeSocketBind.scale.y": {
-      "min": -0.1,
-      "max": 0.05
+      "min": 0,
+      "max": 0
     },
     "LeftEyeSocketBind.scale.z": {
-      "min": -0.05,
-      "max": 0.05
+      "min": 0,
+      "max": 0
     },
-    "LeftEyeSocketBind.location.x": 0.01,
-    "LeftEyeSocketBind.location.y": 0.2,
+    "LeftEyeSocketBind.location.x": 0,
+    "LeftEyeSocketBind.location.y": 0,
     "LeftEyeSocketBind.location.z": 0,
     "LeftEyeSocketBind.rotation.x": 0,
     "LeftEyeSocketBind.rotation.y": 0,
     "LeftEyeSocketBind.rotation.z": {
-      "min": -9,
-      "max": 9
+      "min": 0,
+      "max": 0
     },
     "NeckBind.scale.x": {
-      "min": -0.2,
-      "max": 0.25
+      "min": 0,
+      "max": 0
     },
     "NeckBind.scale.y": 0,
     "NeckBind.scale.z": {
-      "min": -0.13,
-      "max": 0.15
+      "min": 0,
+      "max": 0
     },
     "NeckBind.location": 0,
     "NeckBind.rotation": 0,
-    "LeftCheekBind.location.x": 0.05,
-    "LeftCheekBind.location.y": 0.05,
-    "LeftCheekBind.location.z": 0.05,
-    "LeftCheekBoneBind.location": 0.1,
-    "LeftCheekBoneBind.rotation": 6,
-    "LeftCheekBoneBind.scale": 0.1
+    "LeftCheekBind.location.x": 0,
+    "LeftCheekBind.location.y": 0,
+    "LeftCheekBind.location.z": 0,
+    "LeftCheekBoneBind.location": 0,
+    "LeftCheekBoneBind.rotation": 0,
+    "LeftCheekBoneBind.scale": 0
   },
   "bone_properties": {
     "var_iris_shrink": {
-      "min": 0.2,
-      "max": 0.8,
+      "min": 0,
+      "max": 0,
       "target_bone": "LeftEyeSocketBind"
     },
     "var_iris_grow": {
@@ -163,7 +163,7 @@
     },
     "var_pupil_shrink": {
       "min": 0,
-      "max": 0.5,
+      "max": 0,
       "target_bone": "LeftEyeSocketBind"
     },
     "var_pupil_grow": {

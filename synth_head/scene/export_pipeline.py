@@ -13,7 +13,13 @@ from ..core.config import PipelineConfig
 from ..core.export import eye_bake_seq_png_name, frame_dir_name, frame_glb_name, frame_png_name
 from .blendshapes import active_auth_head_name
 from .export_bake import bake_head_materials, bake_object_material, scope_bake_environment
-from .export_glb import export_glb, rewrite_head_material_slots, staging_scene, stamp_frame_names
+from .export_glb import (
+    export_glb,
+    rewrite_head_material_slots,
+    rewrite_object_material_slot,
+    staging_scene,
+    stamp_frame_names,
+)
 from .mesh import cut_and_sew, join_and_merge
 from .progress import PipelineProgress, export_pipeline_step_count
 from .progress_overlay import progress_props
@@ -85,6 +91,7 @@ def export_pipeline_generator(
                     margin=cfg.export.bake_margin,
                 )
 
+                hd_eye_material_names: dict[str, str] = {}
                 if wedge_projection and cfg.export.copy_eye_projection:
                     if not prog.advance("Copy eye bakes", frame=frame, frame_end=end):
                         return
@@ -126,6 +133,7 @@ def export_pipeline_generator(
                                 if obj.active_material is not None
                                 else cfg.export.hd_eye_material_name
                             )
+                            hd_eye_material_names[suffix] = material_name
                             p = bake_object_material(
                                 obj,
                                 material_name,
@@ -156,6 +164,10 @@ def export_pipeline_generator(
                             sew_lips=cfg.cleanup.sew_lips,
                         )
                     rewrite_head_material_slots(stage.head_geo, png_paths, cfg.export)
+                    for stage_obj, suffix in ((stage.hd_eye_R, "R_hd_eye"), (stage.hd_eye_L, "L_hd_eye")):
+                        src_name = hd_eye_material_names.get(suffix)
+                        if src_name is not None:
+                            rewrite_object_material_slot(stage_obj, src_name, suffix, png_paths)
                     stamp_frame_names(stage.objects, frame)
                     export_glb(stage.objects, glb_path, format=cfg.export.glb_format)
 

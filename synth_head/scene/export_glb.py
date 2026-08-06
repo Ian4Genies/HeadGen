@@ -182,14 +182,20 @@ def staging_scene(
                     print(f"[Export][stage] WARNING: include_eyes=True but {lbl} ref is unset — skipping")
 
         hd_eyes: list[bpy.types.Object] = []
+        hd_eye_R: bpy.types.Object | None = None
+        hd_eye_L: bpy.types.Object | None = None
         if export_cfg.include_hd_eyes:
-            for src, lbl in ((getattr(refs, "hd_eye_R", None), "hd_eye_R"),
-                             (getattr(refs, "hd_eye_L", None), "hd_eye_L")):
-                frozen = _freeze(src, lbl)
-                if frozen is not None:
-                    hd_eyes.append(frozen)
-                elif src is None:
-                    print(f"[Export][stage] WARNING: include_hd_eyes=True but {lbl} ref is unset — skipping")
+            hd_eye_R = _freeze(getattr(refs, "hd_eye_R", None), "hd_eye_R")
+            if hd_eye_R is not None:
+                hd_eyes.append(hd_eye_R)
+            elif getattr(refs, "hd_eye_R", None) is None:
+                print("[Export][stage] WARNING: include_hd_eyes=True but hd_eye_R ref is unset — skipping")
+
+            hd_eye_L = _freeze(getattr(refs, "hd_eye_L", None), "hd_eye_L")
+            if hd_eye_L is not None:
+                hd_eyes.append(hd_eye_L)
+            elif getattr(refs, "hd_eye_L", None) is None:
+                print("[Export][stage] WARNING: include_hd_eyes=True but hd_eye_L ref is unset — skipping")
 
         boolean_cutters: list[bpy.types.Object] = []
         if export_cfg.include_boolean_cutters:
@@ -232,6 +238,8 @@ def staging_scene(
             head_geo=head_geo,
             eyes=eyes,
             hd_eyes=hd_eyes,
+            hd_eye_R=hd_eye_R,
+            hd_eye_L=hd_eye_L,
             boolean_cutters=boolean_cutters,
             brows=brows,
             lashes=lashes,
@@ -334,6 +342,35 @@ def rewrite_head_material_slots(
                 export_mat = _build_export_material(suffix, png)
                 mesh.materials[slot_idx] = export_mat
                 break
+
+
+def rewrite_object_material_slot(
+    obj: bpy.types.Object | None,
+    src_name: str,
+    suffix: str,
+    png_paths: dict[str, Path],
+) -> None:
+    """Replace the material slot named *src_name* on *obj* with a baked Export material.
+
+    Sibling to ``rewrite_head_material_slots`` for objects frozen separately
+    from head_geo — e.g. hd_eye_R / hd_eye_L each carry their own single
+    material and are baked individually via ``bake_object_material``, so the
+    head-only rewrite above never reaches them. Without this, the frozen HD
+    eye objects keep their original live node-based material (an RGB node
+    driving Base Color) into the GLB, and Blender's glTF exporter can't bake a
+    linked-but-non-texture color input — it falls back to one fixed default
+    color regardless of the frame's actual keyframed eye color.
+    """
+    if obj is None:
+        return
+    png = png_paths.get(suffix)
+    if png is None:
+        return
+    mesh = obj.data
+    for slot_idx, mat in enumerate(mesh.materials):
+        if mat is not None and mat.name == src_name:
+            mesh.materials[slot_idx] = _build_export_material(suffix, png)
+            return
 
 
 # ---------------------------------------------------------------------------

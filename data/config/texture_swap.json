@@ -5,7 +5,7 @@
       "sequence_path": "output-pipeline/brow_sequence",
       "node_name": "brow-sequence",
       "percentage": 1,
-      "enabled": false
+      "enabled": true
     },
     "lash": {
       "pool_path": "input-pipeline/texture/lash",
